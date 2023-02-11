@@ -1,0 +1,234 @@
+﻿@inject UserManager<AppUser> UserManager
+@inject IFileService FileService
+
+@model IEnumerable<AppUser>
+
+@{
+	List<AppUser> admins = new List<AppUser>();
+	List<AppUser> projectManagers = new List<AppUser>();
+	List<AppUser> developers = new List<AppUser>();
+	List<AppUser> members = new List<AppUser>();
+
+	foreach (AppUser user in Model)
+	{
+		if (await UserManager.IsInRoleAsync(user, nameof(Roles.Admin)))
+			admins.Add(user);
+
+		else if (await UserManager.IsInRoleAsync(user, nameof(Roles.ProjectManager)))
+			projectManagers.Add(user);
+
+		else if (await UserManager.IsInRoleAsync(user, nameof(Roles.Developer)))
+			developers.Add(user);
+
+		else if (await UserManager.IsInRoleAsync(user, nameof(Roles.Member)))
+			members.Add(user);
+	}
+}
+
+<!-- Breadcrumbs -->
+<div class="pagetitle">
+	<h1>Manage Team Members</h1>
+	<nav>
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Company</a></li>
+			<li class="breadcrumb-item active">Manage Team Members</li>
+		</ol>
+	</nav>
+</div>
+
+<!-- Changes saved alert -->
+@if(TempData.ContainsKey("Message"))
+{
+	<div class="col-lg-6">
+		<div class="alert alert-success alert-dismissible fade show" role="alert">
+			@TempData["Message"]
+			<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+		</div>
+	</div>
+}
+
+<h5>Administrators</h5>
+@if (admins.Count() == 0)
+{
+	<div class="row">
+		<div class="col-lg-6">
+			<div class="card">
+				<div class="card-body">
+					<p class="card-text"><br/>No company employees are assigned to this role.</p>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+@for (int i = 0; i < admins.Count(); i++)
+{
+	IEnumerable<AppUser> users = admins.Skip(i*2).Take(2);
+
+	<div class="row">
+		@foreach (AppUser user in users)
+		{
+			string? role = (await UserManager.GetRolesAsync(user)).FirstOrDefault();
+
+			<div class="col-lg-6">
+				<div class="card">
+					<div class="row g-0">
+						<div class="col-md-2 d-flex justify-content-center align-items-center">
+							<img class="rounded-circle" width="100" height="100"
+								 src="data:image/*;base64,@(Convert.ToBase64String(user.PictureData))">
+						</div>
+						<div class="col-md-10">
+							<div class="card-body">
+								<h5 class="card-title">@user.FullName</h5>
+								<h6 class="card-subtitle">Title: @user.JobTitle</h6>
+								<h6 class="card-subtitle mt-1">Permissions: @(role is not null ? role : "None")</h6>
+							</div>
+							<div class="card-footer">
+								<a class="btn btn-success btn-outline" asp-controller="Company" asp-action="EditEmployee" asp-route-id="@user.Id">Change</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+	</div>
+}
+
+<h5>Project Managers</h5>
+@if (projectManagers.Count() == 0)
+{
+	<div class="row">
+		<div class="col-lg-6">
+			<div class="card">
+				<div class="card-body">
+					<p class="card-text"><br/>No company employees are assigned to this role.</p>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+@for (int i = 0; i < projectManagers.Count(); i++)
+{
+	IEnumerable<AppUser> users = projectManagers.Skip(i * 2).Take(2);
+
+	<div class="row">
+		@foreach (AppUser user in users)
+		{
+			string? role = (await UserManager.GetRolesAsync(user)).FirstOrDefault();
+
+			<div class="col-lg-6">
+				<div class="card">
+					<div class="row g-0">
+						<div class="col-md-2 d-flex justify-content-center align-items-center">
+							<img class="rounded-circle" width="100" height="100"
+								 src="data:image/*;base64,@(Convert.ToBase64String(user.PictureData))">
+						</div>
+						<div class="col-md-10">
+							<div class="card-body">
+								<h5 class="card-title">@user.FullName</h5>
+								<h6 class="card-subtitle">Title: @user.JobTitle</h6>
+								<h6 class="card-subtitle mt-1">Permissions: @(role is not null ? role : "None")</h6>
+							</div>
+							<div class="card-footer">
+								<a class="btn btn-success btn-outline" asp-controller="Company" asp-action="EditEmployee" asp-route-id="@user.Id">Change</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+	</div>
+}
+
+<h5>Developers</h5>
+@if (developers.Count() == 0)
+{
+	<div class="row">
+		<div class="col-lg-6">
+			<div class="card">
+				<div class="card-body">
+					<p class="card-text"><br/>No company employees are assigned to this role.</p>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+@for (int i = 0; i < developers.Count(); i++)
+{
+	IEnumerable<AppUser> users = developers.Skip(i * 2).Take(2);
+
+	<div class="row">
+		@foreach (AppUser user in users)
+		{
+			string? role = (await UserManager.GetRolesAsync(user)).FirstOrDefault();
+
+			<div class="col-lg-6">
+				<div class="card">
+					<div class="row g-0">
+						<div class="col-md-2 d-flex justify-content-center align-items-center">
+							<img class="rounded-circle" width="100" height="100"
+								 src="data:image/*;base64,@(Convert.ToBase64String(user.PictureData))">
+						</div>
+						<div class="col-md-10">
+							<div class="card-body">
+								<h5 class="card-title">@user.FullName</h5>
+								<h6 class="card-subtitle">Title: @user.JobTitle</h6>
+								<h6 class="card-subtitle mt-1">Permissions: @(role is not null ? role : "None")</h6>
+							</div>
+							<div class="card-footer">
+								<a class="btn btn-success btn-outline" asp-controller="Company" asp-action="EditEmployee" asp-route-id="@user.Id">Change</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+	</div>
+}
+
+<h4>Members</h4>
+@if (members.Count() == 0)
+{
+	<div class="row">
+		<div class="col-lg-6">
+			<div class="card">
+				<div class="card-body">
+					<p class="card-text"><br/>No company employees are assigned to this role.</p>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+@for (int i = 0; i < members.Count(); i++)
+{
+	IEnumerable<AppUser> users = members.Skip(i * 2).Take(2);
+
+	<div class="row">
+		@foreach (AppUser user in users)
+		{
+			string? role = (await UserManager.GetRolesAsync(user)).FirstOrDefault();
+
+			<div class="col-lg-6">
+				<div class="card">
+					<div class="row g-0">
+						<div class="col-md-2 d-flex justify-content-center align-items-center">
+							<img class="rounded-circle" width="100" height="100"
+								 src="data:image/*;base64,@(Convert.ToBase64String(user.PictureData))">
+						</div>
+						<div class="col-md-10">
+							<div class="card-body">
+								<h5 class="card-title">@user.FullName</h5>
+								<h6 class="card-subtitle">Title: @user.JobTitle</h6>
+								<h6 class="card-subtitle mt-1">Permissions: @(role is not null ? role : "None")</h6>
+							</div>
+							<div class="card-footer">
+								<a class="btn btn-success btn-outline" asp-controller="Company" asp-action="EditEmployee" asp-route-id="@user.Id">Change</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+	</div>
+}
+
+

@@ -1,0 +1,107 @@
+﻿@model IEnumerable<Notification>
+
+@{
+    IEnumerable<Notification> newNotifications = Model.Where(n => !n.HasBeenSeen);
+    IEnumerable<Notification> oldNotifications = Model.Where(n => n.HasBeenSeen);
+}
+
+<div class="pagetitle">
+    <h1>Notifications</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">Account</li>
+            <li class="breadcrumb-item active">Notifications</li>
+        </ol>
+    </nav>
+</div>
+
+<section class="section">
+    <div class="row align-items-top">
+
+        <h3>New Notifications</h3>
+        @if(newNotifications.Count() == 0)
+        {
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">No new notifications</h5>
+                        <p class="card-text">Nothing here! You're all up to date.</p>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            foreach(Notification notification in newNotifications)
+            {
+                <div class="col-lg-6">
+
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">@notification.Title</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">@notification.TimeSinceCreated</h6>
+                            <p class="card-text">@notification.Message</p>
+                        </div>
+                        <div class="card-footer">
+                        @switch((NotificationType)notification.NotificationTypeId)
+                        {
+                            case (NotificationType.CompanyInvite):
+                                <!-- Accept -->
+                                <a class="btn btn-success" 
+                                asp-controller="Company" asp-action="AcceptCompanyInvite"
+                                asp-route-notificationId="@notification.Id">Accept</a>
+
+                                <!-- Decline -->
+                                <a class="btn btn-danger"
+                                asp-controller="Company" asp-action="RejectCompanyInvite"
+                                asp-route-notificationId="@notification.Id">Decline</a>
+                                break;
+
+                            case (NotificationType.CompanyInviteAccepted):
+                                <a class="btn btn-primary" asp-controller="Company" asp-action="ManageTeamMembers">Take me there!</a>
+                                <a class="btn btn-secondary" asp-controller="Notifications" asp-action="MarkAsRead" asp-route-id="@notification.Id">Ok</a>
+                                break;
+
+                            default:
+                                <a class="btn btn-secondary" asp-controller="Notifications" asp-action="MarkAsRead" asp-route-id="@notification.Id">Ok</a>
+                                break;
+                        }
+                        </div>
+                    </div>
+
+                </div>
+            }
+        }
+
+        <h3>Old News</h3>
+        @if (oldNotifications.Count() == 0)
+        {
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Empty</h5>
+                        <p class="card-text">No history to show.</p>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            foreach (Notification notification in oldNotifications)
+            {
+                <div class="col-lg-6">
+
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">@notification.Title</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">@notification.TimeSinceCreated</h6>
+                            <p class="card-text">@notification.Message</p>
+                        </div>
+                    </div>
+
+                </div>
+            }
+        }
+
+    </div>
+</section>

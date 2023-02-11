@@ -1,0 +1,156 @@
+﻿@inject UserManager<AppUser> UserManager
+@inject SignInManager<AppUser> SignInManager
+@inject INotificationService NotificationService
+@inject IFileService FileService
+
+@{
+    AppUser? appUser = await UserManager.GetUserAsync(User);
+    IEnumerable<string> roles = appUser is not null ? await UserManager.GetRolesAsync(appUser) : new string[] { String.Empty };
+}
+
+<header id="header" class="header fixed-top d-flex align-items-center">
+
+    <!-- Logo -->
+    <div class="d-flex align-items-center justify-content-between">
+        <a href="index.html" class="logo d-flex align-items-center">
+            <img src="~/img/logo.png" alt="">
+            <span class="d-none d-lg-block">BugBanisher</span>
+        </a>
+        <i class="bi bi-list toggle-sidebar-btn"></i>
+    </div>
+
+    <!-- Nav Bar -->
+    <nav class="header-nav ms-auto">
+        <ul class="d-flex align-items-center">
+
+            @if (appUser is not null)
+            {
+                <!-- Notifications -->
+                IEnumerable<Notification> unseenNotifications = await NotificationService.GetUnseenNotificationsForUserAsync(appUser);
+                IEnumerable<Notification> notificationsToDisplay = unseenNotifications.Take(4);
+
+                <li class="nav-item dropdown">
+
+                    <a class="nav-link nav-icon" data-bs-toggle="dropdown">
+                        <i class="bi bi-bell"></i>
+                        <span class="badge bg-primary badge-number">@unseenNotifications.Count()</span>
+                    </a>
+
+                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
+                        <li class="dropdown-header">
+                            You have @unseenNotifications.Count() new notifications
+                            <a asp-controller="Notifications" asp-action="MyNotifications">
+                            <span class="badge rounded-pill bg-primary p-2 ms-2">View all</span></a>
+                        </li>
+
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+
+                        @foreach(Notification notification in notificationsToDisplay)
+                        {
+                            <li class="notification-item">
+                                <i class="bi bi-exclamation-circle text-warning"></i>
+                                <div>
+                                    <h4>@notification.Title</h4>
+                                    <p>@notification.Message</p>
+                                    <p>@notification.TimeSinceCreated</p>
+                                </div>
+                            </li>
+
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                        }
+
+                        @if (unseenNotifications.Count() > 4)
+                        {
+                            <li class="dropdown-footer">
+                                <span class="text-muted">@(unseenNotifications.Count() - 4) more new</span>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="dropdown-footer">
+                                <span class="text-muted">That's it!</span>
+                            </li>
+                        }
+
+
+                    </ul>
+
+                </li>
+                <!-- End Notifications -->
+
+                <!-- Profile -->
+                <li class="nav-item dropdown pe-3">
+
+                    <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+                        <img class="rounded-circle"
+                             src="data:image/*;base64,@(Convert.ToBase64String(appUser.PictureData))">
+                        <span class="d-none d-md-block dropdown-toggle ps-2">@(appUser.FullName)</span>
+                    </a>
+
+                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+                        <li class="dropdown-header">
+                            <h6>@appUser.FullName</h6>
+                            <span>@appUser.JobTitle</span>
+                        </li>
+
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" asp-area="Identity" asp-page="/Account/Manage/Profile">
+                                <i class="bi bi-person"></i>
+                                <span>My Profile</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" asp-area="Identity" asp-page="/Account/Manage/Index">
+                                <i class="bi bi-gear"></i>
+                                <span>Account Settings</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+
+                        <li>
+                            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
+                                <button type="submit" class="dropdown-item d-flex align-items-center">
+                                    <i class="bi bi-box-arrow-right"></i><span>Sign Out</span>
+                                    </button>
+                            </form>
+                        </li>
+
+                    </ul>
+                </li>
+                <!-- End Profile -->
+            }
+            else
+            {
+                <li class="nav-item pe-3">
+                    <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">Register</a>
+                </li>
+                <li class="nav-item pe-3">
+                    <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">Login</a>
+                </li>
+            }
+
+            @if(SignInManager.IsSignedIn(User))
+            {
+                <partial name="_SidebarPartial" />
+            }
+
+        </ul>
+    </nav>
+
+</header> 

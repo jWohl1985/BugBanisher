@@ -1,0 +1,81 @@
+﻿@using BugBanisher.Models.ViewModels;
+@model EditEmployeeViewModel
+
+
+<div class="pagetitle">
+    <h1>Edit Employee</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">Company</li>
+            <li class="breadcrumb-item">Manage Team Members</li>
+            <li class="breadcrumb-item active">Edit Employee</li>
+        </ol>
+    </nav>
+</div>
+
+@if (ViewData.ContainsKey("Message"))
+{
+    <div class="col-lg-6">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @ViewData["Message"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+}
+
+<div class="row">
+
+    <div class="col-lg-5">
+	    <div class="card">
+		    <div class="row g-0">
+			    <div class="col-md-2 d-flex justify-content-center align-items-center">
+				    <img src="data:image/*;base64,@(Convert.ToBase64String(Model.Employee.PictureData))" class="rounded-circle" width="100" height="100">
+			    </div>
+			    <div class="col-md-10">
+				    <div class="card-body">
+                            <h5 class="card-title">@Model.Employee.FullName</h5>
+                        
+
+                        <form class="row g-3" asp-controller="Company" asp-action="EditEmployee" method="post">
+                            <input type="hidden" asp-for="Employee.Id"/>
+                            <div class="col-12">
+                                <label class="form-label" asp-for="JobTitle">Job Title</label>
+                                <input class="form-control" asp-for="JobTitle" type="text">
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="AvailableRoles" class="form-label">User Role</label>
+                                <select asp-for="SelectedRole" asp-items="@Model.AvailableRoles" class="form-select"></select>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                    <a class="btn btn-outline-secondary" asp-controller="Company" asp-action="ManageTeamMembers">Cancel</a>
+                                </div>
+                                <a class="btn btn-danger btn-outline"
+                                   asp-controller="Company" asp-action="ConfirmRemoveEmployee" asp-route-employeeId="@Model.Employee.Id">Remove From Company</a>
+                            </div>
+                        </form>
+				    </div>
+			    </div>
+		    </div>
+	    </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                    <p class="card-text"><strong>Permissions</strong></p>
+            </div>
+            <div class="card-body">
+                <br/>
+                <strong>Admins</strong> have access to everything. They can edit employee job titles and permissions, assign project managers
+                to projects, and do anything that a Project Manager or Developer can do.<br/><br/>
+                <strong>Project Managers</strong> have control over the projects that they are assigned to manage. They can modify the project,
+                create/edit/assign project tickets, and change the project team members.<br/><br/>
+                <strong>Developers</strong> can create and modify tickets for projects that they are assigned to.<br/><br/>
+                <strong>Members</strong> are limited to posting comments and adding attachments. They cannot modify any information.
+        </div>
+    </div>
+
+</div>
+

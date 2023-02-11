@@ -1,0 +1,69 @@
+﻿@inject UserManager<AppUser> UserManager
+
+@model IEnumerable<Project>
+
+@{
+    string activeOrArchived = (string)ViewData["ProjectType"]!;
+}
+
+
+<div class="pagetitle">
+	<h1>@activeOrArchived Projects</h1>
+	<nav>
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item">Projects</li>
+			<li class="breadcrumb-item active">@activeOrArchived</li>
+		</ol>
+	</nav>
+</div>
+
+@for (int i = 0; i < Model.Count(); i++)
+{
+	<div class="row">
+	@foreach(Project project in Model.Skip(i*3).Take(3))
+	{
+		<div class="col-lg-4">
+			<div class="card">
+				<img src="data:image/*;base64,@(Convert.ToBase64String(project.PictureData))" class="card-img-top" height="250">
+				<div class="card-body">
+					<div class="row">
+						<h5 class="card-title">@project.Name</h5>
+					</div>
+					<div class="row">
+						<p class="card-text">@project.Description</p>
+					</div>
+					<div class="row d-flex justify-space-between">
+						<div class="col">
+							<a class="btn btn-success" asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@project.Id">View</a>
+							<a class="btn btn-info" asp-controller="Projects" asp-action="EditProject" asp-route-projectId="@project.Id">Edit</a>
+						</div>
+						<div class="col d-flex justify-content-end">
+							<a class="btn btn-danger" asp-controller="Projects" asp-action="ConfirmDeleteProject" asp-route-projectId="@project.Id">Delete</a>
+						</div>
+					</div>
+					<div class="row mt-2">
+						<hr/>
+						<div class="row d-flex justify-space-between align-items-center">
+							<div class="col">
+								@if (project.ProjectManagerId is not null)
+								{
+									AppUser projectManager = await UserManager.FindByIdAsync(project.ProjectManagerId);
+									<span class="card-text"><strong>Project Manager:</strong> @projectManager.FullName</span>
+								}
+								else
+								{
+									<span class="card-text"><strong>Project Manager:</strong><span class="text-danger"> Unassigned</span></span>
+								}
+							</div>
+							<div class="col">
+								<span class="card-text"><strong>Created:</strong> @project.Created.ToShortDateString()</span>
+								<span class="card-text ms-3"><strong>Due:</strong> @project.Deadline.ToShortDateString()</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+	</div>
+}

@@ -1,0 +1,89 @@
+﻿@using BugBanisher.Models.ViewModels
+
+@model CreateOrEditProjectViewModel
+
+@{
+    string createOrEdit = (string)ViewData["Action"]!;
+}
+
+<div class="pagetitle">
+    <h1>@createOrEdit Project</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">Projects</li>
+            <li class="breadcrumb-item">Active</li>
+            <li class="breadcrumb-item active">@createOrEdit</li>
+        </ol>
+    </nav>
+</div>
+
+
+<form asp-controller="Projects" asp-action="@(createOrEdit == "Create" ? "CreateProject" : "EditProject")" method="post" enctype="multipart/form-data">
+    <input type="hidden" asp-for="Project.Id" />
+    <input type="hidden" asp-for="Project.CompanyId" />
+    <input type="hidden" asp-for="Project.PictureData" />
+    <input type="hidden" asp-for="Project.PictureExtension" />
+    <input type="hidden" asp-for="Project.Created" />
+    <input type="hidden" asp-for="Project.Team" />
+    <input type="hidden" asp-for="Project.ProjectManagerId" />
+
+    <div class="row">
+
+        <div class="col-lg-6 mt-lg-0 mt-3">
+
+            <div class="form-group">
+                <label asp-for="Name">Project Name</label>
+                <input class="form-control" asp-for="Name" />
+            </div>
+
+            <div class="form-group mt-3">
+                <label asp-for="Description">Project Description</label>
+                <textarea class="form-control" asp-for="Description" cols="15" rows="10"></textarea>
+            </div>
+
+            <div class="form-group mt-3">
+                <label asp-for="Deadline">Project Due Date</label>
+                <input type="date" class="form-control" asp-for="Deadline" />
+            </div>
+
+            <div class="form-group mt-3">
+                <label asp-for="Image">Choose New Picture</label>
+                <input type="file" class="form-control" asp-for="Image" />
+            </div>
+
+            <div class="form-group mt-3 text-center">
+                <button type="submit" class="btn btn-success">@(createOrEdit == "Create" ? "Create" : "Save Changes")</button>
+                <a class="btn btn-outline-secondary ms-3" asp-controller="Projects" asp-action="ListActiveProjects">Cancel</a>
+            </div>
+
+        </div>
+
+        <div class="col-lg-6 mt-3 mt-lg-0">
+            <div>
+                <label>Current Project Picture</label><br />
+                <img src="data:image/*;base64,@(Convert.ToBase64String(Model.Project.PictureData))" width="100" height="100" />
+            </div>
+
+            <h5 class="mt-3">Project Team</h5>
+
+            <div class="form-group mt-3">
+                <label asp-for="SelectedManager">Project Manager</label>
+                <select class="form-select" asp-items="@Model.ProjectManagers" asp-for="SelectedManager">
+                    <option value="@null">Unassigned</option>
+                </select>
+            </div>
+
+            <div class="form-group mt-3">
+                <label asp-for="Developers">Developers</label><br />
+                <select class="form-select" multiple style="width: 200px" asp-items="@Model.Developers" asp-for="SelectedDevelopers">
+                </select>
+            </div>
+
+            <div class="form-group mt-3">
+                <label asp-for="Members">Members</label><br />
+                <select class="form-select" multiple style="width: 200px;" asp-items="@Model.Members" asp-for="SelectedMembers">
+                </select>
+            </div>
+        </div>
+    </div>
+</form>

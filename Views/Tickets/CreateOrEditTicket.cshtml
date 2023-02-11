@@ -1,0 +1,74 @@
+﻿@using BugBanisher.Models.ViewModels;
+
+@model CreateOrEditTicketViewModel
+
+@{
+    string createOrEdit = (string)ViewData["Action"]!;
+    bool isStatusDropdownDisabled = User.IsInRole(nameof(Roles.Developer)) ? false : true;
+}
+
+<div class="pagetitle">
+<h1>@createOrEdit Ticket</h1>
+<nav>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">Tickets</li>
+        <li class="breadcrumb-item active">@createOrEdit</li>
+    </ol>
+</nav>
+</div>
+
+<form asp-controller="Tickets" asp-action="@(createOrEdit == "Create" ? "CreateTicket" : "EditTicket")" method="post">
+    <input type="hidden" asp-for="Ticket.Id"/>
+    <input type="hidden" asp-for="Ticket.ProjectId"/>
+    <input type="hidden" asp-for="Ticket.Created" />
+    <input type="hidden" asp-for="Ticket.CreatorId" />
+    <input type="hidden" asp-for="Ticket.TicketStatusId"/>
+
+    <div class="row">
+
+        <div class="col-lg-6 mt-lg-0 mt-3">
+
+            <div class="form-group">
+                <label asp-for="Title">Ticket Title</label>
+                <input class="form-control" asp-for="Title" />
+            </div>
+
+            <div class="form-group mt-3">
+                <label asp-for="Description">Ticket Description</label>
+                <textarea class="form-control" asp-for="Description" cols="15" rows="10"></textarea>
+            </div>
+
+            <div class="form-group mt-3">
+                <label asp-for="Developers">Developer</label>
+                <select class="form-select" asp-items="@Model.Developers" asp-for="SelectedDeveloper">
+                    <option value="@null">Unassigned</option>
+                </select>
+            </div>
+
+            <div class="form-group mt-3">
+                <label asp-for="Types">Type</label>
+                <select class="form-select" asp-items="@Model.Types" asp-for="SelectedType">
+                </select>
+            </div>
+
+            <div class="form-group mt-3">
+                <label asp-for="Priorities">Priority</label>
+                <select class="form-select" asp-items="@Model.Priorities" asp-for="SelectedPriority">
+                </select>
+            </div>
+
+            <div class="form-group mt-3">
+                <label asp-for="Statuses">Status</label>
+                <select class="form-select" asp-items="@Model.Statuses" asp-for="SelectedStatus" disabled="@(!Model.IsStatusDropdownEnabled)">
+
+                </select>
+            </div>
+
+            <div class="form-group mt-3 text-center">
+                <button type="submit" class="btn btn-success">@(createOrEdit == "Create" ? "Create" : "Save Changes")</button>
+                <a class="btn btn-outline-secondary ms-3" asp-controller="Tickets" asp-action="List">Cancel</a>
+            </div>
+
+        </div>
+    </div>
+</form>

@@ -78,7 +78,20 @@ public class ProjectService : IProjectService
 		return await _context.Projects.Where(p => p.Id == projectId)
 			.Include(p => p.Team)
             .Include(p => p.Tickets)
-            .FirstOrDefaultAsync();
+				.ThenInclude(t => t.Priority)
+			.Include(p => p.Tickets)
+				.ThenInclude(t => t.Type)
+			.Include(p => p.Tickets)
+				.ThenInclude(t => t.Status)
+			.Include(p => p.Tickets)
+				.ThenInclude(t => t.Developer)
+			.Include (p => p.Tickets)
+				.ThenInclude(t => t.Comments)
+			.Include(p => p.Tickets)
+				.ThenInclude(t => t.Attachments)
+			.Include(p => p.Tickets)
+				.ThenInclude(t => t.History)
+			.FirstOrDefaultAsync();
 	}
 
 	public async Task<AppUser?> GetProjectManagerAsync(int projectId)

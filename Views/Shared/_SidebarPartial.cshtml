@@ -34,8 +34,8 @@
                         </a>
                     </li>
                     <li>
-                        <a class="@(IsAction("ManageTeamMembers") ? "active" : "")" asp-controller="Company" asp-action="ManageTeamMembers" asp-route-companyId="@appUser!.CompanyId">
-                            <i class="bi bi-circle"></i><span>Manage Team Members</span>
+                        <a class="@(IsAction("ManageTeamMembers") ? "active" : "")" asp-controller="Company" asp-action="ManageEmployees" asp-route-companyId="@appUser!.CompanyId">
+                            <i class="bi bi-circle"></i><span>Manage Employees</span>
                         </a>
                     </li>
                 </ul>

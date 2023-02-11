@@ -35,7 +35,7 @@ public class CompanyController : Controller
 
     [HttpGet]
     [Authorize]
-    public async Task<ViewResult> ManageTeamMembers()
+    public async Task<ViewResult> ManageEmployees()
     {
         int companyId = User.Identity!.GetCompanyId();
 
@@ -91,7 +91,7 @@ public class CompanyController : Controller
         viewModel.AvailableRoles = new SelectList(await _roleService.GetRolesAsync(), "Name", "Name", viewModel.SelectedRole);
 
         TempData["Message"] = "Employee changes saved!";
-        return RedirectToAction(nameof(ManageTeamMembers));
+        return RedirectToAction(nameof(ManageEmployees));
     }
 
     [HttpGet]
@@ -122,7 +122,7 @@ public class CompanyController : Controller
         await _notificationService.CreateRemovedFromCompanyNotification(companyId, userRemoved);
 
         TempData["Message"] = $"{userRemoved.FirstName} {userRemoved.LastName} was successfully removed.";
-        return RedirectToAction(nameof(ManageTeamMembers));
+        return RedirectToAction(nameof(ManageEmployees));
 	}
 
     [HttpGet]

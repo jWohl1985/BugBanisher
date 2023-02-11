@@ -22,80 +22,144 @@
 </div>
 
 <div class="row">
+
+	<!-- Project Info Card -->
 	<div class="col-lg-6">
 		<div class="card">
 			<div class="card-header">
 				<h5 class="card-text">Project Info</h5>
 			</div>
 			<div class="card-body">
-				<p class="card-text mt-3">Project Name:<br/><strong>@Model.Name</strong></p>
-				<p class="card-text">Description:<br/>@Model.Description</p>
-				<p class="card-text">Created:<br/>@Model.Created.ToShortDateString()</p>
-				<p class="card-text">Deadline:<br/>@Model.Deadline.ToShortDateString()</p>
+
+				<p class="card-text mt-3">
+					Project Name:<br/><br/>
+					<strong>@Model.Name</strong>
+				</p>
+
+				<p class="card-text">
+					Description:<br/><br/>
+					@Model.Description
+				</p>
+
+				<p class="card-text">Created:
+					<br/>@Model.Created.ToShortDateString()
+				</p>
+
+				<p class="card-text">Deadline:
+					<br/>@Model.Deadline.ToShortDateString()
+				</p>
 			</div>
 		</div>
 	</div>
 
+	<!-- Project Team Card -->
 	<div class="col-lg-6">
-	<div class="card">
-			<div class="card-header">
-				<h5 class="card-text">Project Team</h5>
-			</div>
-			<div class="card-body">
-
-				<!-- Project Manager -->
-				<p class="card-text mt-3"><strong>Project Manager:</strong></p>
-				<div class="row d-flex justify-content-start align-items-center">
-					<div class="col-3 col-lg-1">
-						<img class="img-fluid rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(projectManager.PictureData)">
-					</div>
-					<div class="col-9 col-lg-11">
-						<p class="card-text @textFormatting">@(projectManager is not null ? projectManager.FullName : "Unassigned")</p>
-					</div>
+		<div class="card">
+				<div class="card-header">
+					<h5 class="card-text">Project Team</h5>
 				</div>
+				<div class="card-body">
+
+					<!-- Project Manager -->
+					<p class="card-text mt-3"><strong>Project Manager:</strong></p>
+					@if(projectManager is null)
+					{
+						<p class="card-text">Project manager is unassigned!</p>
+					}
+					else
+					{
+						<div class="row d-flex justify-content-start align-items-center">
+							<div class="col-3 col-lg-1">
+								<img class="img-fluid rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(projectManager.PictureData)">
+							</div>
+							<div class="col-9 col-lg-11">
+								<p class="card-text @textFormatting">@(projectManager is not null ? projectManager.FullName : "Unassigned")</p>
+							</div>
+						</div>
+					}
 				
-				<hr />
+					<hr />
 
-				<!-- Developers -->
-				<p class="card-text mt-3"><strong>Developers:</strong></p>
-				@if (developers.Count == 0)
-				{
-					<p class="card-text">No developers are assigned to this project.</p>
-				}
-				@foreach (AppUser developer in developers)
-				{
-					<div class="row d-flex justify-content-start align-items-center">
-						<div class="col-3 col-lg-1">
-							<img class="img-fluid rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(developer.PictureData)">
+					<!-- Developers -->
+					<p class="card-text mt-3"><strong>Developers:</strong></p>
+					@if (developers.Count == 0)
+					{
+						<p class="card-text">No developers are assigned to this project.</p>
+					}
+					@foreach (AppUser developer in developers)
+					{
+						<div class="row d-flex justify-content-start align-items-center">
+							<div class="col-3 col-lg-1">
+								<img class="img-fluid rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(developer.PictureData)">
+							</div>
+							<div class="col-9 col-lg-11">
+								<p class="card-text">@developer.FullName</p>
+							</div>
 						</div>
-						<div class="col-9 col-lg-11">
-							<p class="card-text">@developer.FullName</p>
-						</div>
-					</div>
-				}
+					}
 
-				<hr/>
+					<hr/>
 
-				<!-- Members -->
-				<p class="card-text mt-3"><strong>Members:</strong></p>
-				@if (members.Count == 0)
-				{
-					<p class="card-text">No members are assigned to this project.</p>
-				}
-				@foreach (AppUser member in members)
-				{
-					<div class="row d-flex justify-content-start align-items-center">
-						<div class="col-3 col-lg-1">
-							<img class="img-fluid rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(member.PictureData)">
+					<!-- Members -->
+					<p class="card-text mt-3"><strong>Members:</strong></p>
+					@if (members.Count == 0)
+					{
+						<p class="card-text">No members are assigned to this project.</p>
+					}
+					@foreach (AppUser member in members)
+					{
+						<div class="row d-flex justify-content-start align-items-center">
+							<div class="col-3 col-lg-1">
+								<img class="img-fluid rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(member.PictureData)">
+							</div>
+							<div class="col-9 col-lg-11">
+								<p class="card-text">@member.FullName</p>
+							</div>
 						</div>
-						<div class="col-9 col-lg-11">
-							<p class="card-text">@member.FullName</p>
-						</div>
-					</div>
-				}
+					}
 
-			</div>
+				</div>
 		</div>
 	</div>
-	
+
+	<!-- Tickets Card -->
+	<div class="col">
+		<div class="card">
+			<div class="card-header">
+				<h5 class="card-text">Active Tickets</h5>
+			</div>
+
+			<table class="table table-sm table-striped table-bordered">
+
+				<thead>
+					<tr>
+						<th>Link</th>
+						<th>Created</th>
+						<th>Title</th>
+						<th>Developer</th>
+						<th>Priority</th>
+						<th>Type</th>
+						<th>Status</th>
+					</tr>
+				</thead>
+
+				<tbody>
+					@foreach (Ticket ticket in Model.Tickets)
+					{
+						<tr class="align-middle">
+							<td><a asp-controller="Tickets" asp-action="ViewTicket" asp-route-ticketId="@ticket.Id"><img class="img-fluid" src="~/img/ticket.png" /></a></td>
+							<td>@ticket.Created.ToShortDateString()</td>
+							<td>@ticket.Title</td>
+							<td>@(ticket.Developer is not null ? ticket.Developer.FullName : "Unassigned")</td>
+							<td>@ticket.Priority!.Description</td>
+							<td>@ticket.Type!.Description</td>
+							<td>@ticket.Status!.Description</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+			
+		</div>
+	</div>
+
 </div>

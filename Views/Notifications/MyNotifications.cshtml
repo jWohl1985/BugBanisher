@@ -57,11 +57,6 @@
                                 asp-route-notificationId="@notification.Id">Decline</a>
                                 break;
 
-                            case (NotificationType.CompanyInviteAccepted):
-                                <a class="btn btn-primary" asp-controller="Company" asp-action="ManageTeamMembers">Take me there!</a>
-                                <a class="btn btn-secondary" asp-controller="Notifications" asp-action="MarkAsRead" asp-route-id="@notification.Id">Ok</a>
-                                break;
-
                             default:
                                 <a class="btn btn-secondary" asp-controller="Notifications" asp-action="MarkAsRead" asp-route-id="@notification.Id">Ok</a>
                                 break;

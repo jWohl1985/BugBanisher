@@ -124,12 +124,17 @@
 
 	<!-- Tickets Card -->
 	<div class="col">
+		@if (User.IsInRole(nameof(Roles.Admin)) || User.IsInRole(nameof(Roles.ProjectManager)) || User.IsInRole(nameof(Roles.Developer)))
+		{
+			<a class="btn btn-sm btn-success mb-3" asp-controller="Tickets" asp-action="CreateTicket" asp-route-projectId="@Model.Id">New Ticket</a>
+		}
+
 		<div class="card">
 			<div class="card-header">
 				<h5 class="card-text">Active Tickets</h5>
 			</div>
 
-			<table class="table table-sm table-striped table-bordered">
+			<table class="table table-sm table-striped table-bordered table-responsive">
 
 				<thead>
 					<tr>
@@ -151,9 +156,9 @@
 							<td>@ticket.Created.ToShortDateString()</td>
 							<td>@ticket.Title</td>
 							<td>@(ticket.Developer is not null ? ticket.Developer.FullName : "Unassigned")</td>
-							<td>@ticket.Priority!.Description</td>
+							<td class="text-center"><span class="badge bg-danger">@ticket.Priority!.Description</span></td>
 							<td>@ticket.Type!.Description</td>
-							<td>@ticket.Status!.Description</td>
+							<td class="text-center"><span class="badge bg-success">@ticket.Status!.Description</span></td>
 						</tr>
 					}
 				</tbody>

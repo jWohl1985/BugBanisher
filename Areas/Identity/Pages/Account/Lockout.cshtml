@@ -1,10 +1,15 @@
 ﻿@page
 @model LockoutModel
-@{
-    ViewData["Title"] = "Locked out";
-}
 
-<header>
-    <h1 class="text-danger">@ViewData["Title"]</h1>
-    <p class="text-danger">This account has been locked out, please try again later.</p>
-</header>
+<div class="pagetitle">
+    <h1>Account Locked</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">Account</li>
+            <li class="breadcrumb-item">Log in</li>
+            <li class="breadcrumb-item active">Lock out</li>
+        </ol>
+    </nav>
+</div>
+
+<p class="text-danger">This account has been locked out, please try again later.</p>

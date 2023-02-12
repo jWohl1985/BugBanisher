@@ -1,23 +1,30 @@
 ﻿@page
 @model RegisterConfirmationModel
-@{
-    ViewData["Title"] = "Register confirmation";
-}
 
-<h1>@ViewData["Title"]</h1>
+<div class="pagetitle">
+    <h1>Registration Confirmed</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">Account</li>
+            <li class="breadcrumb-item">Register</li>
+            <li class="breadcrumb-item active">Confirmed</li>
+        </ol>
+    </nav>
+</div>
+
 @{
     if (@Model.DisplayConfirmAccountLink)
     {
-<p>
-    This app does not currently have a real email sender registered, see <a href="https://aka.ms/aspaccountconf">these docs</a> for how to configure a real email sender.
-    Normally this would be emailed: <a id="confirm-link" href="@Model.EmailConfirmationUrl">Click here to confirm your account</a>
-</p>
+        <p>
+            This app does not currently have a real email sender registered, see <a href="https://aka.ms/aspaccountconf">these docs</a> for how to configure a real email sender.
+            Normally this would be emailed: <a id="confirm-link" href="@Model.EmailConfirmationUrl">Click here to confirm your account</a>
+        </p>
     }
     else
     {
-<p>
-        Please check your email to confirm your account.
-</p>
+        <p>
+                Please check your email to confirm your account.
+        </p>
     }
 }
 

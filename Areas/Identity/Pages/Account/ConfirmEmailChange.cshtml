@@ -1,8 +1,15 @@
 ﻿@page
 @model ConfirmEmailChangeModel
-@{
-    ViewData["Title"] = "Confirm email change";
-}
 
-<h1>@ViewData["Title"]</h1>
+<div class="pagetitle">
+    <h1>Email Address Changed</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">Account</li>
+            <li class="breadcrumb-item">Register</li>
+            <li class="breadcrumb-item active">Email Change</li>
+        </ol>
+    </nav>
+</div>
+
 <partial name="_StatusMessage" model="Model.StatusMessage" />

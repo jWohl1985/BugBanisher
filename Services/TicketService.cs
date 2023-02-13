@@ -9,20 +9,26 @@ namespace BugBanisher.Services;
 public class TicketService : ITicketService
 {
 	private readonly BugBanisherContext _context;
-	private readonly UserManager<AppUser> _userManager;
 
 	public TicketService(BugBanisherContext context, UserManager<AppUser> userManager)
 	{
 		_context = context;
-		_userManager = userManager;
 	}
 
 	public async Task<Ticket?> GetTicketByIdAsync(int ticketId)
 	{
 		return await _context.Tickets.Where(t => t.Id == ticketId)
+			.Include(t => t.Project)
+			.Include(t => t.Developer)
+			.Include(t => t.Creator)
+			.Include(t => t.Status)
+			.Include(t => t.Priority)
+			.Include(t => t.Type)
 			.Include(t => t.Attachments)
+				.ThenInclude(t => t.Uploader)
 			.Include(t => t.History)
 			.Include(t => t.Comments)
+				.ThenInclude(t => t.AppUser)
 			.FirstOrDefaultAsync();
 	}
 
@@ -52,6 +58,30 @@ public class TicketService : ITicketService
 	{
 		_context.Tickets.Update(ticket);
 		await _context.SaveChangesAsync();
+	}
+
+	public async Task<bool> AddTicketCommentAsync(int ticketId, TicketComment comment)
+	{
+		Ticket? ticket = await _context.Tickets.FirstOrDefaultAsync(t => t.Id == ticketId);
+
+		if (ticket is null)
+			return false;
+
+		ticket.Comments.Add(comment);
+		await _context.SaveChangesAsync();
+		return true;
+	}
+
+	public async Task<bool> AddTicketAttachmentAsync(int ticketId, TicketAttachment attachment)
+	{
+		Ticket? ticket = await _context.Tickets.FirstOrDefaultAsync(t => t.Id == ticketId);
+
+		if (ticket is null)
+			return false;
+
+		ticket.Attachments.Add(attachment);
+		await _context.SaveChangesAsync();
+		return true;
 	}
 
 

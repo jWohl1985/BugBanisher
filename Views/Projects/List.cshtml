@@ -8,62 +8,48 @@
 
 
 <div class="pagetitle">
-	<h1>@activeOrArchived Projects</h1>
-	<nav>
-		<ol class="breadcrumb">
-			<li class="breadcrumb-item">Projects</li>
-			<li class="breadcrumb-item active">@activeOrArchived</li>
-		</ol>
-	</nav>
+    <h1>@activeOrArchived Projects</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">Projects</li>
+            <li class="breadcrumb-item active">@activeOrArchived</li>
+        </ol>
+    </nav>
 </div>
 
-@for (int i = 0; i < Model.Count(); i++)
+@foreach (Project project in Model)
 {
-	<div class="row">
-	@foreach(Project project in Model.Skip(i*3).Take(3))
-	{
-		<div class="col-lg-4">
-			<div class="card">
-				<img src="data:image/*;base64,@(Convert.ToBase64String(project.PictureData))" class="card-img-top" height="250">
-				<div class="card-body">
-					<div class="row">
-						<h5 class="card-title">@project.Name</h5>
-					</div>
-					<div class="row">
-						<p class="card-text">@project.Description</p>
-					</div>
-					<div class="row d-flex justify-space-between">
-						<div class="col">
-							<a class="btn btn-success" asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@project.Id">View</a>
-							<a class="btn btn-info" asp-controller="Projects" asp-action="EditProject" asp-route-projectId="@project.Id">Edit</a>
-						</div>
-						<div class="col d-flex justify-content-end">
-							<a class="btn btn-danger" asp-controller="Projects" asp-action="ConfirmDeleteProject" asp-route-projectId="@project.Id">Delete</a>
-						</div>
-					</div>
-					<div class="row mt-2">
-						<hr/>
-						<div class="row d-flex justify-space-between align-items-center">
-							<div class="col">
-								@if (project.ProjectManagerId is not null)
-								{
-									AppUser projectManager = await UserManager.FindByIdAsync(project.ProjectManagerId);
-									<span class="card-text"><strong>Project Manager:</strong> @projectManager.FullName</span>
-								}
-								else
-								{
-									<span class="card-text"><strong>Project Manager:</strong><span class="text-danger"> Unassigned</span></span>
-								}
-							</div>
-							<div class="col">
-								<span class="card-text"><strong>Created:</strong> @project.Created.ToShortDateString()</span>
-								<span class="card-text ms-3"><strong>Due:</strong> @project.Deadline.ToShortDateString()</span>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	}
-	</div>
+    AppUser? projectManager = await UserManager.FindByIdAsync(project.ProjectManagerId);
+
+    <div class="row mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row d-flex align-items-center justify-space-between">
+                        <div class="col col-lg-6">
+                            <img class="img-fluid d-block d-md-inline" src="data:image/*;base64,@Convert.ToBase64String(project.PictureData)" width="50" height="50" />
+                            <h5 class="card-text d-block d-md-inline ms-0 ms-md-2 mt-2 mt-md-0">@project.Name</h5>
+                            <a class="btn btn-success btn-sm ms-3" asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@project.Id">View</a>
+                        </div>
+                        @if(projectManager is not null)
+                        {
+                            <div class="col col-lg-6 mt-3 mt-lg-0">
+                                <p class="card-text d-block d-md-inline">Project Manager: </p>
+                                <img class="img-fluid rounded-circle d-block d-md-inline ms-0 ms-md-2" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(projectManager.PictureData)">
+                                <p class="d-inline ms-0 ms-md-2">@projectManager.FullName</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col col-lg-6 mt-3 mt-lg-0">
+                                <p class="card-text d-block d-md-inline">Project Manager: <span class="fw-bold text-danger">Unassigned</span></p>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="card-body mt-2">
+                    <p class="card-text">@project.Description</p>
+                    <p class="card-text"><strong>Tickets:</strong> @project.Tickets.Count</p>
+                </div>
+            </div>
+    </div>
 }

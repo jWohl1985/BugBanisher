@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Security.Cryptography.X509Certificates;
 
 namespace BugBanisher.Controllers;
 
@@ -14,13 +15,41 @@ public class TicketsController : Controller
 {
 	private readonly IProjectService _projectService;
 	private readonly ITicketService _ticketService;
+	private readonly IFileService _fileService;
+	private readonly INotificationService _notificationService;
 	private readonly UserManager<AppUser> _userManager;
 
-	public TicketsController(IProjectService projectService, ITicketService ticketService, UserManager<AppUser> userManager)
+	public TicketsController(IProjectService projectService, 
+		ITicketService ticketService, 
+		IFileService fileService,
+		INotificationService notificationService,
+		UserManager<AppUser> userManager)
 	{
 		_projectService = projectService;
 		_ticketService = ticketService;
+		_fileService = fileService;
+		_notificationService = notificationService;
 		_userManager = userManager;
+	}
+
+	[HttpGet]
+	[Authorize]
+	public async Task<ViewResult> ViewTicket(int ticketId)
+	{
+		Ticket? ticket = await _ticketService.GetTicketByIdAsync(ticketId);
+
+		if (ticket is null)
+			return View("NotFound");
+
+		TicketViewModel viewModel = new TicketViewModel
+		{
+			Ticket = ticket,
+			Project = ticket.Project!,
+			ProjectManager = await _projectService.GetProjectManagerAsync(ticket.ProjectId),
+			Developer = ticket.Developer,
+		};
+
+		return View(viewModel);
 	}
 
 	[HttpGet]
@@ -51,6 +80,9 @@ public class TicketsController : Controller
 
 		ticket.TicketStatusId = ticket.DeveloperId is not null ? "pending" : "unassigned";
 
+		if (ticket.DeveloperId is not null)
+			await _notificationService.CreateNewTicketNotificationAsync(ticket.DeveloperId, ticket);
+
 		ticket.Id = await _ticketService.CreateTicketAsync(ticket);
 
 		return RedirectToAction("Index", "Home");
@@ -58,14 +90,14 @@ public class TicketsController : Controller
 
 	[HttpGet]
 	[Authorize(Roles = "Admin, ProjectManager, Developer")]
-	public async Task<IActionResult> EditTicket(int ticketId)
+	public async Task<ViewResult> EditTicket(int ticketId)
 	{
 		ViewData["Action"] = "Edit";
 
 		Ticket? ticket = await _ticketService.GetTicketByIdAsync(ticketId);
 
 		if (ticket is null)
-			return NotFound();
+			return View("NotFound");
 
 		CreateOrEditTicketViewModel viewModel = await GenerateEditTicketViewModel(ticket);
 
@@ -75,7 +107,7 @@ public class TicketsController : Controller
     [HttpPost]
     [Authorize(Roles = "Admin, ProjectManager, Developer")]
 	[ValidateAntiForgeryToken]
-    public async Task<IActionResult> EditTicket(CreateOrEditTicketViewModel viewModel)
+    public async Task<RedirectToActionResult> EditTicket(CreateOrEditTicketViewModel viewModel)
     {
         ViewData["Action"] = "Edit";
 
@@ -105,8 +137,68 @@ public class TicketsController : Controller
 
         await _ticketService.UpdateTicketAsync(ticket);
 
-		return RedirectToAction("Index", "Home");
+		return RedirectToAction("ViewTicket", new { ticketId = ticket.Id });
     }
+
+	[HttpPost]
+	[Authorize]
+	[ValidateAntiForgeryToken]
+	public async Task<RedirectResult> AddComment(TicketViewModel viewModel)
+	{
+		AppUser user = await _userManager.GetUserAsync(User);
+
+		if (string.IsNullOrEmpty(viewModel.NewComment))
+		{
+			TempData["CommentError"] = "Comment cannot be empty.";
+			return Redirect(Url.RouteUrl(new { controller = "Tickets", action = "ViewTicket", ticketId = viewModel.Ticket.Id }) + "#comments");
+		}
+
+		TicketComment comment = new TicketComment()
+		{
+			TicketId = viewModel.Ticket.Id,
+			AppUserId = user.Id,
+			Created = DateTime.Now,
+			Comment = viewModel.NewComment,
+		};
+
+		await _ticketService.AddTicketCommentAsync(viewModel.Ticket.Id, comment);
+
+		return Redirect(Url.RouteUrl(new { controller = "Tickets", action = "ViewTicket", ticketId = viewModel.Ticket.Id }) + "#comments");
+	}
+
+	[HttpPost]
+	[Authorize]
+	[ValidateAntiForgeryToken]
+	public async Task<RedirectResult> AddAttachment(TicketViewModel viewModel)
+	{
+		AppUser user = await _userManager.GetUserAsync(User);
+
+		if (viewModel.NewAttachment is null)
+		{
+			TempData["AttachmentError"] = "Please choose a file to add.";
+			return Redirect(Url.RouteUrl(new { controller = "Tickets", action = "ViewTicket", ticketId = viewModel.Ticket.Id }) + "#attachments");
+		}
+
+		if (viewModel.FileDescription is null)
+		{
+			TempData["AttachmentError"] = "Please provide a brief file description.";
+			return Redirect(Url.RouteUrl(new { controller = "Tickets", action = "ViewTicket", ticketId = viewModel.Ticket.Id }) + "#attachments");
+		}
+
+		TicketAttachment attachment = new TicketAttachment()
+		{
+			TicketId = viewModel.Ticket.Id,
+			AppUserId = user.Id,
+			Created = DateTime.Now,
+			Description = viewModel.FileDescription,
+			FileData = await _fileService.ConvertFileToByteArrayAsync(viewModel.NewAttachment),
+			FileName = viewModel.NewAttachment.FileName,
+			FileType = viewModel.NewAttachment.ContentType,
+		};
+
+		await _ticketService.AddTicketAttachmentAsync(viewModel.Ticket.Id, attachment);
+		return Redirect(Url.RouteUrl(new { controller = "Tickets", action = "ViewTicket", ticketId = viewModel.Ticket.Id }) + "#attachments");
+	}
 
 
 
@@ -154,8 +246,5 @@ public class TicketsController : Controller
 	}
 
 	#endregion
-
-
-
 
 }

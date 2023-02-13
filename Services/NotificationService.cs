@@ -129,6 +129,29 @@ public class NotificationService : INotificationService
         }
     }
 
+    public async Task<bool> CreateNewTicketNotificationAsync(string developerId, Ticket ticket)
+    {
+        AppUser? developer = await _context.Users.FirstOrDefaultAsync(u => u.Id == developerId);
+        Project? project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == ticket.ProjectId);
+
+        if (developer is null || project is null)
+            return false;
+
+        Notification newTicketNotification = new Notification
+        {
+            AppUserId = developerId,
+            CompanyId = developer.CompanyId!.Value,
+            Created = DateTime.Now,
+            Title = $"You've been assigned a new ticket.",
+            Message = $"You have a new ticket to accept on the {project.Name} project.\n\n" + $"Ticket Title: {ticket.Title}\n\n",
+            NotificationTypeId = (int)NotificationType.NewTicket,
+        };
+
+        await _context.Notifications.AddAsync(newTicketNotification);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
     private async Task RemoveAllCompanyInvitesForUserAsync(AppUser appUser)
     {
         List<Notification> companyInvites = await _context.Notifications

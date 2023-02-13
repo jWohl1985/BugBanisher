@@ -10,4 +10,6 @@ public interface ITicketService
 	Task<List<TicketStatus>> GetTicketStatusesAsync();
 	Task<List<TicketType>> GetTicketTypesAsync();
 	Task UpdateTicketAsync(Ticket ticket);
+	Task<bool> AddTicketCommentAsync(int ticketId, TicketComment comment);
+	Task<bool> AddTicketAttachmentAsync(int ticketId, TicketAttachment attachment);
 }

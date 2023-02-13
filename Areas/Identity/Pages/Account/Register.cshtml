@@ -1,49 +1,73 @@
 ﻿@page
 @model RegisterModel
 
-<div class="pagetitle">
-    <h1>Register New Account</h1>
-    <nav>
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">Account</li>
-            <li class="breadcrumb-item active">Register</li>
-        </ol>
-    </nav>
-</div>
+@{
+    Layout = "_LoginLayout.cshtml";
+}
 
-<div class="row d-flex justify-content-start">
-    <div class="col-6">
-        <form id="registerForm" asp-route-returnUrl="/" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Input.FirstName"></label>
-                <input asp-for="Input.FirstName" class="form-control" aria-required="true" />
-                <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+<section class="section register min-vh-100 d-flex flex-column align-items-center justify-content-center py-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
+
+                <div class="d-flex justify-content-center py-4">
+                    <a asp-controller="Home" asp-action="Index" class="logo d-flex align-items-center w-auto">
+                        <img src="~/img/buglogo.png" alt="">
+                        <span class="d-none d-lg-block">BugBanisher</span>
+                    </a>
+                </div><!-- End Logo -->
+
+                <div class="card mb-3">
+
+                    <div class="card-body">
+
+                        <div class="pt-4 pb-2">
+                            <h5 class="card-title text-center pb-0 fs-4">Create an Account</h5>
+                            <p class="text-center small">Enter your details to create account</p>
+                        </div>
+
+                        <form id="registerForm" asp-route-returnUrl="/" method="post" class="row g-3">
+                            <div asp-validation-summary="All" class="text-danger"></div>
+                            <div class="col-12">
+                                <label asp-for="Input.FirstName" class="form-label">First Name</label>
+                                <input asp-for="Input.FirstName" class="form-control" required>
+                            </div>
+
+                            <div class="col-12">
+                                <label asp-for="Input.LastName" class="form-label">Last Name</label>
+                                <input asp-for="Input.LastName" class="form-control" required>
+                            </div>
+
+                            <div class="col-12">
+                                <label asp-for="Input.Email" class="form-label">Email Address</label>
+                                <input asp-for="Input.Email" type="email" class="form-control" required>
+                            </div>
+
+                            <div class="col-12">
+                                <label asp-for="Input.Password" class="form-label">Password</label>
+                                <input asp-for="Input.Password" type="password" class="form-control" required>
+                            </div>
+
+                            <div class="col-12">
+                                <label asp-for="Input.ConfirmPassword" class="form-label">Confirm Password</label>
+                                <input asp-for="Input.ConfirmPassword" type="password" class="form-control" required>
+                            </div>
+
+                            <div class="col-12">
+                                <button class="btn btn-primary w-100" type="submit">Create Account</button>
+                            </div>
+                            <div class="col-12">
+                                <p class="small mb-0">Already have an account? <a asp-area="Identity" asp-page="Login">Log in</a></p>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Input.LastName"></label>
-                <input asp-for="Input.LastName" class="form-control" aria-required="true" />
-                <span asp-validation-for="Input.LastName" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Input.Email"></label>
-                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" />
-                <span asp-validation-for="Input.Email" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Input.Password"></label>
-                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" />
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Input.ConfirmPassword"></label>
-                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" />
-                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-            </div>
-            <button id="registerSubmit" type="submit" class="btn btn-primary mt-3">Register</button>
-        </form>
+        </div>
     </div>
-</div>
+
+</section>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

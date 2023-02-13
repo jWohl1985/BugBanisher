@@ -14,4 +14,5 @@ public enum NotificationType
 	CompanyInviteAccepted = 1,
 	CompanyInviteRejected = 2,
 	RemovedFromCompany = 3,
+	NewTicket = 4,
 }

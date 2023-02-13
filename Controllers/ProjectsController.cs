@@ -19,8 +19,6 @@ public class ProjectsController : Controller
 
     private const string ListView = "List";
     private const string CreateOrEditProjectView = "CreateOrEditProject";
-    private const string Admin = nameof(Roles.Admin);
-    private const string ProjectManager = nameof(Roles.ProjectManager);
 
     private bool UserIsAdmin => User.IsInRole(nameof(Roles.Admin));
 
@@ -34,19 +32,28 @@ public class ProjectsController : Controller
 
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> ViewProject(int projectId)
+    public async Task<ViewResult> ViewProject(int projectId)
     {
         Project? project = await _projectService.GetProjectByIdAsync(projectId);
 
         if (project is null)
-            return NotFound();
+            return View("NotFound");
 
-        return View(project);
+        ProjectViewModel viewModel = new ProjectViewModel
+        {
+            Project = project,
+            ProjectManager = await _projectService.GetProjectManagerAsync(project.Id),
+            Developers = await _projectService.GetDevelopersOnProjectAsync(project.Id),
+            Members = await _projectService.GetMembersOnProjectAsync(project.Id),
+            Tickets = project.Tickets,
+        };
+
+        return View(viewModel);
     }
 
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> ListActiveProjects()
+    public async Task<ViewResult> ListActiveProjects()
     {
         ViewData["ProjectType"] = "Active";
         int companyId = User.Identity!.GetCompanyId();
@@ -59,11 +66,7 @@ public class ProjectsController : Controller
         }
         else
         {
-            AppUser? user = await _userManager.GetUserAsync(User);
-
-            if (user is null)
-                return NotFound();
-
+            AppUser user = await _userManager.GetUserAsync(User);
             activeProjects = await _projectService.GetUserActiveProjectsAsync(user.Id);
         }
 
@@ -72,7 +75,7 @@ public class ProjectsController : Controller
 
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> ListArchivedProjects()
+    public async Task<ViewResult> ListArchivedProjects()
     {
         ViewData["ProjectType"] = "Archived";
         int companyId = User.Identity!.GetCompanyId();
@@ -85,11 +88,7 @@ public class ProjectsController : Controller
         }
         else
         {
-            AppUser? user = await _userManager.GetUserAsync(User);
-
-            if (user is null)
-                return NotFound();
-
+            AppUser user = await _userManager.GetUserAsync(User);
             archivedProjects = await _projectService.GetUserArchivedProjectsAsync(user.Id);
         }
 
@@ -129,14 +128,14 @@ public class ProjectsController : Controller
 
     [HttpGet]
     [Authorize(Roles = "Admin, ProjectManager")]
-    public async Task<IActionResult> EditProject(int projectId)
+    public async Task<ViewResult> EditProject(int projectId)
     {
         ViewData["Action"] = "Edit";
 
         Project? project = await _projectService.GetProjectByIdAsync(projectId);
 
         if (project is null)
-            return NotFound();
+            return View("NotFound");
 
         CreateOrEditProjectViewModel viewModel = await GenerateEditProjectViewModel(project);
 
@@ -165,12 +164,12 @@ public class ProjectsController : Controller
 
     [HttpGet]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> ConfirmDeleteProject(int projectId)
+    public async Task<ViewResult> ConfirmDeleteProject(int projectId)
     {
         Project? project = await _projectService.GetProjectByIdAsync(projectId);
 
         if (project is null)
-            return NotFound();
+            return View("NotFound");
 
         return View(project);
     }

@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.Security.Principal;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -45,12 +43,12 @@ public class CompanyController : Controller
 
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> EditEmployee(string id)
+    public async Task<ViewResult> EditEmployee(string id)
     {
         AppUser? employeeToEdit = await _userManager.FindByIdAsync(id);
 
         if (employeeToEdit is null)
-            return NotFound();
+            return View("NotFound");
 
         IEnumerable<IdentityRole> roles = await _roleService.GetRolesAsync();
         string? selectedRole = (await _roleService.GetUserRolesAsync(employeeToEdit)).FirstOrDefault();
@@ -74,7 +72,7 @@ public class CompanyController : Controller
         AppUser? employeeToEdit = await _userManager.FindByIdAsync(viewModel.Employee.Id);
 
         if (employeeToEdit is null)
-            return NotFound();
+            return View("NotFound");
 
         if (viewModel.JobTitle != employeeToEdit.JobTitle)
         {
@@ -96,12 +94,12 @@ public class CompanyController : Controller
 
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> ConfirmRemoveEmployee(string employeeId)
+    public async Task<ViewResult> ConfirmRemoveEmployee(string employeeId)
     {
         AppUser? employee = await _userManager.FindByIdAsync(employeeId);
 
         if (employee is null)
-            return NotFound();
+            return View("NotFound");
 
         return View(employee);
     }
@@ -115,7 +113,7 @@ public class CompanyController : Controller
         AppUser? userRemoved = await _userManager.FindByIdAsync(employee.Id);
 
         if (userRemoved is null)
-            return NotFound();
+            return View("NotFound");
 
         await _companyService.RemoveEmployeeAsync(userRemoved.Id);
         await _projectService.RemoveEmployeeFromAllActiveProjectsAsync(companyId, userRemoved.Id);
@@ -164,18 +162,18 @@ public class CompanyController : Controller
 
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> AcceptCompanyInvite(int notificationId)
+    public async Task<ViewResult> AcceptCompanyInvite(int notificationId)
     {
         Notification? notification = await _notificationService.GetByIdAsync(notificationId);
 
         if (notification is null || notification.NotificationTypeId != (int)NotificationType.CompanyInvite)
-            return Problem("Invalid invite.");
+            return View("NotFound");
 
         Company? company = await _companyService.GetCompanyByIdAsync(notification.CompanyId);
         AppUser? appUser = await _userManager.GetUserAsync(User);
 
         if (appUser is null || company is null)
-            return Problem("Invalid invite. The user or company does not exist anymore.");
+            return View("NotFound");
 
         IEnumerable<string> currentUserRoles = await _roleService.GetUserRolesAsync(appUser);
         await _roleService.RemoveUserFromRolesAsync(appUser, currentUserRoles);
@@ -196,13 +194,13 @@ public class CompanyController : Controller
         Notification? notification = await _notificationService.GetByIdAsync(notificationId);
 
         if (notification is null || notification.NotificationTypeId != (int)NotificationType.CompanyInvite)
-            return Problem("Invalid invite.");
+            return View("NotFound");
 
         Company? company = await _companyService.GetCompanyByIdAsync(notification.CompanyId);
         AppUser? appUser = await _userManager.GetUserAsync(User);
 
         if (appUser is null || company is null)
-            return Problem("Invalid invite. The user or company does not exist anymore.");
+            return View("NotFound");
 
         notification.HasBeenSeen = true;
         notification.Message = notification.Message + " (You declined)";
@@ -213,7 +211,8 @@ public class CompanyController : Controller
         return RedirectToAction(nameof(NotificationsController.MyNotifications), "Notifications");
     }
 
-    private async Task<string?> GetInviteErrors(AppUser sendingUser, AppUser? receivingUser)
+	#region Private Helper Methods
+	private async Task<string?> GetInviteErrors(AppUser sendingUser, AppUser? receivingUser)
     {
         if (receivingUser is null)
             return "Could not find a user with that e-mail address.";
@@ -233,4 +232,5 @@ public class CompanyController : Controller
 
         return null;
     }
+    #endregion
 }

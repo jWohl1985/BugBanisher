@@ -1,0 +1,262 @@
+﻿@using BugBanisher.Models.ViewModels
+
+@model TicketViewModel
+
+<div class="pagetitle">
+    <h1>View Ticket</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@Model.Project.Id">Project: @Model.Project.Name</a></li>
+            <li class="breadcrumb-item active">Ticket: @Model.Ticket.Title</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row">
+
+    <!-- Ticket Info Card -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-text">Basic Ticket Info</h5>
+            </div>
+            <div class="card-body">
+
+                <p class="card-text mt-3">
+                    Ticket Name: <strong>@Model.Ticket.Title</strong>
+                </p><hr/>
+
+                <p class="card-text text-muted">Created On @Model.Ticket.Created.ToShortDateString() By:
+                    <div class="row">
+                        <div class="row d-flex justify-content-start align-items-center">
+                            <div class="col-3 col-lg-1">
+                                <img class="img-fluid rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(Model.Ticket.Creator!.PictureData)">
+                            </div>
+                            <div class="col-9 col-lg-11">
+                                <p class="card-text">@Model.Ticket.Creator!.FullName</p>
+                            </div>
+                        </div>
+                    </div>
+                </p><hr/>
+
+                <p class="card-text mt-3">
+                    Description:<br/></br>
+                    @Model.Ticket.Description
+                </p>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticket Details Card -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-text">Ticket Details</h5>
+            </div>
+            <div class="card-body">
+
+                <!-- Type, Priority, Status -->
+                <p class="card-text mt-3">
+                    Ticket Type: @Model.Ticket.Type!.Description
+                </p>
+
+                <p class="card-text mt-3">
+                    Ticket Priority: <span class="badge @Model.PriorityBadgeType">@Model.Ticket.Priority!.Description</span>
+                </p>
+
+                <p class="card-text mt-3">
+                    Ticket Status: <span class="badge @Model.StatusBadgeType">@Model.Ticket.Status!.Description</span>
+                </p>
+
+                <hr />
+
+                <p class="card-text mt-3">
+                    Project: <a asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@Model.Project.Id">@Model.Project.Name</a>
+                </p>
+
+                <div class="row">
+                    
+                    <p class="card-text mt-1">
+                        Project Manager:
+                    </p>
+                    @if (Model.ProjectManager is null)
+                    {
+                        <p class="card-text fw-bold text-danger">Project manager is unassigned!</p>
+                    }
+                    else
+                    {
+                        <div class="row d-flex justify-content-start align-items-center">
+                            <div class="col-3 col-lg-1">
+                                <img class="img-fluid rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(Model.ProjectManager.PictureData)">
+                            </div>
+                            <div class="col-9 col-lg-11">
+                                <p class="card-text">@Model.ProjectManager.FullName</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <hr />
+
+                <!-- Developer -->
+                <p class="card-text mt-3"><strong>Assigned Developer:</strong></p>
+                @if (Model.Developer is null)
+                {
+                    <p class="card-text text-danger fw-bold">Ticket has not been assigned to a developer.</p>
+                }
+                else
+                {
+                    <div class="row d-flex justify-content-start align-items-center">
+                        <div class="col-3 col-lg-1">
+                            <img class="img-fluid rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(Model.Developer.PictureData)">
+                        </div>
+                        <div class="col-9 col-lg-11">
+                            <p class="card-text">@Model.Developer.FullName</p>
+                        </div>
+                    </div>
+                }
+
+                <hr />
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Attachments Card -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-text">Ticket Attachments</h5>
+            </div>
+
+            <div class="card-body">
+                @if (Model.Ticket.Attachments.Count == 0)
+                {
+                    <p class="card-text mt-3 ms-3 mb-3">There are no attachments for this ticket.</p>
+                }
+                else
+                {
+                    <table class="table table-sm table-striped table-bordered table-responsive m-3 w-75">
+
+                        <thead>
+                            <tr>
+                                <th>Open</th>
+                                <th>File Name</th>
+                                <th>Uploader</th>
+                                <th>Date</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (TicketAttachment attachment in Model.Ticket.Attachments)
+                            {
+                                <tr class="align-middle">
+                                    <td><a href="#"><img class="img-fluid" height="50" width="50" src="~/img/ContentType/@(System.IO.Path.GetExtension(attachment.FileName).Trim('.')).png" /></a></td>
+                                    <td>@attachment.FileName</td>
+                                    <td>@attachment.Uploader!.FullName</td>
+                                    <td>@attachment.Created.ToLongDateString()</td>
+                                    <td>@attachment.Description</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                <div class="card-footer">
+                    <div class="row">
+                        <!-- Add an attachment -->
+                        <a href="#attachments"></a>
+                        @if (TempData.ContainsKey("AttachmentError"))
+                        {
+                            <div class="col-lg-6 ms-3 mt-3">
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    @TempData["AttachmentError"]
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            </div>
+                        }
+                        <form asp-controller="Tickets" asp-action="AddAttachment" method="post" enctype="multipart/form-data" class="mt-1 ms-1">
+                            <input type="hidden" asp-for="Ticket.Id" />
+
+                            <div class="form-group">
+                                <label asp-for="NewAttachment">Attach a file</label>
+                                <input type="file" class="form-control w-50" asp-for="NewAttachment" />
+                            </div>
+
+                            <div class="form-group mt-2">
+                                <label asp-for="FileDescription">File Description</label><br />
+                                <textarea class="form-control w-50" rows="3" class="w-50" asp-for="FileDescription"></textarea>
+                            </div>
+
+                            <button class="btn btn-sm btn-success mt-3 mb-2" type="submit">Add attachment</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comments Card -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-text">Ticket Comments</h5>
+            </div>
+
+            <div class="card-body">
+                @if (Model.Ticket.Comments.Count == 0)
+                {
+                    <p class="card-text mt-3 ms-3 mb-3">There are no comments for this ticket.</p>
+                }
+                @foreach (TicketComment comment in Model.Ticket.Comments.OrderByDescending(c => c.Created))
+                {
+                    <div class="row d-flex justify-content-start mt-3 ms-3">
+                        <div class="col-3 col-lg-1">
+                            <img class="img-fluid rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(comment.AppUser!.PictureData)">
+                        </div>
+                        <div class="col-9 col-lg-11">
+                            <div class="row">
+                                <p class="card-text"><strong>@comment.AppUser!.FullName</strong> | @comment.Created.ToString()</p>
+                            </div>
+                            <div class="row">
+                                <p class="card-text mt-2">@comment.Comment</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr />
+                }
+
+                <!-- Add a comment -->
+                <div class="card-footer">
+                    <div class="row">
+                        <a href="#comments"></a>
+                        @if (TempData.ContainsKey("CommentError"))
+                        {
+                            <div class="col-lg-6">
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    @TempData["CommentError"]
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            </div>
+                        }
+                        <form asp-controller="Tickets" asp-action="AddComment" method="post" class="mt-3 ms-3">
+                            <input type="hidden" asp-for="Ticket.Id" />
+
+                            <div class="form-group">
+                                <textarea asp-for="@Model.NewComment" rows="3" class="form-control w-50"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-sm btn-success mt-3 mb-3">Add comment</button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

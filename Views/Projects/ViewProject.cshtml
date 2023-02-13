@@ -1,22 +1,14 @@
-﻿@inject IProjectService ProjectService
+﻿@using BugBanisher.Models.ViewModels
 
-@model Project
-
-@{
-	AppUser? projectManager = await ProjectService.GetProjectManagerAsync(Model.Id);
-	string textFormatting = projectManager is not null ? "" : "text-danger";
-
-	List<AppUser> developers = await ProjectService.GetDevelopersOnProjectAsync(Model.Id);
-	List<AppUser> members = await ProjectService.GetMembersOnProjectAsync(Model.Id);
-}
+@model ProjectViewModel
 
 <div class="pagetitle">
-	<h1>Project: @Model.Name</h1>
+	<h1>View Project: @Model.Project.Name</h1>
 	<nav>
 		<ol class="breadcrumb">
 			<li class="breadcrumb-item">Projects</li>
 			<li class="breadcrumb-item">Active</li>
-			<li class="breadcrumb-item active">@Model.Name</li>
+			<li class="breadcrumb-item active">@Model.Project.Name</li>
 		</ol>
 	</nav>
 </div>
@@ -27,27 +19,32 @@
 	<div class="col-lg-6">
 		<div class="card">
 			<div class="card-header">
-				<h5 class="card-text">Project Info</h5>
+				<h5 class="card-text d-inline">Project Info: <strong>@Model.Project.Name</strong></h5>
+				<a class="btn btn-sm btn-info ms-3" asp-controller="Projects" asp-action="EditProject" asp-route-projectId="@Model.Project.Id">Edit</a>
 			</div>
 			<div class="card-body">
 
 				<p class="card-text mt-3">
-					Project Name:<br/><br/>
-					<strong>@Model.Name</strong>
+					<strong>Description:</strong><br/><br/>
+					@Model.Project.Description
 				</p>
 
-				<p class="card-text">
-					Description:<br/><br/>
-					@Model.Description
-				</p>
+				<div class="row d-flex justify-space-between">
 
-				<p class="card-text">Created:
-					<br/>@Model.Created.ToShortDateString()
-				</p>
-
-				<p class="card-text">Deadline:
-					<br/>@Model.Deadline.ToShortDateString()
-				</p>
+					<div class="col">
+						<p class="card-text"><strong>Created:</strong>
+						<br/>@Model.Project.Created.ToShortDateString()
+						</p>
+					</div>
+					
+					<div class="col">
+						<p class="card-text"><strong>Deadline:</strong>
+						<br/>@Model.Project.Deadline.ToShortDateString()
+					</p>
+					</div>
+					
+				</div>
+				
 			</div>
 		</div>
 	</div>
@@ -62,18 +59,18 @@
 
 					<!-- Project Manager -->
 					<p class="card-text mt-3"><strong>Project Manager:</strong></p>
-					@if(projectManager is null)
+					@if(Model.ProjectManager is null)
 					{
-						<p class="card-text">Project manager is unassigned!</p>
+						<p class="card-text text-danger">Project manager is unassigned!</p>
 					}
 					else
 					{
 						<div class="row d-flex justify-content-start align-items-center">
 							<div class="col-3 col-lg-1">
-								<img class="img-fluid rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(projectManager.PictureData)">
+								<img class="img-fluid rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(Model.ProjectManager.PictureData)">
 							</div>
 							<div class="col-9 col-lg-11">
-								<p class="card-text @textFormatting">@(projectManager is not null ? projectManager.FullName : "Unassigned")</p>
+								<p class="card-text">@Model.ProjectManager.FullName</p>
 							</div>
 						</div>
 					}
@@ -82,13 +79,13 @@
 
 					<!-- Developers -->
 					<p class="card-text mt-3"><strong>Developers:</strong></p>
-					@if (developers.Count == 0)
+					@if (Model.Developers.Count == 0)
 					{
 						<p class="card-text">No developers are assigned to this project.</p>
 					}
-					@foreach (AppUser developer in developers)
+					@foreach (AppUser developer in Model.Developers)
 					{
-						<div class="row d-flex justify-content-start align-items-center">
+						<div class="row d-flex justify-content-start align-items-center mb-2">
 							<div class="col-3 col-lg-1">
 								<img class="img-fluid rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(developer.PictureData)">
 							</div>
@@ -102,13 +99,13 @@
 
 					<!-- Members -->
 					<p class="card-text mt-3"><strong>Members:</strong></p>
-					@if (members.Count == 0)
+					@if (Model.Members.Count == 0)
 					{
 						<p class="card-text">No members are assigned to this project.</p>
 					}
-					@foreach (AppUser member in members)
+					@foreach (AppUser member in Model.Members)
 					{
-						<div class="row d-flex justify-content-start align-items-center">
+						<div class="row d-flex justify-content-start align-items-center mb-2">
 							<div class="col-3 col-lg-1">
 								<img class="img-fluid rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(member.PictureData)">
 							</div>
@@ -126,7 +123,7 @@
 	<div class="col">
 		@if (User.IsInRole(nameof(Roles.Admin)) || User.IsInRole(nameof(Roles.ProjectManager)) || User.IsInRole(nameof(Roles.Developer)))
 		{
-			<a class="btn btn-sm btn-success mb-3" asp-controller="Tickets" asp-action="CreateTicket" asp-route-projectId="@Model.Id">New Ticket</a>
+			<a class="btn btn-sm btn-success mb-3" asp-controller="Tickets" asp-action="CreateTicket" asp-route-projectId="@Model.Project.Id">Create Ticket</a>
 		}
 
 		<div class="card">
@@ -134,14 +131,14 @@
 				<h5 class="card-text">Active Tickets</h5>
 			</div>
 
-			<table class="table table-sm table-striped table-bordered table-responsive">
+			<table class="table table-sm table-striped table-bordered">
 
 				<thead>
 					<tr>
 						<th>Link</th>
 						<th>Created</th>
-						<th>Title</th>
-						<th>Developer</th>
+						<th>Ticket Name</th>
+						<th>Assigned Developer</th>
 						<th>Priority</th>
 						<th>Type</th>
 						<th>Status</th>
@@ -152,13 +149,13 @@
 					@foreach (Ticket ticket in Model.Tickets)
 					{
 						<tr class="align-middle">
-							<td><a asp-controller="Tickets" asp-action="ViewTicket" asp-route-ticketId="@ticket.Id"><img class="img-fluid" src="~/img/ticket.png" /></a></td>
+							<td class="text-center p-0"><a asp-controller="Tickets" asp-action="ViewTicket" asp-route-ticketId="@ticket.Id"><img class="img-fluid" src="~/img/ticket.png" /></a></td>
 							<td>@ticket.Created.ToShortDateString()</td>
 							<td>@ticket.Title</td>
-							<td>@(ticket.Developer is not null ? ticket.Developer.FullName : "Unassigned")</td>
-							<td class="text-center"><span class="badge bg-danger">@ticket.Priority!.Description</span></td>
+							<td class="@Model.GetDeveloperTextFormat(ticket)">@(ticket.Developer is not null ? ticket.Developer.FullName : "Unassigned")</td>
+							<td class="text-center"><span class="badge @Model.GetPriorityBadgeFormat(ticket)">@ticket.Priority!.Description</span></td>
 							<td>@ticket.Type!.Description</td>
-							<td class="text-center"><span class="badge bg-success">@ticket.Status!.Description</span></td>
+							<td class="text-center"><span class="badge @Model.GetStatusBadgeFormat(ticket)">@ticket.Status!.Description</span></td>
 						</tr>
 					}
 				</tbody>

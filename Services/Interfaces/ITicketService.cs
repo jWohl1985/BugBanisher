@@ -9,6 +9,7 @@ public interface ITicketService
 	Task<List<TicketPriority>> GetTicketPrioritiesAsync();
 	Task<List<TicketStatus>> GetTicketStatusesAsync();
 	Task<List<TicketType>> GetTicketTypesAsync();
+	Task<TicketAttachment?> GetTicketAttachmentByIdAsync(int ticketAttachmentId);
 	Task UpdateTicketAsync(Ticket ticket);
 	Task<bool> AddTicketCommentAsync(int ticketId, TicketComment comment);
 	Task<bool> AddTicketAttachmentAsync(int ticketId, TicketAttachment attachment);

@@ -16,41 +16,57 @@
 <div class="row">
 
 	<!-- Project Info Card -->
-	<div class="col-lg-6">
-		<div class="card">
-			<div class="card-header">
-				<h5 class="card-text d-inline">Project Info: <strong>@Model.Project.Name</strong></h5>
-				<a class="btn btn-sm btn-info ms-3" asp-controller="Projects" asp-action="EditProject" asp-route-projectId="@Model.Project.Id">Edit</a>
-			</div>
-			<div class="card-body">
-
-				<p class="card-text mt-3">
-					<strong>Description:</strong><br/><br/>
-					@Model.Project.Description
-				</p>
-
-				<div class="row d-flex justify-space-between">
-
-					<div class="col">
-						<p class="card-text"><strong>Created:</strong>
-						<br/>@Model.Project.Created.ToShortDateString()
-						</p>
-					</div>
-					
-					<div class="col">
-						<p class="card-text"><strong>Deadline:</strong>
-						<br/>@Model.Project.Deadline.ToShortDateString()
-					</p>
-					</div>
-					
-				</div>
-				
-			</div>
+	<div class="col-lg-2">
+		<img src="data:image/*;base64,@Convert.ToBase64String(Model.Project.PictureData)" class="img-fluid" width="225" height="225" />
+		<div class="d-flex justify-content-center">
+				<a class="btn btn-sm btn-success mt-2" asp-controller="Projects" asp-action="EditProject" asp-route-projectId="@Model.Project.Id">Edit</a>
+				<a class="btn btn-sm btn-warning mt-2 ms-2" asp-controller="Projects" asp-action="ArchiveProject" asp-route-projectId="@Model.Project.Id">Archive</a>
 		</div>
+	</div>
+	<div class="col-lg-5">
+			<div class="card">
+				<div class="card-header">
+					<h5 class="card-text d-inline">Project Info: <strong>@Model.Project.Name</strong></h5>
+				</div>
+				<div class="card-body">
+
+					<p class="card-text mt-3">
+						<strong>Description:</strong><br/><br/>
+						@Model.Project.Description
+					</p>
+
+					<div class="d-flex">
+
+						<div class="col">
+							<p class="card-text"><strong>Created:</strong>
+							<br/>@Model.Project.Created.ToShortDateString()
+							</p>
+						</div>
+					
+						<div class="col">
+							<p class="card-text"><strong>Deadline:</strong>
+							<br/>@Model.Project.Deadline.ToShortDateString()
+							</p>
+						</div>
+					
+					</div>
+
+					<p class="card-text mt-3">@((Model.Project.Deadline - DateTime.Now).Days) days remaining</p>
+					<div class="progress mt-0">
+					@{
+						float daysUsed = (DateTime.Now - Model.Project.Created).Days;
+						float totalDays = (Model.Project.Deadline - Model.Project.Created).Days;
+						float percentComplete = (daysUsed / totalDays) * 100;
+					}
+						<div class="progress-bar progress-bar-striped" role="progressbar" style="width: @(percentComplete)%" aria-valuenow="@percentComplete" aria-valuemin="0" aria-valuemax="100"></div>
+					</div>
+				</div>
+			</div>
+
 	</div>
 
 	<!-- Project Team Card -->
-	<div class="col-lg-6">
+	<div class="col-lg-5">
 		<div class="card">
 				<div class="card-header">
 					<h5 class="card-text">Project Team</h5>
@@ -121,46 +137,56 @@
 
 	<!-- Tickets Card -->
 	<div class="col">
-		@if (User.IsInRole(nameof(Roles.Admin)) || User.IsInRole(nameof(Roles.ProjectManager)) || User.IsInRole(nameof(Roles.Developer)))
-		{
-			<a class="btn btn-sm btn-success mb-3" asp-controller="Tickets" asp-action="CreateTicket" asp-route-projectId="@Model.Project.Id">Create Ticket</a>
-		}
+		
 
 		<div class="card">
 			<div class="card-header">
-				<h5 class="card-text">Active Tickets</h5>
+				<h5 class="card-text d-inline">Active Tickets</h5>
+				@if (User.IsInRole(nameof(Roles.Admin)) || User.IsInRole(nameof(Roles.ProjectManager)) || User.IsInRole(nameof(Roles.Developer)))
+				{
+					<a class="btn btn-sm btn-success mb-3 d-inline ms-3" asp-controller="Tickets" asp-action="CreateTicket" asp-route-projectId="@Model.Project.Id">Create Ticket</a>
+				}
 			</div>
 
-			<table class="table table-sm table-striped table-bordered">
+			<div class="card-body">
+				<div class="table-responsive">
 
-				<thead>
-					<tr>
-						<th>Link</th>
-						<th>Created</th>
-						<th>Ticket Name</th>
-						<th>Assigned Developer</th>
-						<th>Priority</th>
-						<th>Type</th>
-						<th>Status</th>
-					</tr>
-				</thead>
+					<table class="table table-sm table-bordered table-hover table-light mt-4">
 
-				<tbody>
-					@foreach (Ticket ticket in Model.Tickets)
-					{
-						<tr class="align-middle">
-							<td class="text-center p-0"><a asp-controller="Tickets" asp-action="ViewTicket" asp-route-ticketId="@ticket.Id"><img class="img-fluid" src="~/img/ticket.png" /></a></td>
-							<td>@ticket.Created.ToShortDateString()</td>
-							<td>@ticket.Title</td>
-							<td class="@Model.GetDeveloperTextFormat(ticket)">@(ticket.Developer is not null ? ticket.Developer.FullName : "Unassigned")</td>
-							<td class="text-center"><span class="badge @Model.GetPriorityBadgeFormat(ticket)">@ticket.Priority!.Description</span></td>
-							<td>@ticket.Type!.Description</td>
-							<td class="text-center"><span class="badge @Model.GetStatusBadgeFormat(ticket)">@ticket.Status!.Description</span></td>
-						</tr>
-					}
-				</tbody>
-			</table>
-			
+						<thead class="table-light">
+							<tr>
+								<th>Ticket</th>
+								<th>Created</th>
+								<th>Assigned Developer</th>
+								<th>Priority</th>
+								<th>Type</th>
+								<th>Status</th>
+							</tr>
+						</thead>
+
+						<tbody>
+							@foreach (Ticket ticket in Model.Tickets)
+							{
+								<tr class="align-middle">
+									<td>
+										<a asp-controller="Tickets" asp-action="ViewTicket" asp-route-ticketId="@ticket.Id">
+											<img class="img-fluid me-2" src="~/img/ticket.png" />
+											<p class="text-primary d-inline">@ticket.Title</p>
+										</a>
+									</td>
+									<td>@ticket.Created.ToShortDateString()</td>
+									<td class="@Model.GetDeveloperTextFormat(ticket)">@(ticket.Developer is not null ? ticket.Developer.FullName : "")</td>
+									<td class="text-center"><span class="badge @Model.GetPriorityBadgeFormat(ticket)">@ticket.Priority!.Description</span></td>
+									<td>@ticket.Type!.Description</td>
+									<td class="text-center"><span class="@Model.GetStatusTextFormat(ticket)">@ticket.Status!.Description</span></td>
+								</tr>
+							}
+						</tbody>
+
+					</table>
+
+				</div>
+			</div>
 		</div>
 	</div>
 

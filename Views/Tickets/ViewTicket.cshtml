@@ -66,7 +66,7 @@
                 </p>
 
                 <p class="card-text mt-3">
-                    Ticket Status: <span class="badge @Model.StatusBadgeType">@Model.Ticket.Status!.Description</span>
+                    Ticket Status: <span class="@Model.StatusTextFormat">@Model.Ticket.Status!.Description</span>
                 </p>
 
                 <hr />
@@ -82,7 +82,7 @@
                     </p>
                     @if (Model.ProjectManager is null)
                     {
-                        <p class="card-text fw-bold text-danger">Project manager is unassigned!</p>
+                        <p class="card-text text-danger">Project manager is unassigned!</p>
                     }
                     else
                     {
@@ -103,7 +103,7 @@
                 <p class="card-text mt-3"><strong>Assigned Developer:</strong></p>
                 @if (Model.Developer is null)
                 {
-                    <p class="card-text text-danger fw-bold">Ticket has not been assigned to a developer.</p>
+                    <p class="card-text text-danger">Ticket has not been assigned to a developer.</p>
                 }
                 else
                 {
@@ -141,7 +141,7 @@
 
                         <thead>
                             <tr>
-                                <th>Open</th>
+                                <th>Download</th>
                                 <th>File Name</th>
                                 <th>Uploader</th>
                                 <th>Date</th>
@@ -153,7 +153,11 @@
                             @foreach (TicketAttachment attachment in Model.Ticket.Attachments)
                             {
                                 <tr class="align-middle">
-                                    <td><a href="#"><img class="img-fluid" height="50" width="50" src="~/img/ContentType/@(System.IO.Path.GetExtension(attachment.FileName).Trim('.')).png" /></a></td>
+                                    <td class="text-center">
+                                        <a asp-controller="Tickets" asp-action="ShowAttachment" asp-route-ticketAttachmentId="@attachment.Id">
+                                            <img class="img-fluid" height="50" width="50" src="~/img/ContentType/@(System.IO.Path.GetExtension(attachment.FileName).Trim('.')).png" />
+                                        </a>
+                                    </td>
                                     <td>@attachment.FileName</td>
                                     <td>@attachment.Uploader!.FullName</td>
                                     <td>@attachment.Created.ToLongDateString()</td>

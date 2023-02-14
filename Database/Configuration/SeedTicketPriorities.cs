@@ -18,12 +18,6 @@ public class SeedTicketPriorities : IEntityTypeConfiguration<TicketPriority>
         {
             new TicketPriority
             {
-                Id = "veryLow",
-                Description = "If time allows",
-            },
-
-            new TicketPriority
-            {
                 Id = "low",
                 Description = "Low"
             },
@@ -39,12 +33,6 @@ public class SeedTicketPriorities : IEntityTypeConfiguration<TicketPriority>
                 Id = "high",
                 Description = "High"
             },
-
-            new TicketPriority
-            {
-                Id = "veryHigh",
-                Description = "Emergency"
-            }
         };
     }
 }

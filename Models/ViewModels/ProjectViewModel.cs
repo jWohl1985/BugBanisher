@@ -8,24 +8,23 @@ public class ProjectViewModel
     public List<AppUser> Members { get; set; } = default!;
     public IEnumerable<Ticket> Tickets { get; set; } = default!;
 
-    public string GetDeveloperTextFormat(Ticket ticket) => ticket.DeveloperId is not null ? "" : "fw-bold text-danger";
+    public string GetDeveloperTextFormat(Ticket ticket) => ticket.DeveloperId is not null ? "" : "text-danger";
     public string GetPriorityBadgeFormat(Ticket ticket) => ticket.Priority!.Id switch
     {
-        "veryLow" => "bg-success",
         "low" => "bg-success",
         "medium" => "bg-primary",
-        "high" => "bg-warning",
-        "veryHigh" => "bg-danger",
+        "high" => "bg-danger",
         _ => "bg-danger",
     };
-    public string GetStatusBadgeFormat(Ticket ticket) => ticket.Status!.Id switch
+
+    public string GetStatusTextFormat(Ticket ticket) => ticket.Status!.Id switch
     {
-        "unassigned" => "bg-danger",
-        "pending" => "bg-warning",
-        "development" => "bg-primary",
-        "hold" => "bg-danger",
-        "complete" => "bg-success",
-        _ => "bg-danger",
+        "unassigned" => "text-danger",
+        "pending" => "text-dark",
+        "development" => "text-dark",
+        "hold" => "text-danger",
+        "complete" => "text-success",
+        _ => "text-danger",
     };
 
 }

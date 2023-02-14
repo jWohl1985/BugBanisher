@@ -200,6 +200,23 @@ public class TicketsController : Controller
 		return Redirect(Url.RouteUrl(new { controller = "Tickets", action = "ViewTicket", ticketId = viewModel.Ticket.Id }) + "#attachments");
 	}
 
+	[HttpGet]
+	[Authorize]
+	public async Task<IActionResult> ShowAttachment(int ticketAttachmentId)
+	{
+		TicketAttachment? attachment = await _ticketService.GetTicketAttachmentByIdAsync(ticketAttachmentId);
+
+		if (attachment is null)
+			return View("NotFound");
+
+		string fileName = attachment.FileName;
+		byte[] fileData = attachment.FileData;
+		string ext = Path.GetExtension(fileName).Replace(".", "");
+
+		Response.Headers.Add("Content-Disposition", $"inline; filename={fileName}");
+		return File(fileData, $"application/{ext}");
+	}
+
 
 
     #region Private helper methods

@@ -12,23 +12,21 @@ public class TicketViewModel
 	public IFormFile? NewAttachment { get; set; }
 	public string? FileDescription { get; set; }
 
-	public string StatusBadgeType => Ticket.Status is null ? "" : Ticket.Status.Id switch
+	public string StatusTextFormat => Ticket.Status is null ? "" : Ticket.Status.Id switch
 	{
-		"unassigned" => "bg-danger",
-		"pending" => "bg-warning",
-		"development" => "bg-primary",
-		"hold" => "bg-danger",
-		"complete" => "bg-success",
-		_ => "bg-danger"
+		"unassigned" => "text-danger",
+		"pending" => "text-dark",
+		"development" => "text-dark",
+		"hold" => "text-danger",
+		"complete" => "text-success",
+		_ => "text-danger"
 	};
 
 	public string PriorityBadgeType => Ticket.Priority is null ? "" : Ticket.Priority!.Id switch
 	{
-		"veryLow" => "bg-success",
 		"low" => "bg-success",
 		"medium" => "bg-primary",
 		"high" => "bg-warning",
-		"veryHigh" => "bg-danger",
 		_ => "bg-danger",
 	};
 

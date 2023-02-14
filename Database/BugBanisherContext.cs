@@ -18,7 +18,11 @@ public class BugBanisherContext : IdentityDbContext<AppUser>
     public DbSet<TicketPriority> TicketPriorities { get; set; } = default!;
     public DbSet<TicketType> TicketTypes { get; set; } = default!;
     public DbSet<TicketStatus> TicketStatuses { get; set; } = default!;
+    public DbSet<TicketAttachment> TicketAttachments { get; set; } = default!;
+    public DbSet<TicketComment> TicketComments { get; set; } = default!;
+    public DbSet<TicketHistory> TicketHistories { get; set; } = default!;
     public DbSet<Notification> Notifications { get; set; } = default!;
+    
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

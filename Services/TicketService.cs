@@ -54,6 +54,11 @@ public class TicketService : ITicketService
         return await _context.TicketTypes.ToListAsync();
     }
 
+	public async Task<TicketAttachment?> GetTicketAttachmentByIdAsync(int ticketAttachmentId)
+	{
+		return await _context.TicketAttachments.FirstOrDefaultAsync(ta => ta.Id == ticketAttachmentId);
+	}
+
 	public async Task UpdateTicketAsync(Ticket ticket)
 	{
 		_context.Tickets.Update(ticket);

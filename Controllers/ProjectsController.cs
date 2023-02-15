@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using BugBanisher.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using BugBanisher.Models.Enums;
+using System.ComponentModel.Design;
 
 namespace ProjectManager.Controllers;
 
@@ -53,29 +54,32 @@ public class ProjectsController : Controller
 
     [HttpGet]
     [Authorize]
-    public async Task<ViewResult> ListActiveProjects()
+    public async Task<ViewResult> ListActiveProjects(string sortBy="Project Name", int pageNumber=1, int perPage=10)
     {
-        ViewData["ProjectType"] = "Active";
         int companyId = User.Identity!.GetCompanyId();
-      
-        List<Project> activeProjects;
+        AppUser user = await _userManager.GetUserAsync(User);
 
-        if (UserIsAdmin)
-        {
-            activeProjects = await _projectService.GetAllActiveCompanyProjectsAsync(companyId);
-        }
-        else
-        {
-            AppUser user = await _userManager.GetUserAsync(User);
-            activeProjects = await _projectService.GetUserActiveProjectsAsync(user.Id);
-        }
+        List<Project> activeProjects = 
+            UserIsAdmin ? await _projectService.GetAllActiveCompanyProjectsAsync(companyId) : await _projectService.GetUserActiveProjectsAsync(user.Id);
 
-        return View(ListView, activeProjects);
+        ProjectListViewModel viewModel = new ProjectListViewModel()
+        {
+            ActiveOrArchived = "Active",
+            Projects = activeProjects,
+            PageNumber = pageNumber.ToString(),
+            PerPage = perPage.ToString(),
+            SortBy = sortBy,
+
+            SortByOptions = new SelectList(new string[] { "Project Name", "Project Manager", "Due Date", "Open Tickets" }, sortBy),
+            PerPageOptions = new SelectList(new string[] { "5", "10", "20", "30", "40", "50" }, perPage.ToString()),
+        };
+
+        return View(ListView, viewModel);
     }
 
     [HttpGet]
     [Authorize]
-    public async Task<ViewResult> ListArchivedProjects()
+    public async Task<ViewResult> ListArchivedProjects(int pageNumber=1, int perPage=5)
     {
         ViewData["ProjectType"] = "Archived";
         int companyId = User.Identity!.GetCompanyId();
@@ -92,7 +96,7 @@ public class ProjectsController : Controller
             archivedProjects = await _projectService.GetUserArchivedProjectsAsync(user.Id);
         }
 
-        return View(ListView, archivedProjects);
+        return View(ListView, archivedProjects.Skip(pageNumber*perPage).Take(perPage));
     }
 
     [HttpGet]

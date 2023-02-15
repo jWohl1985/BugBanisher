@@ -1,55 +1,171 @@
-﻿@inject UserManager<AppUser> UserManager
+﻿@using BugBanisher.Models.ViewModels
 
-@model IEnumerable<Project>
+@inject UserManager<AppUser> UserManager
+
+@model ProjectListViewModel
 
 @{
-    string activeOrArchived = (string)ViewData["ProjectType"]!;
+    int pageNumber = int.Parse(Model.PageNumber);
+    int perPage = int.Parse(Model.PerPage);
+    int numberOfPages = (Model.Projects.Count / perPage) + 1;
+
+    bool canPrevPage = pageNumber > 1;
+    bool canNextPage = pageNumber < numberOfPages;
+
+    IEnumerable<Project> sortedProjects = Model.SortBy switch
+    {
+        "Open Tickets" => Model.Projects.OrderBy(p => p.Tickets.Count),
+        "Due Date" => Model.Projects.OrderBy(p => p.Deadline),
+        "Project Manager" => Model.Projects.OrderBy(p => p.ProjectManagerId),
+        "Project Name" or _ => Model.Projects.OrderBy(p => p.Name),
+    };
 }
 
-
 <div class="pagetitle">
-    <h1>@activeOrArchived Projects</h1>
+    <h1>@Model.ActiveOrArchived Projects</h1>
     <nav>
         <ol class="breadcrumb">
             <li class="breadcrumb-item">Projects</li>
-            <li class="breadcrumb-item active">@activeOrArchived</li>
+            <li class="breadcrumb-item active">@Model.ActiveOrArchived</li>
         </ol>
     </nav>
 </div>
 
-@foreach (Project project in Model)
+<div class="row mb-3">
+    <div class="col">
+
+        <form asp-controller="Projects" asp-action="List@(Model.ActiveOrArchived)Projects" method="get">
+
+            <span>Sort by</span>
+                <select class="d-inline" asp-items="@Model.SortByOptions" asp-for="SortBy">
+                </select>
+
+            <span class="ms-3">Show</span>
+                <select class="d-inline" asp-items="@Model.PerPageOptions" asp-for="PerPage">
+                </select>
+            <span>per page</span>
+
+            <button class="btn btn-sm btn-success" type="submit" asp-action="List@(Model.ActiveOrArchived)Projects"
+                    asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@Model.PageNumber" asp-route-perPage="@Model.PerPage">
+                    Go
+            </button>
+        </form>
+
+    </div>
+</div>
+
+@foreach (Project project in sortedProjects.Skip((pageNumber - 1) * perPage).Take(perPage))
 {
     AppUser? projectManager = await UserManager.FindByIdAsync(project.ProjectManagerId);
 
-    <div class="row mb-3">
+    List<Ticket> openTickets = project.Tickets.Where(t => t.TicketStatusId != "complete" && !t.IsArchived).ToList();
+
+    int unassignedTickets = openTickets.Where(t => t.DeveloperId == null || t.TicketStatusId == "pending").Count();
+    int onHoldTickets = openTickets.Where(t => t.TicketStatusId == "hold").Count();
+    int priorityTickets = openTickets.Where(t => t.TicketPriorityId == "high").Count();
+
+    <div class="row mb-1">
             <div class="card">
-                <div class="card-header">
-                    <div class="row d-flex align-items-center justify-space-between">
-                        <div class="col col-lg-6">
-                            <img class="img-fluid d-block d-md-inline" src="data:image/*;base64,@Convert.ToBase64String(project.PictureData)" width="50" height="50" />
-                            <h5 class="card-text d-block d-md-inline ms-0 ms-md-2 mt-2 mt-md-0">@project.Name</h5>
-                            <a class="btn btn-success btn-sm ms-3" asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@project.Id">View</a>
+                <div class="card-body">
+                    <div class="row d-flex align-items-center justify-content-start mt-3">
+                        <div class="col-2 col-lg-1">
+                            <a asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@project.Id">
+                                <img class="img-fluid p-0" src="data:image/*;base64,@Convert.ToBase64String(project.PictureData)" width="75" height="75" /> 
+                            </a>
                         </div>
-                        @if(projectManager is not null)
-                        {
-                            <div class="col col-lg-6 mt-3 mt-lg-0">
-                                <p class="card-text d-block d-md-inline">Project Manager: </p>
-                                <img class="img-fluid rounded-circle d-block d-md-inline ms-0 ms-md-2" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(projectManager.PictureData)">
-                                <p class="d-inline ms-0 ms-md-2">@projectManager.FullName</p>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="col col-lg-6 mt-3 mt-lg-0">
-                                <p class="card-text d-block d-md-inline">Project Manager: <span class="fw-bold text-danger">Unassigned</span></p>
-                            </div>
-                        }
+                        <div class="col col-lg-3">
+                            <a asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@project.Id">
+                                <h5 class="card-text">@project.Name</h5>
+                            </a>
+                            @if (projectManager is not null)
+                            {
+                                <p class="card-text">Project Manager: @projectManager.FullName</p>
+                            }
+                            else
+                            {
+                                <p class="card-text">Project Manager: <span class="text-danger">Unassigned</span></p>
+                            }
+                        </div>
+                        <div class="col col-lg-2">
+                            <p class="card-text mt-3">@((project.Deadline - DateTime.Now).Days) days remaining</p>
+					        <div class="progress mt-0">
+					        @{
+						        float daysUsed = (DateTime.Now - project.Created).Days;
+						        float totalDays = (project.Deadline - project.Created).Days;
+						        float percentComplete = (daysUsed / totalDays) * 100;
+					        }
+						        <div class="progress-bar progress-bar-striped" role="progressbar" style="width: @(percentComplete)%" aria-valuenow="@percentComplete" aria-valuemin="0" aria-valuemax="100"></div>
+					        </div>
+                        </div>
+                        <div class="col">
+
+                        </div>
+                        <div class="col col-lg-2">
+                            <p class="card-text">@openTickets.Count open tickets</p>
+                        </div>
+                        <div class="col col-lg-3">
+                            @if (priorityTickets > 0)
+                            {
+                                <p class="card-text">@priorityTickets high priority</p>
+                            }
+                            @if (unassignedTickets > 0)
+                            {
+                                <p class="card-text text-danger">@unassignedTickets unassigned or pending</p>
+                            }
+                            @if (onHoldTickets > 0)
+                            {
+                                <p class="card-text">@onHoldTickets on hold</p>
+                            }
                     </div>
-                </div>
-                <div class="card-body mt-2">
-                    <p class="card-text">@project.Description</p>
-                    <p class="card-text"><strong>Tickets:</strong> @project.Tickets.Count</p>
+                    </div>
                 </div>
             </div>
     </div>
+}
+
+<p class="text-muted">
+    @{
+        int startingEntry = sortedProjects.Count() == 0 ? 0 : (pageNumber - 1) * perPage + 1;
+        int endingEntry = Math.Min(sortedProjects.Count(), startingEntry + perPage - 1);
+    }
+    Showing @startingEntry to @endingEntry of @(sortedProjects.Count())
+</p>
+
+@if (sortedProjects.Count() > perPage)
+{
+    @if (canPrevPage)
+    {
+        <a class="btn btn-sm btn-outline-info" asp-action="List@(Model.ActiveOrArchived)Projects"
+        asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(pageNumber-1)" asp-route-perPage="@Model.PerPage">
+            Prev
+        </a>
+    }
+
+    @if (pageNumber > 4)
+    {
+        <span class="ms-2">...</span>
+    }
+
+    @for (int i = Math.Max(pageNumber - 3, 1); i <= Math.Min(pageNumber + 3, numberOfPages); i++)
+    {
+        string active = i == pageNumber ? "btn-info" : "btn-outline-info";
+
+        <a class="btn btn-sm @active ms-2" type="button" asp-action="List@(Model.ActiveOrArchived)Projects"
+        asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@i" asp-route-perPage="@Model.PerPage">
+            @i
+        </a>
+    }
+
+    @if (pageNumber < numberOfPages - 3)
+    {
+        <span class="ms-2">...</span>
+    }
+
+    @if (canNextPage)
+    {
+        <a class="btn btn-sm btn-outline-info ms-2" asp-action="List@(Model.ActiveOrArchived)Projects"
+        asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(pageNumber+1)" asp-route-perPage="@Model.PerPage">
+            Next
+        </a>
+    }
 }

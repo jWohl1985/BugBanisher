@@ -26,7 +26,8 @@
 	<div class="col-lg-5">
 			<div class="card">
 				<div class="card-header">
-					<h5 class="card-text d-inline">Project Info: <strong>@Model.Project.Name</strong></h5>
+					<h5 class="card-text">Project Info: <strong>@Model.Project.Name</strong></h5>
+					<a class="btn btn-sm btn-danger d-inline" asp-controller="Projects" asp-action="ConfirmDeleteProject" asp-route-projectId="@Model.Project.Id">Delete</a>
 				</div>
 				<div class="card-body">
 

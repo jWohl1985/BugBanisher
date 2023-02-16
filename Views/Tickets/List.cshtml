@@ -1,0 +1,50 @@
+﻿@model IEnumerable<Ticket>
+
+@{
+    string openOrActionRequired = (string?)ViewData["OpenOrActionRequired"] ?? "";
+}
+
+<div class="pagetitle">
+    <h1>@openOrActionRequired Tickets</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">Tickets</li>
+            <li class="breadcrumb-item active">@openOrActionRequired</li>
+        </ol>
+    </nav>
+</div>
+
+<table class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Project</th>
+            <th>Developer</th>
+            <th>Priority</th>
+            <th>Type</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (Ticket ticket in Model)
+        {
+            <tr>
+                <td>@ticket.Title</td>
+                <td>@ticket.Project!.Name</td>
+                @if (ticket.Developer is not null)
+                {
+                    <td>@ticket.Developer.FullName</td>
+                }
+                else
+                {
+                    <td>Unassigned</td>
+                }
+                <td>@ticket.Priority!.Description</td>
+                <td>@ticket.Type!.Description</td>
+                <td>@ticket.Status!.Description</td>
+            </tr>
+        }
+    </tbody>
+</table>
+    

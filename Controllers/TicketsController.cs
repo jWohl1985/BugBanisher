@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Security.Cryptography.X509Certificates;
+using BugBanisher.Extensions;
+using BugBanisher.Models.Enums;
 
 namespace BugBanisher.Controllers;
 
@@ -18,6 +20,8 @@ public class TicketsController : Controller
 	private readonly IFileService _fileService;
 	private readonly INotificationService _notificationService;
 	private readonly UserManager<AppUser> _userManager;
+
+	private bool UserIsAdmin => User.IsInRole(nameof(Roles.Admin));
 
 	public TicketsController(IProjectService projectService, 
 		ITicketService ticketService, 
@@ -53,6 +57,34 @@ public class TicketsController : Controller
 	}
 
 	[HttpGet]
+	[Authorize]
+	public async Task<ViewResult> ListActiveTickets()
+	{
+		ViewData["OpenOrActionRequired"] = "Open";
+		AppUser user = await _userManager.GetUserAsync(User);
+		int companyId = User.Identity!.GetCompanyId();
+
+		List<Ticket> activeTickets =
+			UserIsAdmin ? await _ticketService.GetAllActiveCompanyTicketsAsync(companyId) : await _ticketService.GetUserActiveTicketsAsync(user.Id);
+
+		return View("List", activeTickets.OrderByDescending(t => t.ProjectId));
+	}
+
+    [HttpGet]
+    [Authorize]
+    public async Task<ViewResult> ListProblemTickets()
+    {
+		ViewData["OpenOrActionRequired"] = "Action Required";
+        AppUser user = await _userManager.GetUserAsync(User);
+        int companyId = User.Identity!.GetCompanyId();
+
+        List<Ticket> problemTickets =
+            UserIsAdmin ? await _ticketService.GetAllProblemTicketsAsync(companyId) : await _ticketService.GetUserProblemTicketsAsync(user.Id);
+
+        return View("List", problemTickets.OrderByDescending(t => t.ProjectId));
+    }
+
+    [HttpGet]
 	[Authorize(Roles = "Admin, ProjectManager, Developer")]
 	public async Task<ViewResult> CreateTicket(int projectId)
 	{

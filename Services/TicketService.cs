@@ -3,16 +3,19 @@ using BugBanisher.Models;
 using BugBanisher.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.Design;
 
 namespace BugBanisher.Services;
 
 public class TicketService : ITicketService
 {
 	private readonly BugBanisherContext _context;
+	private readonly UserManager<AppUser> _userManager;
 
 	public TicketService(BugBanisherContext context, UserManager<AppUser> userManager)
 	{
 		_context = context;
+		_userManager = userManager;
 	}
 
 	public async Task<Ticket?> GetTicketByIdAsync(int ticketId)
@@ -39,7 +42,95 @@ public class TicketService : ITicketService
 		return ticket.Id;
 	}
 
-	public async Task<List<TicketPriority>> GetTicketPrioritiesAsync()
+	public async Task<List<Ticket>> GetAllActiveCompanyTicketsAsync(int companyId)
+	{
+		List<Project> activeCompanyProjects = await _context.Projects
+			.Where(p => p.CompanyId == companyId && !p.IsArchived)
+			.Include(p => p.Tickets)
+			.ToListAsync();
+
+		List<Ticket> activeCompanyTickets = new List<Ticket>();
+
+		return await _context.Tickets.Where(t => !t.IsArchived && !(t.TicketStatusId == "complete"))
+			.Include(t => t.Project)
+			.Where(t => activeCompanyProjects.Contains(t.Project!))
+			.Include(t => t.Priority)
+			.Include(t => t.Status)
+			.Include(t => t.Type)
+			.Include(t => t.Developer)
+			.ToListAsync();
+	}
+
+	public async Task<List<Ticket>> GetUserActiveTicketsAsync(string userId)
+	{
+		List<Ticket> userTickets = new List<Ticket>();
+
+		AppUser? user = await _userManager.FindByIdAsync(userId);
+
+		if (user is null)
+			return userTickets;
+
+        List<Project> activeCompanyProjects = await _context.Projects
+            .Where(p => p.CompanyId == user.CompanyId && !p.IsArchived)
+            .Include(p => p.Tickets)
+            .ToListAsync();
+
+        return await _context.Tickets.Where(t => !t.IsArchived && !(t.TicketStatusId == "complete"))
+            .Include(t => t.Project)
+            .Where(t => activeCompanyProjects.Contains(t.Project!))
+			.Where(t => t.Project!.ProjectManagerId == userId || t.DeveloperId == userId)
+            .Include(t => t.Priority)
+            .Include(t => t.Status)
+            .Include(t => t.Type)
+            .Include(t => t.Developer)
+            .ToListAsync();
+    }
+
+	public async Task<List<Ticket>> GetAllProblemTicketsAsync(int companyId)
+	{
+        List<Project> activeCompanyProjects = await _context.Projects
+            .Where(p => p.CompanyId == companyId && !p.IsArchived)
+            .Include(p => p.Tickets)
+            .ToListAsync();
+
+		return await _context.Tickets.Where(t => !t.IsArchived && !(t.TicketStatusId == "complete"))
+            .Include(t => t.Project)
+            .Where(t => activeCompanyProjects.Contains(t.Project!))
+			.Where(t => t.TicketStatusId == "unassigned" || t.TicketStatusId == "hold" || t.TicketStatusId == "pending")
+            .Include(t => t.Priority)
+            .Include(t => t.Status)
+            .Include(t => t.Type)
+            .Include(t => t.Developer)
+            .ToListAsync();
+    }
+
+    public async Task<List<Ticket>> GetUserProblemTicketsAsync(string userId)
+    {
+        List<Ticket> problemTickets = new List<Ticket>();
+
+		AppUser user = await _userManager.FindByIdAsync(userId);
+
+		if (user is null)
+			return problemTickets;
+
+        List<Project> activeCompanyProjects = await _context.Projects
+            .Where(p => p.CompanyId == user.CompanyId && !p.IsArchived)
+            .Include(p => p.Tickets)
+            .ToListAsync();
+
+        return await _context.Tickets.Where(t => !t.IsArchived && !(t.TicketStatusId == "complete"))
+            .Include(t => t.Project)
+            .Where(t => activeCompanyProjects.Contains(t.Project!))
+            .Where(t => t.TicketStatusId == "unassigned" || t.TicketStatusId == "hold" || t.TicketStatusId == "pending")
+			.Where(t => t.Project!.ProjectManagerId == userId || t.DeveloperId == userId)
+            .Include(t => t.Priority)
+            .Include(t => t.Status)
+            .Include(t => t.Type)
+            .Include(t => t.Developer)
+            .ToListAsync();
+    }
+
+    public async Task<List<TicketPriority>> GetTicketPrioritiesAsync()
 	{
 		return await _context.TicketPriorities.ToListAsync();
 	}

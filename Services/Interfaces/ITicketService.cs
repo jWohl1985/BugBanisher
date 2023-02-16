@@ -6,6 +6,10 @@ public interface ITicketService
 {
 	Task<Ticket?> GetTicketByIdAsync(int ticketId);
 	Task<int> CreateTicketAsync(Ticket ticket);
+	Task<List<Ticket>> GetAllActiveCompanyTicketsAsync(int companyId);
+	Task<List<Ticket>> GetUserActiveTicketsAsync(string userId);
+	Task<List<Ticket>> GetAllProblemTicketsAsync(int companyId);
+	Task<List<Ticket>> GetUserProblemTicketsAsync(string userId);
 	Task<List<TicketPriority>> GetTicketPrioritiesAsync();
 	Task<List<TicketStatus>> GetTicketStatusesAsync();
 	Task<List<TicketType>> GetTicketTypesAsync();

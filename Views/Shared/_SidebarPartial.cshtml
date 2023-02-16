@@ -20,9 +20,10 @@
             </a>
         </li>
 
+        <!-- Company -->
         @if (userRoles.Contains(nameof(Roles.Admin)))
         {
-            <!-- Company Nav-->
+            
             <li class="nav-item">
                 <a class="nav-link @(IsController("Company") ? "" : "collapsed")" data-bs-target="#company-nav" data-bs-toggle="collapse" href="#">
                     <i class="bi bi-menu-button-wide"></i><span>Company</span><i class="bi bi-chevron-down ms-auto"></i>
@@ -41,8 +42,8 @@
                 </ul>
             </li>
         }
-        <!-- End Company Nav -->
 
+        <!-- Projects, Tickets, Stats & Charts -->
         @if (appUser is not null && appUser.CompanyId is not null)
         {
             <!-- Projects -->
@@ -92,7 +93,6 @@
                     }
                 </ul>
             </li>
-            <!-- End Projects Nav -->
 
             <!-- Tickets -->
             <li class="nav-item">
@@ -100,27 +100,32 @@
                     <i class="bi bi-layout-text-window-reverse"></i><span>Tickets</span><i class="bi bi-chevron-down ms-auto"></i>
                 </a>
                 <ul id="tickets-nav" class="nav-content @(IsController("Tickets") ? "" : "collapse")" data-bs-parent="#sidebar-nav">
-                    @if (userRoles.Contains(nameof(Roles.Admin)) || userRoles.Contains(nameof(Roles.ProjectManager)))
+                    @if (userRoles.Contains(nameof(Roles.Admin)))
                     {
                         <li>
-                            <a href="#">
-                                <i class="bi bi-circle"></i><span>Manage Tickets</span>
+                            <a class="@(IsAction("ListActiveTickets") ? "active" : "")" asp-controller="Tickets" asp-action="ListActiveTickets">
+                                <i class="bi bi-circle"></i><span>All Active</span>
                             </a>
                         </li>
                     }
-                    <li>
-                        <a href="#">
-                            <i class="bi bi-circle"></i><span>My Current Tickets</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <i class="bi bi-circle"></i><span>My Archived Tickets</span>
-                        </a>
-                    </li>
+                    else
+                    {
+                        <li>
+                            <a class="@(IsAction("ListActiveTickets") ? "active" : "")" asp-controller="Tickets" asp-action="ListActiveTickets">
+                                <i class="bi bi-circle"></i><span>My Open Tickets</span>
+                            </a>
+                        </li>
+                    }
+                    @if (userRoles.Contains(nameof(Roles.Admin)) || userRoles.Contains(nameof(Roles.ProjectManager)))
+                    {
+                        <li>
+                            <a class="@(IsAction("ListProblemTickets") ? "active" : "")" asp-controller="Tickets" asp-action="ListProblemTickets">
+                                <i class="bi bi-circle"></i><span>Action Needed</span>
+                            </a>
+                        </li>
+                    }
                 </ul>
             </li>
-            <!-- End Tickets Nav -->
 
             <!-- Stats & Charts  -->
             <li class="nav-item">
@@ -154,18 +159,18 @@
 
                 </ul>
             </li>
-            <!-- End Stats & Charts Nav -->
         }
 
+        <!-- Notifications -->
         @if (appUser is not null)
         {
-            <!-- Notifications -->
             <li class="nav-item">
                 <a class="nav-link @(IsController("Notifications") ? "" : "collapsed")" asp-controller="Notifications" asp-action="MyNotifications">
                     <i class="bi bi-bar-chart"></i><span>Notifications</span>
                 </a>
             </li>
         }
+
     </ul>
 
 </aside>

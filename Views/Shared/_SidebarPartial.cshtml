@@ -103,27 +103,37 @@
                     @if (userRoles.Contains(nameof(Roles.Admin)))
                     {
                         <li>
-                            <a class="@(IsAction("ListActiveTickets") ? "active" : "")" asp-controller="Tickets" asp-action="ListActiveTickets">
-                                <i class="bi bi-circle"></i><span>All Active</span>
+                            <a class="@(IsAction("ListOpenTickets") ? "active" : "")" asp-controller="Tickets" asp-action="ListOpenTickets">
+                                <i class="bi bi-circle"></i><span>All Open</span>
                             </a>
                         </li>
                     }
                     else
                     {
                         <li>
-                            <a class="@(IsAction("ListActiveTickets") ? "active" : "")" asp-controller="Tickets" asp-action="ListActiveTickets">
+                            <a class="@(IsAction("ListOpenTickets") ? "active" : "")" asp-controller="Tickets" asp-action="ListOpenTickets">
                                 <i class="bi bi-circle"></i><span>My Open Tickets</span>
                             </a>
                         </li>
                     }
-                    @if (userRoles.Contains(nameof(Roles.Admin)) || userRoles.Contains(nameof(Roles.ProjectManager)))
-                    {
-                        <li>
-                            <a class="@(IsAction("ListProblemTickets") ? "active" : "")" asp-controller="Tickets" asp-action="ListProblemTickets">
-                                <i class="bi bi-circle"></i><span>Action Needed</span>
-                            </a>
-                        </li>
-                    }
+
+                    <li>
+                        <a class="@(IsAction("ListActionRequiredTickets") ? "active" : "")" asp-controller="Tickets" asp-action="ListActionRequiredTickets">
+                            <i class="bi bi-circle"></i><span>Action Needed</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a class="@(IsAction("ListCompletedTickets") ? "active" : "")" asp-controller="Tickets" asp-action="ListCompletedTickets">
+                            <i class="bi bi-circle"></i><span>Completed</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a class="@(IsAction("CreateNewTicket") ? "active" : "")" asp-controller="Tickets" asp-action="CreateNewTicketFromSidebar">
+                            <i class="bi bi-circle"></i><span>Create New Ticket</span>
+                        </a>
+                    </li>
                 </ul>
             </li>
 

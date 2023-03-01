@@ -1,7 +1,24 @@
-﻿@model IEnumerable<Ticket>
+﻿@using BugBanisher.Models.ViewModels;
+
+@model TicketListViewModel
 
 @{
-    string openOrActionRequired = (string?)ViewData["OpenOrActionRequired"] ?? "";
+    string openOrActionRequired = Model.OpenOrActionRequired;
+
+    int pageNumber = int.Parse(Model.PageNumber);
+    int perPage = int.Parse(Model.PerPage);
+    int numberOfPages = (Model.Tickets.Count / perPage) + 1;
+
+    bool canPrevPage = pageNumber > 1;
+    bool canNextPage = pageNumber < numberOfPages;
+
+    IEnumerable<Ticket> sortedTickets = Model.SortBy switch
+    {
+        "Project Name" => Model.Tickets.OrderBy(t => t.Project!.Name),
+        "Priority" => Model.Tickets.OrderBy(t => t.TicketPriorityId),
+        "Developer" => Model.Tickets.OrderBy(t => t.DeveloperId),
+        "Status" or _ => Model.Tickets.OrderBy(t => t.TicketStatusId),
+    };
 }
 
 <div class="pagetitle">
@@ -14,23 +31,72 @@
     </nav>
 </div>
 
-<table class="table table-bordered table-hover">
+@if (openOrActionRequired == "Action Required")
+{
+    <div class="card p-2 pt-4">
+        <div class="card-body mb-0">
+            <div class="card-text">
+                    These tickets require some action by the developer or project manager.<br />
+                    Either the developer has not been assigned, has not accepted the assignment, or they have placed the ticket on hold.
+            </div>
+        </div>
+    </div>
+}
+else if (openOrActionRequired == "Open")
+{
+    <div class="card p-2 pt-4">
+        <div class="card-body mb-0">
+            <div class="card-text">
+                These are all of the open tickets (not archived or complete) across all projects.
+            </div>
+        </div>
+    </div>
+}
+
+
+<!-- Sort & Paging Options -->
+<div class="row mb-3">
+    <div class="col">
+
+        <form asp-controller="Tickets" asp-action="List@(Model.OpenOrActionRequired)Tickets" method="get">
+
+            <span>Sort by</span>
+            <select class="d-inline" asp-items="@Model.SortByOptions" asp-for="SortBy">
+            </select>
+
+            <span class="ms-3">Show</span>
+            <select class="d-inline" asp-items="@Model.PerPageOptions" asp-for="PerPage">
+            </select>
+            <span>per page</span>
+
+            <button class="btn btn-sm btn-success ms-3" type="submit"
+                    asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@Model.PageNumber" asp-route-perPage="@Model.PerPage">
+                Go
+            </button>
+        </form>
+
+    </div>
+</div>
+
+<!-- Tickets Table -->
+<table class="table table-bordered table-hover bg-light">
+
     <thead>
         <tr>
-            <th>Title</th>
+            <th>Ticket Title</th>
             <th>Project</th>
             <th>Developer</th>
-            <th>Priority</th>
+            <th class="text-center">Priority</th>
             <th>Type</th>
             <th>Status</th>
         </tr>
     </thead>
 
     <tbody>
-        @foreach (Ticket ticket in Model)
+        @foreach (Ticket ticket in sortedTickets.Skip((pageNumber - 1) * perPage).Take(perPage))
         {
             <tr>
-                <td>@ticket.Title</td>
+                <td><a asp-action="ViewTicket" asp-route-ticketId="@ticket.Id">@ticket.Title</a></td>
                 <td>@ticket.Project!.Name</td>
                 @if (ticket.Developer is not null)
                 {
@@ -38,13 +104,62 @@
                 }
                 else
                 {
-                    <td>Unassigned</td>
+                    <td class="text-danger">Unassigned</td>
                 }
-                <td>@ticket.Priority!.Description</td>
+                <td class="text-center"><span class="@Model.GetPriorityFormatting(@ticket.TicketPriorityId)">@ticket.Priority!.Description</span></td>
                 <td>@ticket.Type!.Description</td>
-                <td>@ticket.Status!.Description</td>
+                <td class="@Model.GetStatusFormatting(@ticket.TicketStatusId)">@ticket.Status!.Description</td>
             </tr>
         }
     </tbody>
 </table>
     
+
+<!-- Paging -->
+
+<p class="text-muted">
+    @{
+        int startingEntry = sortedTickets.Count() == 0 ? 0 : (pageNumber - 1) * perPage + 1;
+        int endingEntry = Math.Min(sortedTickets.Count(), startingEntry + perPage - 1);
+    }
+    Showing @startingEntry to @endingEntry of @(sortedTickets.Count())
+</p>
+
+@if (sortedTickets.Count() > perPage)
+{
+    @if (canPrevPage)
+    {
+        <a class="btn btn-sm btn-outline-info" asp-action="List@(Model.OpenOrActionRequired)Tickets"
+            asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(pageNumber-1)" asp-route-perPage="@Model.PerPage">
+            Prev
+        </a>
+    }
+
+    @if (pageNumber > 4)
+    {
+        <span class="ms-2">...</span>
+    }
+
+    @for (int i = Math.Max(pageNumber - 3, 1); i <= Math.Min(pageNumber + 3, numberOfPages); i++)
+    {
+        string active = i == pageNumber ? "btn-info" : "btn-outline-info";
+
+        <a class="btn btn-sm @active ms-2" type="button" asp-action="List@(Model.OpenOrActionRequired)Tickets"
+            asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@i" asp-route-perPage="@Model.PerPage">
+            @i
+        </a>
+    }
+
+    @if (pageNumber < numberOfPages - 3)
+    {
+        <span class="ms-2">...</span>
+    }
+
+    @if (canNextPage)
+    {
+        <a class="btn btn-sm btn-outline-info ms-2" asp-action="List@(Model.OpenOrActionRequired)Tickets"
+            asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(pageNumber+1)" asp-route-perPage="@Model.PerPage">
+            Next
+        </a>
+    }
+}

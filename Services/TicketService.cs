@@ -42,7 +42,7 @@ public class TicketService : ITicketService
 		return ticket.Id;
 	}
 
-	public async Task<List<Ticket>> GetAllActiveCompanyTicketsAsync(int companyId)
+	public async Task<List<Ticket>> GetAllOpenCompanyTicketsAsync(int companyId)
 	{
 		List<Project> activeCompanyProjects = await _context.Projects
 			.Where(p => p.CompanyId == companyId && !p.IsArchived)
@@ -61,7 +61,7 @@ public class TicketService : ITicketService
 			.ToListAsync();
 	}
 
-	public async Task<List<Ticket>> GetUserActiveTicketsAsync(string userId)
+	public async Task<List<Ticket>> GetUserOpenTicketsAsync(string userId)
 	{
 		List<Ticket> userTickets = new List<Ticket>();
 
@@ -86,7 +86,7 @@ public class TicketService : ITicketService
             .ToListAsync();
     }
 
-	public async Task<List<Ticket>> GetAllProblemTicketsAsync(int companyId)
+	public async Task<List<Ticket>> GetAllActionRequiredTicketsAsync(int companyId)
 	{
         List<Project> activeCompanyProjects = await _context.Projects
             .Where(p => p.CompanyId == companyId && !p.IsArchived)
@@ -104,7 +104,7 @@ public class TicketService : ITicketService
             .ToListAsync();
     }
 
-    public async Task<List<Ticket>> GetUserProblemTicketsAsync(string userId)
+    public async Task<List<Ticket>> GetUserActionRequiredTicketsAsync(string userId)
     {
         List<Ticket> problemTickets = new List<Ticket>();
 

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Security.Cryptography.X509Certificates;
 using BugBanisher.Extensions;
 using BugBanisher.Models.Enums;
+using System.Globalization;
 
 namespace BugBanisher.Controllers;
 
@@ -58,30 +59,54 @@ public class TicketsController : Controller
 
 	[HttpGet]
 	[Authorize]
-	public async Task<ViewResult> ListActiveTickets()
+	public async Task<ViewResult> ListOpenTickets(string sortBy = "Project Name", int pageNumber = 1, int perPage = 10)
 	{
 		ViewData["OpenOrActionRequired"] = "Open";
-		AppUser user = await _userManager.GetUserAsync(User);
-		int companyId = User.Identity!.GetCompanyId();
+        int companyId = User.Identity!.GetCompanyId();
+        AppUser user = await _userManager.GetUserAsync(User);
 
-		List<Ticket> activeTickets =
-			UserIsAdmin ? await _ticketService.GetAllActiveCompanyTicketsAsync(companyId) : await _ticketService.GetUserActiveTicketsAsync(user.Id);
+        List<Ticket> activeTickets =
+            UserIsAdmin ? await _ticketService.GetAllOpenCompanyTicketsAsync(companyId) : await _ticketService.GetUserOpenTicketsAsync(user.Id);
 
-		return View("List", activeTickets.OrderByDescending(t => t.ProjectId));
+        TicketListViewModel viewModel = new TicketListViewModel()
+        {
+            OpenOrActionRequired = "Open",
+            Tickets = activeTickets,
+            PageNumber = pageNumber.ToString(),
+            PerPage = perPage.ToString(),
+			SortBy = sortBy,
+
+            SortByOptions = new SelectList(new string[] { "Project Name", "Developer", "Priority", "Type", "Status" }, sortBy),
+            PerPageOptions = new SelectList(new string[] { "5", "10", "20", "30", "40", "50" }, perPage.ToString()),
+        };
+
+        return View("List", viewModel);
 	}
 
     [HttpGet]
     [Authorize]
-    public async Task<ViewResult> ListProblemTickets()
+    public async Task<ViewResult> ListActionRequiredTickets(string sortBy = "Project Name", int pageNumber = 1, int perPage = 10)
     {
 		ViewData["OpenOrActionRequired"] = "Action Required";
-        AppUser user = await _userManager.GetUserAsync(User);
         int companyId = User.Identity!.GetCompanyId();
+        AppUser user = await _userManager.GetUserAsync(User);
+        
+        List<Ticket> actionRequiredTickets =
+            UserIsAdmin ? await _ticketService.GetAllActionRequiredTicketsAsync(companyId) : await _ticketService.GetUserActionRequiredTicketsAsync(user.Id);
 
-        List<Ticket> problemTickets =
-            UserIsAdmin ? await _ticketService.GetAllProblemTicketsAsync(companyId) : await _ticketService.GetUserProblemTicketsAsync(user.Id);
+        TicketListViewModel viewModel = new TicketListViewModel()
+        {
+            OpenOrActionRequired = "Action Required",
+            Tickets = actionRequiredTickets,
+            PageNumber = pageNumber.ToString(),
+            PerPage = perPage.ToString(),
+            SortBy = sortBy,
 
-        return View("List", problemTickets.OrderByDescending(t => t.ProjectId));
+            SortByOptions = new SelectList(new string[] { "Project Name", "Developer", "Priority", "Type", "Status" }, sortBy),
+            PerPageOptions = new SelectList(new string[] { "5", "10", "20", "30", "40", "50" }, perPage.ToString()),
+        };
+
+        return View("List", viewModel);
     }
 
     [HttpGet]

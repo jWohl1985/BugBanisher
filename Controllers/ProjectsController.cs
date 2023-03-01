@@ -8,6 +8,7 @@ using BugBanisher.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using BugBanisher.Models.Enums;
 using System.ComponentModel.Design;
+using System.Globalization;
 
 namespace ProjectManager.Controllers;
 
@@ -54,7 +55,7 @@ public class ProjectsController : Controller
 
     [HttpGet]
     [Authorize]
-    public async Task<ViewResult> ListActiveProjects(string sortBy="Project Name", int pageNumber=1, int perPage=10)
+    public async Task<ViewResult> ListActiveProjects(string sortBy = "Project Name", int pageNumber = 1, int perPage = 10)
     {
         int companyId = User.Identity!.GetCompanyId();
         AppUser user = await _userManager.GetUserAsync(User);
@@ -79,24 +80,27 @@ public class ProjectsController : Controller
 
     [HttpGet]
     [Authorize]
-    public async Task<ViewResult> ListArchivedProjects(int pageNumber=1, int perPage=5)
+    public async Task<ViewResult> ListArchivedProjects(string sortBy = "Project Name", int pageNumber = 1, int perPage = 10)
     {
-        ViewData["ProjectType"] = "Archived";
         int companyId = User.Identity!.GetCompanyId();
+        AppUser user = await _userManager.GetUserAsync(User);
 
-        List<Project> archivedProjects;
+        List<Project> archivedProjects = 
+            UserIsAdmin ? await _projectService.GetAllArchivedCompanyProjectsAsync(companyId) : archivedProjects = await _projectService.GetUserArchivedProjectsAsync(user.Id);
 
-        if (UserIsAdmin)
+        ProjectListViewModel viewModel = new ProjectListViewModel()
         {
-            archivedProjects = await _projectService.GetAllArchivedCompanyProjectsAsync(companyId);
-        }
-        else
-        {
-            AppUser user = await _userManager.GetUserAsync(User);
-            archivedProjects = await _projectService.GetUserArchivedProjectsAsync(user.Id);
-        }
+            ActiveOrArchived = "Archived",
+            Projects = archivedProjects,
+            PageNumber = pageNumber.ToString(),
+            PerPage = perPage.ToString(),
+            SortBy = sortBy,
 
-        return View(ListView, archivedProjects.Skip(pageNumber*perPage).Take(perPage));
+            SortByOptions = new SelectList(new string[] { "Project Name", "Project Manager", "Due Date", "Open Tickets" }, sortBy),
+            PerPageOptions = new SelectList(new string[] { "5", "10", "20", "30", "40", "50" }, perPage.ToString()),
+        };
+
+        return View(ListView, viewModel);
     }
 
     [HttpGet]

@@ -4,7 +4,7 @@ namespace BugBanisher.Models.ViewModels;
 
 public class TicketListViewModel
 {
-    public string OpenOrActionRequired { get; set; } = default!;
+    public string TicketListType { get; set; } = default!;
     public List<Ticket> Tickets { get; set; } = default!;
     public string PageNumber { get; set; } = default!;
     public string PerPage { get; set; } = default!;

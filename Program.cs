@@ -25,6 +25,7 @@ builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<ITicketHistoryService, TicketHistoryService>();
 
 // builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 

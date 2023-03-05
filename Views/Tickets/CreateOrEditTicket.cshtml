@@ -19,10 +19,14 @@
 
 <form asp-controller="Tickets" asp-action="@(createOrEdit == "Create" ? "CreateTicket" : "EditTicket")" method="post">
     <input type="hidden" asp-for="Ticket.Id"/>
+    <input type="hidden" asp-for="Ticket.Title"/>
     <input type="hidden" asp-for="Ticket.ProjectId"/>
     <input type="hidden" asp-for="Ticket.Created" />
     <input type="hidden" asp-for="Ticket.CreatorId" />
+    <input type="hidden" asp-for="Ticket.Description"/>
     <input type="hidden" asp-for="Ticket.TicketStatusId"/>
+    <input type="hidden" asp-for="Ticket.TicketPriorityId"/>
+    <input type="hidden" asp-for="Ticket.TicketTypeId"/>
 
     <div class="row">
 

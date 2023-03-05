@@ -9,6 +9,7 @@ using System.Security.Cryptography.X509Certificates;
 using BugBanisher.Extensions;
 using BugBanisher.Models.Enums;
 using System.Globalization;
+using System.Net.Sockets;
 
 namespace BugBanisher.Controllers;
 
@@ -20,6 +21,7 @@ public class TicketsController : Controller
 	private readonly ITicketService _ticketService;
 	private readonly IFileService _fileService;
 	private readonly INotificationService _notificationService;
+	private readonly ITicketHistoryService _ticketHistoryService;
 	private readonly UserManager<AppUser> _userManager;
 
 	private bool UserIsAdmin => User.IsInRole(nameof(Roles.Admin));
@@ -28,12 +30,14 @@ public class TicketsController : Controller
 		ITicketService ticketService, 
 		IFileService fileService,
 		INotificationService notificationService,
+		ITicketHistoryService ticketHistoryService,
 		UserManager<AppUser> userManager)
 	{
 		_projectService = projectService;
 		_ticketService = ticketService;
 		_fileService = fileService;
 		_notificationService = notificationService;
+		_ticketHistoryService = ticketHistoryService;
 		_userManager = userManager;
 	}
 
@@ -61,7 +65,6 @@ public class TicketsController : Controller
 	[Authorize]
 	public async Task<ViewResult> ListOpenTickets(string sortBy = "Project Name", int pageNumber = 1, int perPage = 10)
 	{
-		ViewData["OpenOrActionRequired"] = "Open";
         int companyId = User.Identity!.GetCompanyId();
         AppUser user = await _userManager.GetUserAsync(User);
 
@@ -70,7 +73,7 @@ public class TicketsController : Controller
 
         TicketListViewModel viewModel = new TicketListViewModel()
         {
-            OpenOrActionRequired = "Open",
+            TicketListType = "Open",
             Tickets = activeTickets,
             PageNumber = pageNumber.ToString(),
             PerPage = perPage.ToString(),
@@ -87,7 +90,6 @@ public class TicketsController : Controller
     [Authorize]
     public async Task<ViewResult> ListActionRequiredTickets(string sortBy = "Project Name", int pageNumber = 1, int perPage = 10)
     {
-		ViewData["OpenOrActionRequired"] = "Action Required";
         int companyId = User.Identity!.GetCompanyId();
         AppUser user = await _userManager.GetUserAsync(User);
         
@@ -96,8 +98,33 @@ public class TicketsController : Controller
 
         TicketListViewModel viewModel = new TicketListViewModel()
         {
-            OpenOrActionRequired = "Action Required",
+            TicketListType = "Action Required",
             Tickets = actionRequiredTickets,
+            PageNumber = pageNumber.ToString(),
+            PerPage = perPage.ToString(),
+            SortBy = sortBy,
+
+            SortByOptions = new SelectList(new string[] { "Project Name", "Developer", "Priority", "Type", "Status" }, sortBy),
+            PerPageOptions = new SelectList(new string[] { "5", "10", "20", "30", "40", "50" }, perPage.ToString()),
+        };
+
+        return View("List", viewModel);
+    }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<ViewResult> ListCompletedTickets(string sortBy = "Project Name", int pageNumber = 1, int perPage = 10)
+    {
+        int companyId = User.Identity!.GetCompanyId();
+        AppUser user = await _userManager.GetUserAsync(User);
+
+        List<Ticket> activeTickets =
+            UserIsAdmin ? await _ticketService.GetCompletedTicketsAsync(companyId) : await _ticketService.GetUserCompletedTicketsAsync(user.Id);
+
+        TicketListViewModel viewModel = new TicketListViewModel()
+        {
+            TicketListType = "Completed",
+            Tickets = activeTickets,
             PageNumber = pageNumber.ToString(),
             PerPage = perPage.ToString(),
             SortBy = sortBy,
@@ -142,6 +169,8 @@ public class TicketsController : Controller
 
 		ticket.Id = await _ticketService.CreateTicketAsync(ticket);
 
+		await _ticketHistoryService.AddTicketCreatedEventAsync(ticket.Id);
+
 		return RedirectToAction("Index", "Home");
 	}
 
@@ -170,30 +199,36 @@ public class TicketsController : Controller
 
 		Ticket ticket = viewModel.Ticket;
 
-		ticket.Title = viewModel.Title;
-		ticket.Description = viewModel.Description;
-		ticket.TicketTypeId = viewModel.SelectedType!;
-		ticket.TicketPriorityId = viewModel.SelectedPriority!;
-		ticket.Updated = DateTime.Now;
+        bool aPropertyWasChanged = DetermineIfTicketChangesWereMade(viewModel);
 
-		if (viewModel.SelectedStatus is not null)
-            ticket.TicketStatusId = viewModel.SelectedStatus;
-
-		if (viewModel.SelectedDeveloper is null)
+		if (aPropertyWasChanged)
 		{
-            ticket.DeveloperId = null;
-			ticket.TicketStatusId = "unassigned";
-		}
-		else
-		{
-            ticket.DeveloperId = viewModel.SelectedDeveloper;
+            TicketHistory historyItem = await CreateTicketChangeHistory(viewModel);
 
-			if (ticket.TicketStatusId == "unassigned")
+			ticket.Title = viewModel.Title;
+			ticket.Description = viewModel.Description;
+			ticket.TicketStatusId = viewModel.SelectedStatus!;
+			ticket.TicketPriorityId = viewModel.SelectedPriority!;
+			ticket.TicketTypeId = viewModel.SelectedType!;
+			ticket.Updated = DateTime.Now;
+
+			if (viewModel.SelectedDeveloper is null)
+			{
+				ticket.DeveloperId = null;
+				ticket.TicketStatusId = "unassigned";
+			}
+
+			if (ticket.DeveloperId != viewModel.SelectedDeveloper && viewModel.SelectedDeveloper is not null)
+			{
 				ticket.TicketStatusId = "pending";
+				ticket.DeveloperId = viewModel.SelectedDeveloper;
+				await _notificationService.CreateNewTicketNotificationAsync(ticket.DeveloperId, ticket);
+			}
+
+			await _ticketService.UpdateTicketAsync(ticket);
+			await _ticketHistoryService.AddTicketHistoryItemAsync(historyItem);
         }
-
-        await _ticketService.UpdateTicketAsync(ticket);
-
+        
 		return RedirectToAction("ViewTicket", new { ticketId = ticket.Id });
     }
 
@@ -254,6 +289,7 @@ public class TicketsController : Controller
 		};
 
 		await _ticketService.AddTicketAttachmentAsync(viewModel.Ticket.Id, attachment);
+		await _ticketHistoryService.AddAttachmentEventAsync(viewModel.Ticket, attachment);
 		return Redirect(Url.RouteUrl(new { controller = "Tickets", action = "ViewTicket", ticketId = viewModel.Ticket.Id }) + "#attachments");
 	}
 
@@ -273,8 +309,6 @@ public class TicketsController : Controller
 		Response.Headers.Add("Content-Disposition", $"inline; filename={fileName}");
 		return File(fileData, $"application/{ext}");
 	}
-
-
 
     #region Private helper methods
 
@@ -319,6 +353,56 @@ public class TicketsController : Controller
 		return viewModel;
 	}
 
-	#endregion
+	private bool DetermineIfTicketChangesWereMade(CreateOrEditTicketViewModel viewModel)
+	{
+        Ticket ticket = viewModel.Ticket;
 
+		return !(ticket.Title == viewModel.Title
+			&& ticket.Description == viewModel.Description
+			&& ticket.TicketTypeId == viewModel.SelectedType
+			&& ticket.TicketPriorityId == viewModel.SelectedPriority
+			&& ticket.TicketStatusId == viewModel.SelectedStatus
+			&& ticket.DeveloperId == viewModel.SelectedDeveloper);
+    }
+
+	private async Task<TicketHistory> CreateTicketChangeHistory(CreateOrEditTicketViewModel viewModel)
+	{
+        Ticket ticket = viewModel.Ticket;
+        AppUser editingUser = await _userManager.GetUserAsync(User);
+
+        TicketHistory historyItem = new TicketHistory()
+        {
+            TicketId = ticket.Id,
+            AppUserId = (await _userManager.GetUserAsync(User)).Id,
+            Created = DateTime.Now,
+            Description = $"{editingUser.FullName} made the following changes:</br></br><ul>",
+        };
+
+        if (ticket.Title != viewModel.Title)
+            historyItem.Description += $"<li>Changed the ticket title to <strong>{viewModel.Title}</strong></li>";
+
+        if (ticket.Description != viewModel.Description)
+            historyItem.Description += $"<li>Changed the ticket description to:</br>{viewModel.Description}</li>";
+
+        if (ticket.TicketTypeId != viewModel.SelectedType)
+            historyItem.Description += $"<li>Changed the ticket type to <strong>{await _ticketService.GetTicketTypeDescriptionByIdAsync(viewModel.SelectedType)}</strong></li>";
+
+        if (ticket.TicketPriorityId != viewModel.SelectedPriority)
+            historyItem.Description += $"<li>Changed the ticket priority to <strong>{await _ticketService.GetTicketPriorityDescriptionByIdAsync(viewModel.SelectedPriority)}</strong></li>";
+
+        if (ticket.TicketStatusId != viewModel.SelectedStatus && ticket.TicketStatusId != "unassigned")
+            historyItem.Description += $"<li>Changed the ticket status to {await _ticketService.GetTicketStatusDescriptionByIdAsync(viewModel.SelectedStatus)}</strong></li>";
+
+        if (ticket.DeveloperId != viewModel.SelectedDeveloper)
+        {
+            AppUser? newDeveloper = await _userManager.FindByIdAsync(viewModel.SelectedDeveloper);
+            historyItem.Description += $"<li>Changed the ticket developer to <strong>{newDeveloper.FullName ?? "Unassigned"}</strong></li>";
+        }
+
+		historyItem.Description += "</ul>";
+
+		return historyItem;
+    }
+
+	#endregion
 }

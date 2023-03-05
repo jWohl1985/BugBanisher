@@ -3,7 +3,7 @@
 @model TicketListViewModel
 
 @{
-    string openOrActionRequired = Model.OpenOrActionRequired;
+    string ticketListType = Model.TicketListType;
 
     int pageNumber = int.Parse(Model.PageNumber);
     int perPage = int.Parse(Model.PerPage);
@@ -22,43 +22,47 @@
 }
 
 <div class="pagetitle">
-    <h1>@openOrActionRequired Tickets</h1>
+    <h1>@ticketListType Tickets</h1>
     <nav>
         <ol class="breadcrumb">
             <li class="breadcrumb-item">Tickets</li>
-            <li class="breadcrumb-item active">@openOrActionRequired</li>
+            <li class="breadcrumb-item active">@ticketListType</li>
         </ol>
     </nav>
 </div>
 
-@if (openOrActionRequired == "Action Required")
-{
-    <div class="card p-2 pt-4">
-        <div class="card-body mb-0">
-            <div class="card-text">
-                    These tickets require some action by the developer or project manager.<br />
-                    Either the developer has not been assigned, has not accepted the assignment, or they have placed the ticket on hold.
-            </div>
+<div class="card p-2 pt-4">
+    <div class="card-body mb-0">
+        <div class="card-text">
+                @if (ticketListType == "Action Required")
+                {
+                    <text>
+                        These tickets require some action by the developer or project manager.< br />
+                        Either the developer has not been assigned, has not accepted the assignment, or they have placed the ticket on hold.
+                    </text>
+                }
+                else if (ticketListType == "Open")
+                {
+                    <text>
+                        These are all of the open tickets (not archived or complete) across all projects.
+                    </text>
+                }
+                else if (ticketListType == "Completed")
+                {
+                    <text>
+                        These tickets have been marked as completed but have not been archived. Consider archiving them - you will still be able to view the ticket
+                        details, but changes cannot be made and the ticket won't appear on any of the active ticket lists.
+                    </text>
+                }
         </div>
     </div>
-}
-else if (openOrActionRequired == "Open")
-{
-    <div class="card p-2 pt-4">
-        <div class="card-body mb-0">
-            <div class="card-text">
-                These are all of the open tickets (not archived or complete) across all projects.
-            </div>
-        </div>
-    </div>
-}
-
+</div>
 
 <!-- Sort & Paging Options -->
 <div class="row mb-3">
     <div class="col">
 
-        <form asp-controller="Tickets" asp-action="List@(Model.OpenOrActionRequired)Tickets" method="get">
+        <form asp-controller="Tickets" asp-action="List@(Model.TicketListType)Tickets" method="get">
 
             <span>Sort by</span>
             <select class="d-inline" asp-items="@Model.SortByOptions" asp-for="SortBy">
@@ -93,6 +97,14 @@ else if (openOrActionRequired == "Open")
     </thead>
 
     <tbody>
+        @if (sortedTickets.Count() == 0)
+        {
+            <tr>
+                <td class="text-center" colspan="6">
+                    There are no @Model.TicketListType.ToLower() tickets to show.
+                </td>
+            </tr>
+        }
         @foreach (Ticket ticket in sortedTickets.Skip((pageNumber - 1) * perPage).Take(perPage))
         {
             <tr>
@@ -108,7 +120,13 @@ else if (openOrActionRequired == "Open")
                 }
                 <td class="text-center"><span class="@Model.GetPriorityFormatting(@ticket.TicketPriorityId)">@ticket.Priority!.Description</span></td>
                 <td>@ticket.Type!.Description</td>
-                <td class="@Model.GetStatusFormatting(@ticket.TicketStatusId)">@ticket.Status!.Description</td>
+                <td class="@Model.GetStatusFormatting(@ticket.TicketStatusId)">
+                    @ticket.Status!.Description 
+                    @if (ticketListType == "Completed")
+                    {
+                        <a asp-action="ArchiveTicket" asp-route-ticketId="@ticket.Id">Archive</a>
+                    }
+                </td>
             </tr>
         }
     </tbody>
@@ -129,7 +147,7 @@ else if (openOrActionRequired == "Open")
 {
     @if (canPrevPage)
     {
-        <a class="btn btn-sm btn-outline-info" asp-action="List@(Model.OpenOrActionRequired)Tickets"
+        <a class="btn btn-sm btn-outline-info" asp-action="List@(Model.TicketListType)Tickets"
             asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(pageNumber-1)" asp-route-perPage="@Model.PerPage">
             Prev
         </a>
@@ -144,7 +162,7 @@ else if (openOrActionRequired == "Open")
     {
         string active = i == pageNumber ? "btn-info" : "btn-outline-info";
 
-        <a class="btn btn-sm @active ms-2" type="button" asp-action="List@(Model.OpenOrActionRequired)Tickets"
+        <a class="btn btn-sm @active ms-2" type="button" asp-action="List@(Model.TicketListType)Tickets"
             asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@i" asp-route-perPage="@Model.PerPage">
             @i
         </a>
@@ -157,7 +175,7 @@ else if (openOrActionRequired == "Open")
 
     @if (canNextPage)
     {
-        <a class="btn btn-sm btn-outline-info ms-2" asp-action="List@(Model.OpenOrActionRequired)Tickets"
+        <a class="btn btn-sm btn-outline-info ms-2" asp-action="List@(Model.TicketListType)Tickets"
             asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(pageNumber+1)" asp-route-perPage="@Model.PerPage">
             Next
         </a>

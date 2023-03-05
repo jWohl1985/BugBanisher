@@ -49,8 +49,6 @@ public class TicketService : ITicketService
 			.Include(p => p.Tickets)
 			.ToListAsync();
 
-		List<Ticket> activeCompanyTickets = new List<Ticket>();
-
 		return await _context.Tickets.Where(t => !t.IsArchived && !(t.TicketStatusId == "complete"))
 			.Include(t => t.Project)
 			.Where(t => activeCompanyProjects.Contains(t.Project!))
@@ -130,6 +128,50 @@ public class TicketService : ITicketService
             .ToListAsync();
     }
 
+    public async Task<List<Ticket>> GetCompletedTicketsAsync(int companyId)
+    {
+        List<Project> activeProjects = await _context.Projects
+            .Where(p => p.CompanyId == companyId && !p.IsArchived)
+            .Include(p => p.Tickets)
+            .ToListAsync();
+
+        return await _context.Tickets
+            .Include(t => t.Project)
+            .Where(t => activeProjects.Contains(t.Project!))
+            .Where(t => !t.IsArchived && (t.TicketStatusId == "complete"))
+            .Include(t => t.Priority)
+            .Include(t => t.Status)
+            .Include(t => t.Type)
+            .Include(t => t.Developer)
+            .ToListAsync();
+    }
+
+    public async Task<List<Ticket>> GetUserCompletedTicketsAsync(string userId)
+    {
+        List<Ticket> completedTickets = new List<Ticket>();
+
+        AppUser user = await _userManager.FindByIdAsync(userId);
+
+        if (user is null)
+            return completedTickets;
+
+        List<Project> activeCompanyProjects = await _context.Projects
+            .Where(p => p.CompanyId == user.CompanyId && !p.IsArchived)
+            .Include(p => p.Tickets)
+            .ToListAsync();
+
+        return await _context.Tickets
+            .Include(t => t.Project)
+            .Where(t => activeCompanyProjects.Contains(t.Project!))
+            .Where(t => !t.IsArchived && (t.TicketStatusId == "complete"))
+            .Where(t => t.Project!.ProjectManagerId == userId || t.DeveloperId == userId)
+            .Include(t => t.Priority)
+            .Include(t => t.Status)
+            .Include(t => t.Type)
+            .Include(t => t.Developer)
+            .ToListAsync();
+    }
+
     public async Task<List<TicketPriority>> GetTicketPrioritiesAsync()
 	{
 		return await _context.TicketPriorities.ToListAsync();
@@ -180,5 +222,24 @@ public class TicketService : ITicketService
 		return true;
 	}
 
+	public async Task<string> GetTicketTypeDescriptionByIdAsync(string? typeId)
+	{
+		TicketType? ticketType = await _context.TicketTypes.FirstOrDefaultAsync(t => t.Id == typeId);
 
+		return ticketType is not null ? ticketType.Description : "";
+	}
+
+	public async Task<string> GetTicketStatusDescriptionByIdAsync(string? statusId)
+	{
+		TicketStatus? ticketStatus = await _context.TicketStatuses.FirstOrDefaultAsync(t => t.Id == statusId);
+
+		return ticketStatus is not null ? ticketStatus.Description : "";
+	}
+
+	public async Task<string> GetTicketPriorityDescriptionByIdAsync(string? priorityId)
+	{
+		TicketPriority? ticketPriority = await _context.TicketPriorities.FirstOrDefaultAsync(t => t.Id == priorityId);
+
+		return ticketPriority is not null ? ticketPriority.Description : "";
+	}
 }

@@ -131,7 +131,7 @@ public class ProjectsController : Controller
         project.Id = await _projectService.CreateNewProjectAsync(project);
         await AssignSelectedTeamToProject(viewModel, project);
 
-        return RedirectToAction(nameof(ListActiveProjects));
+        return RedirectToAction(nameof(ViewProject), new { projectId = project.Id });
     }
 
     [HttpGet]
@@ -166,9 +166,9 @@ public class ProjectsController : Controller
 
 		await _projectService.UpdateProjectAsync(project);
 		await AssignSelectedTeamToProject(viewModel, project);
-        
-        return RedirectToAction(nameof(ListActiveProjects));
-    }
+
+		return RedirectToAction(nameof(ViewProject), new { projectId = project.Id });
+	}
 
     [HttpGet]
     [Authorize(Roles = "Admin")]
@@ -193,9 +193,54 @@ public class ProjectsController : Controller
         return RedirectToAction(nameof(ListActiveProjects));
     }
 
+    [HttpGet]
+    [Authorize(Roles = "Admin, ProjectManager")]
+    public async Task<ViewResult> ConfirmArchiveProject(int projectId)
+    {
+        Project? project = await _projectService.GetProjectByIdAsync(projectId);
 
-    #region Private Helper Methods
-    private async Task<CreateOrEditProjectViewModel> GenerateCreateProjectViewModel()
+        if (project is null)
+            return View("NotFound");
+
+        return View(project);
+    }
+
+	[HttpPost]
+	[Authorize(Roles = "Admin, ProjectManager")]
+    [ValidateAntiForgeryToken]
+	public async Task<IActionResult> ArchiveProjectConfirmed(Project project)
+	{
+        if (!await _projectService.ArchiveProjectAsync(project.Id))
+            return Problem($"Could not archive project. Id: {project.Id}, Name: {project.Name}");
+
+		return RedirectToAction(nameof(ListArchivedProjects));
+	}
+
+	[HttpGet]
+	[Authorize(Roles = "Admin, ProjectManager")]
+	public async Task<ViewResult> ConfirmUnarchiveProject(int projectId)
+	{
+		Project? project = await _projectService.GetProjectByIdAsync(projectId);
+
+		if (project is null)
+			return View("NotFound");
+
+		return View(project);
+	}
+
+	[HttpPost]
+	[Authorize(Roles = "Admin, ProjectManager")]
+	[ValidateAntiForgeryToken]
+	public async Task<IActionResult> UnarchiveProjectConfirmed(Project project)
+	{
+		if (!await _projectService.UnarchiveProjectAsync(project.Id))
+			return Problem($"Could not unarchive project. Id: {project.Id}, Name: {project.Name}");
+
+		return RedirectToAction(nameof(ListActiveProjects));
+	}
+
+	#region Private Helper Methods
+	private async Task<CreateOrEditProjectViewModel> GenerateCreateProjectViewModel()
     {
         Project createdProject = new Project
         {

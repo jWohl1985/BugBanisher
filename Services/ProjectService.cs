@@ -284,4 +284,42 @@ public class ProjectService : IProjectService
 		_context.Update(project);
 		await _context.SaveChangesAsync();
 	}
+
+	public async Task<bool> ArchiveProjectAsync(int projectId)
+	{
+		Project? project = await GetProjectByIdAsync(projectId);
+
+		if (project is null)
+			return false;
+
+		project.IsArchived = true;
+
+		foreach (Ticket ticket in project.Tickets)
+		{
+			ticket.IsArchivedByProject = true;
+		}
+
+		_context.Projects.Update(project);
+		await _context.SaveChangesAsync();
+		return true;
+	}
+
+	public async Task<bool> UnarchiveProjectAsync(int projectId)
+	{
+		Project? project = await GetProjectByIdAsync(projectId);
+
+		if (project is null)
+			return false;
+
+		project.IsArchived = false;
+
+		foreach (Ticket ticket in project.Tickets)
+		{
+			ticket.IsArchivedByProject = false;
+		}
+
+		_context.Projects.Update(project);
+		await _context.SaveChangesAsync();
+		return true;
+	}
 }

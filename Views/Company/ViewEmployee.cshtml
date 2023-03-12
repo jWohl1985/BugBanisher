@@ -1,0 +1,182 @@
+﻿@using BugBanisher.Models.ViewModels;
+@using BugBanisher.Extensions;
+
+@model AppUser
+@inject ICompanyService CompanyService
+@inject UserManager<AppUser> UserManager
+
+@{
+    AppUser viewingUser = await UserManager.GetUserAsync(User);
+
+    Company? company = Model.CompanyId.HasValue ? await CompanyService.GetCompanyByIdAsync(Model.CompanyId.Value) : null;
+}
+
+<div class="pagetitle">
+    <h1>Employee Profile</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">Company</li>
+            <li class="breadcrumb-item">Employees</li>
+            <li class="breadcrumb-item active">@Model.FullName</li>
+        </ol>
+    </nav>
+</div>
+
+<section class="section profile">
+    <div class="row">
+        <div class="col-xl-4">
+
+            <div class="card">
+                <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
+
+                    <img src="data:img/*;base64,@Convert.ToBase64String(Model.PictureData)" alt="Profile" class="rounded-circle" width="100" height="100">
+                    <h2>@Model.FullName</h2>
+                    <h3>@Model.JobTitle</h3>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-xl-8">
+
+            <div class="card">
+                <div class="card-body pt-3">
+                    <!-- Bordered Tabs -->
+                    <ul class="nav nav-tabs nav-tabs-bordered">
+
+                        <li class="nav-item">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Overview</button>
+                        </li>
+
+                        @if (viewingUser.Id == Model.Id)
+                        {
+                            <li class="nav-item">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit">Edit Profile</button>
+                            </li>
+                        }
+                    </ul>
+                    <div class="tab-content pt-2">
+
+                        <div class="tab-pane fade show active profile-overview" id="profile-overview">
+                            <h5 class="card-title">About</h5>
+                            <p class="small fst-italic">@(Model.About is not null ? Model.About : "This user has not filled this out!")</p>
+
+                            <h5 class="card-title">Profile Details</h5>
+
+                            <div class="row">
+                                <div class="col-lg-3 col-md-4 label ">Full Name</div>
+                                <div class="col-lg-9 col-md-8">@Model.FullName</div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-lg-3 col-md-4 label">Company</div>
+                                <div class="col-lg-9 col-md-8">@(company is not null ? company.Name : "None")</div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-lg-3 col-md-4 label">Job</div>
+                                <div class="col-lg-9 col-md-8">@Model.JobTitle</div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-lg-3 col-md-4 label">Phone</div>
+                                <div class="col-lg-9 col-md-8">@(Model.PhoneNumber is not null ? Model.PhoneNumber : "(555) 555-5555")</div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-lg-3 col-md-4 label">Email</div>
+                                <div class="col-lg-9 col-md-8">@Model.Email</div>
+                            </div>
+
+                        </div>
+
+                        @if (viewingUser.Id == Model.Id)
+                        {
+                        <div class="tab-pane fade profile-edit pt-3" id="profile-edit">
+
+                            <!-- Profile Edit Form -->
+                            <form asp-controller="Company" asp-action="UpdateEmployeeProfile" asp-route-userId="@Model.Id" method="post" enctype="multipart/form-data">
+                                <input type="hidden" asp-for="Id"/>
+                                <input type="hidden" asp-for="CompanyId" />
+                                <input type="hidden" asp-for="Email" />
+                                <input type="hidden" asp-for="JobTitle"/>
+
+                                <div class="row mb-3">
+                                    <label asp-for="ProfilePicture" class="col-md-4 col-lg-3 col-form-label">Profile Image</label>
+                                    <div class="col-md-8 col-lg-9">
+                                        <img src="data:img/*;base64,@Convert.ToBase64String(Model.PictureData)" alt="Profile">
+                                        <div class="pt-2">
+                                            <label asp-for="ProfilePicture" class="btn btn-outline-info btn-sm"><i class="bi bi-upload"></i><input asp-for="ProfilePicture" type="file" hidden/></label>
+                                            <a class="btn btn-outline-danger btn-sm" asp-controller="Company" asp-action="DeleteProfilePicture" asp-route-userId="@Model.Id"><i class="bi bi-trash"></i></a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <label asp-for="FirstName" class="col-md-4 col-lg-3 col-form-label">First Name</label>
+                                    <div class="col-md-8 col-lg-9">
+                                        <input type="text" class="form-control" asp-for="FirstName" value="@Model.FirstName">
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <label asp-for="LastName" class="col-md-4 col-lg-3 col-form-label">Last Name</label>
+                                    <div class="col-md-8 col-lg-9">
+                                        <input type="text" class="form-control" asp-for="LastName" value="@Model.LastName">
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <label asp-for="About" class="col-md-4 col-lg-3 col-form-label">About</label>
+                                    <div class="col-md-8 col-lg-9">
+                                        <textarea name="about" class="form-control" asp-for="About" style="height: 100px">@(Model.About is not null ? Model.About : "")</textarea>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <label class="col-md-4 col-lg-3 col-form-label">Company</label>
+                                    <div class="col-md-8 col-lg-9">
+                                        <input type="text" class="form-control" value="@(company is not null ? company.Name : "None")" disabled>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <label asp-for="JobTitle" class="col-md-4 col-lg-3 col-form-label">Job</label>
+                                    <div class="col-md-8 col-lg-9">
+                                        <input type="text" class="form-control" id="Job" value="@Model.JobTitle" disabled>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <label asp-for="PhoneNumber" class="col-md-4 col-lg-3 col-form-label">Phone</label>
+                                    <div class="col-md-8 col-lg-9">
+                                        <input asp-for="PhoneNumber" type="text" class="form-control" value="@(Model.PhoneNumber is not null ? Model.PhoneNumber : "(555) 555-5555")">
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <label asp-for="Email" class="col-md-4 col-lg-3 col-form-label">Email</label>
+                                    <div class="col-md-8 col-lg-9">
+                                        <input asp-for="Email" type="email" class="form-control" id="Email" value="@Model.Email" disabled>
+                                    </div>
+                                </div>
+
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                </div>
+                            </form><!-- End Profile Edit Form -->
+
+                        </div>
+                        }
+
+                    </div><!-- End Bordered Tabs -->
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+</div>
+

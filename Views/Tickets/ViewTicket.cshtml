@@ -24,16 +24,19 @@
 
                 <p class="card-text mt-3">
                     Ticket Name: <strong>@Model.Ticket.Title</strong>
+                    <a class="btn btn-sm btn-info ms-2" asp-controller="Tickets" asp-action="EditTicket" asp-route-ticketId="@Model.Ticket.Id">Edit</a>
+                    <a class="btn btn-sm btn-warning ms-2">Archive</a>
+                    <a class="btn btn-sm btn-danger ms-2">Delete</a>
                 </p><hr/>
 
                 <p class="card-text text-muted">Created On @Model.Ticket.Created.ToShortDateString() By:
                     <div class="row">
                         <div class="row d-flex justify-content-start align-items-center">
                             <div class="col-3 col-lg-1">
-                                <img class="img-fluid rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(Model.Ticket.Creator!.PictureData)">
+                                <img class="rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(Model.Ticket.Creator!.PictureData)">
                             </div>
                             <div class="col-9 col-lg-11">
-                                <p class="card-text">@Model.Ticket.Creator!.FullName</p>
+                                <p class="card-text"><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@Model.Ticket.Creator!.Id">@Model.Ticket.Creator!.FullName</a></p>
                             </div>
                         </div>
                     </div>
@@ -88,10 +91,10 @@
                     {
                         <div class="row d-flex justify-content-start align-items-center">
                             <div class="col-3 col-lg-1">
-                                <img class="img-fluid rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(Model.ProjectManager.PictureData)">
+                                <img class="rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(Model.ProjectManager.PictureData)">
                             </div>
                             <div class="col-9 col-lg-11">
-                                <p class="card-text">@Model.ProjectManager.FullName</p>
+                                <p class="card-text"><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@Model.ProjectManager.Id">@Model.ProjectManager.FullName</a></p>
                             </div>
                         </div>
                     }
@@ -109,10 +112,10 @@
                 {
                     <div class="row d-flex justify-content-start align-items-center">
                         <div class="col-3 col-lg-1">
-                            <img class="img-fluid rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(Model.Developer.PictureData)">
+                            <img class="rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(Model.Developer.PictureData)">
                         </div>
                         <div class="col-9 col-lg-11">
-                            <p class="card-text">@Model.Developer.FullName</p>
+                            <p class="card-text"><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@Model.Developer.Id">@Model.Developer.FullName</a></p>
                         </div>
                     </div>
                 }

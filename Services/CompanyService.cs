@@ -88,5 +88,47 @@ public class CompanyService : ICompanyService
         return members;
     }
 
+    public async Task<AppUser?> UpdateEmployeeProfileAsync(AppUser updatedUser)
+    {
+        AppUser? user = await _context.Users.FindAsync(updatedUser.Id);
 
+        if (user is null)
+            return user;
+
+        user.FirstName = updatedUser.FirstName;
+        user.About = updatedUser.About;
+        user.PhoneNumber = updatedUser.PhoneNumber;
+        user.PictureData = updatedUser.PictureData;
+        user.PictureExtension = updatedUser.PictureExtension;
+
+        _context.Users.Update(user);
+        await _context.SaveChangesAsync();
+
+        return user;
+    }
+
+    public async Task DeleteProfilePictureAsync(AppUser appUser)
+    {
+        appUser.PictureExtension = "png";
+        appUser.PictureData = File.ReadAllBytes("wwwroot/img/ProfilePics/defaultUser.png");
+
+        _context.Users.Update(appUser);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<bool> AddEmployeeAsync(AppUser appUser, int companyId)
+    {
+        Company? company = await GetCompanyByIdAsync(companyId);
+
+        if (company is null)
+            return false;
+
+        appUser.CompanyId = companyId;
+
+        _context.Users.Update(appUser);
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
 }
+

@@ -17,18 +17,72 @@ public class CompanyController : Controller
     private readonly IProjectService _projectService;
     private readonly INotificationService _notificationService;
     private readonly IRoleService _roleService;
+    private readonly IFileService _fileService;
 
     public CompanyController(UserManager<AppUser> userManager, 
         ICompanyService companyService,
         IProjectService projectService,
         INotificationService notificationService,
-        IRoleService roleService)
+        IRoleService roleService,
+        IFileService fileService)
     {
         _userManager = userManager;
         _companyService = companyService;
         _projectService = projectService;
         _notificationService = notificationService;
         _roleService = roleService;
+        _fileService = fileService;
+    }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<ViewResult> ViewEmployee(string userId)
+    {
+        AppUser? appUser = await _userManager.FindByIdAsync(userId);
+
+        if (appUser is null)
+            return View("NotFound");
+
+        return View(appUser);
+    }
+
+    [HttpPost]
+    [Authorize]
+    public async Task<IActionResult> UpdateEmployeeProfile(AppUser updatedUser)
+    {
+        AppUser user = await _userManager.GetUserAsync(User);
+
+        if (user.Id != updatedUser.Id)
+            return Problem("You cannot modify another user's profile!");
+
+        if (updatedUser.ProfilePicture is not null)
+        {
+            updatedUser.PictureData = await _fileService.ConvertFileToByteArrayAsync(updatedUser.ProfilePicture);
+            updatedUser.PictureExtension = updatedUser.ProfilePicture.ContentType;
+        }
+        else
+        {
+            updatedUser.PictureData = user.PictureData;
+            updatedUser.PictureExtension = user.PictureExtension;
+        }
+
+        await _companyService.UpdateEmployeeProfileAsync(updatedUser);
+
+        return RedirectToAction(nameof(ViewEmployee), new { userId = user.Id });
+    }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<IActionResult> DeleteProfilePicture(string userId)
+    {
+        AppUser user = await _userManager.GetUserAsync(User);
+
+        if (user.Id != userId)
+            return Problem("You cannot modify another user's profile!");
+
+        await _companyService.DeleteProfilePictureAsync(user);
+
+        return RedirectToAction(nameof(ViewEmployee), new { userId = user.Id });
     }
 
     [HttpGet]
@@ -137,7 +191,7 @@ public class CompanyController : Controller
     [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
-    public async Task<ViewResult> InviteUserToCompany([Bind("Email")] AppUser user)
+    public async Task<IActionResult> InviteUserToCompany([Bind("Email")] AppUser user)
     {
         AppUser? receivingUser = await _userManager.FindByEmailAsync(user.Email!);
 
@@ -178,7 +232,7 @@ public class CompanyController : Controller
         IEnumerable<string> currentUserRoles = await _roleService.GetUserRolesAsync(appUser);
         await _roleService.RemoveUserFromRolesAsync(appUser, currentUserRoles);
         
-        appUser.CompanyId = company.Id;
+        await _companyService.AddEmployeeAsync(appUser, company.Id);
 		await _roleService.AddUserToRoleAsync(appUser, nameof(Roles.Member));
 		await _notificationService.CreateInviteAcceptedNotification(notification.Id, appUser);
 

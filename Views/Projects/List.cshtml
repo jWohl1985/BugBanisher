@@ -31,28 +31,26 @@
     </nav>
 </div>
 
-<div class="row mb-3">
-    <div class="col">
 
-        <form asp-controller="Projects" asp-action="List@(Model.ActiveOrArchived)Projects" method="get">
+<form asp-controller="Projects" asp-action="List@(Model.ActiveOrArchived)Projects" method="get" class="row mb-3 align-items-end">
 
-            <span>Sort by</span>
-                <select class="d-inline" asp-items="@Model.SortByOptions" asp-for="SortBy">
-                </select>
-
-            <span class="ms-3">Show</span>
-                <select class="d-inline" asp-items="@Model.PerPageOptions" asp-for="PerPage">
-                </select>
-            <span>per page</span>
-
-            <button class="btn btn-sm btn-success" type="submit" asp-action="List@(Model.ActiveOrArchived)Projects"
-                    asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@Model.PageNumber" asp-route-perPage="@Model.PerPage">
-                    Go
-            </button>
-        </form>
-
+    <div class="col-12">
+        <span>Sort:</span>
+        <select class="d-inline" asp-items="@Model.SortByOptions" asp-for="SortBy">
+        </select>
+        <span>Per page:</span>
+        <select class="d-inline" asp-items="@Model.PerPageOptions" asp-for="PerPage">
+        </select>
     </div>
-</div>
+    
+    <div class="col-12 mt-3">
+        <button class="btn btn-sm btn-success" type="submit" asp-action="List@(Model.ActiveOrArchived)Projects"
+                asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@Model.PageNumber" asp-route-perPage="@Model.PerPage">
+            Search
+        </button>
+    </div>
+
+</form>
 
 @foreach (Project project in sortedProjects.Skip((pageNumber - 1) * perPage).Take(perPage))
 {
@@ -64,30 +62,45 @@
     int onHoldTickets = openTickets.Where(t => t.TicketStatusId == "hold").Count();
     int priorityTickets = openTickets.Where(t => t.TicketPriorityId == "high").Count();
 
+    string ticketSummary = $"{openTickets.Count} open, {unassignedTickets} unassigned, {onHoldTickets} on hold, {priorityTickets} high priority";
+
     <div class="row mb-1">
-            <div class="card">
+            <div class="card col-md-8">
                 <div class="card-body">
                     <div class="row d-flex align-items-center justify-content-start mt-3">
-                        <div class="col-2 col-lg-1">
+                        <div class="col-4 col-md-2">
                             <a asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@project.Id">
-                                <img class="img-fluid p-0" src="data:image/*;base64,@Convert.ToBase64String(project.PictureData)" width="75" height="75" /> 
+                                <img class="img-fluid" src="data:image/*;base64,@Convert.ToBase64String(project.PictureData)" width="100" height="100" /> 
                             </a>
                         </div>
-                        <div class="col col-lg-3">
+                        <div class="col-8 col-md-5">
+                            <strong>Project Name:</strong>
                             <a asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@project.Id">
                                 <h5 class="card-text">@project.Name</h5>
                             </a>
+                        </div>
+                        <div class="col-12 col-md-5 mt-3 mb-2 mt-md-0 mb-md-0">
                             @if (projectManager is not null)
                             {
-                                <p class="card-text">Project Manager: @projectManager.FullName</p>
+                                <span><strong>Project Manager:</strong></span>
+                                <div class="row d-flex align-items-center">
+                                    <div class="col-2">
+								        <img class="rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(projectManager.PictureData)">
+                                    </div>
+                                    <div class="col-10">
+								        <p class="card-text ms-3"><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@projectManager.Id">@projectManager.FullName</a></p>
+                                    </div>
+                                </div>
                             }
                             else
                             {
                                 <p class="card-text">Project Manager: <span class="text-danger">Unassigned</span></p>
                             }
                         </div>
-                        <div class="col col-lg-2">
-                            <p class="card-text mt-3">@((project.Deadline - DateTime.Now).Days) days remaining</p>
+                    </div>
+                    <div class="row d-flex align-items-end justify-content-start">
+                        <div class="col col-md-6">
+                            <p class="card-text mt-3">Deadline: @project.Deadline.ToShortDateString() - @((project.Deadline - DateTime.Now).Days) days remaining</p>
 					        <div class="progress mt-0">
 					        @{
 						        float daysUsed = (DateTime.Now - project.Created).Days;
@@ -97,27 +110,10 @@
 						        <div class="progress-bar progress-bar-striped" role="progressbar" style="width: @(percentComplete)%" aria-valuenow="@percentComplete" aria-valuemin="0" aria-valuemax="100"></div>
 					        </div>
                         </div>
-                        <div class="col">
-
+                        <div class="col col-md-6">
+                            <p class="card-text"><strong>Tickets: </strong>@ticketSummary</p>
                         </div>
-                        <div class="col col-lg-2">
-                            <p class="card-text">@openTickets.Count open tickets</p>
                         </div>
-                        <div class="col col-lg-3">
-                            @if (priorityTickets > 0)
-                            {
-                                <p class="card-text">@priorityTickets high priority</p>
-                            }
-                            @if (unassignedTickets > 0)
-                            {
-                                <p class="card-text text-danger">@unassignedTickets unassigned or pending</p>
-                            }
-                            @if (onHoldTickets > 0)
-                            {
-                                <p class="card-text">@onHoldTickets on hold</p>
-                            }
-                    </div>
-                    </div>
                 </div>
             </div>
     </div>

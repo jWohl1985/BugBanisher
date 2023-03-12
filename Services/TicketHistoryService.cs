@@ -92,7 +92,7 @@ namespace BugBanisher.Services
                 Description = $"{creator.FullName} created the ticket</br></br>" +
                 $"Title: {ticket.Title}</br>" +
                 $"Priority: {ticket.Priority!.Description}</br>" +
-                $"Type:{ticket.Type!.Description}</br>" +
+                $"Type: {ticket.Type!.Description}</br>" +
                 $"Developer: {(ticket.Developer is not null ? ticket.Developer.FullName : "Unassigned")}</br></br>" +
                 $"Description: {ticket.Description}",
             };

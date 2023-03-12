@@ -2,12 +2,21 @@
 
 @model ProjectViewModel
 
+@inject UserManager<AppUser> UserManager
+
+@{
+	AppUser user = await UserManager.GetUserAsync(User);
+	bool currentUserIsProjectManager = (Model.ProjectManager is not null && Model.ProjectManager.Id == user.Id);
+
+	string activeOrArchived = Model.Project.IsArchived ? "Archived" : "Active";
+}
+
 <div class="pagetitle">
 	<h1>View Project: @Model.Project.Name</h1>
 	<nav>
 		<ol class="breadcrumb">
 			<li class="breadcrumb-item">Projects</li>
-			<li class="breadcrumb-item">Active</li>
+			<li class="breadcrumb-item">@activeOrArchived</li>
 			<li class="breadcrumb-item active">@Model.Project.Name</li>
 		</ol>
 	</nav>
@@ -16,18 +25,39 @@
 <div class="row">
 
 	<!-- Project Info Card -->
-	<div class="col-lg-2">
+	<div class="col-lg-2 mb-3 mb-lg-0">
 		<img src="data:image/*;base64,@Convert.ToBase64String(Model.Project.PictureData)" class="img-fluid" width="225" height="225" />
-		<div class="d-flex justify-content-center">
-				<a class="btn btn-sm btn-success mt-2" asp-controller="Projects" asp-action="EditProject" asp-route-projectId="@Model.Project.Id">Edit</a>
-				<a class="btn btn-sm btn-warning mt-2 ms-2" asp-controller="Projects" asp-action="ArchiveProject" asp-route-projectId="@Model.Project.Id">Archive</a>
-		</div>
+		@if (Model.Project.IsArchived)
+		{
+			<div class="d-flex justify-content-start mt-2">
+				<p class="text-danger">Project is currently archived. Unarchive it to make changes.</p>
+			</div>
+		}
 	</div>
 	<div class="col-lg-5">
 			<div class="card">
 				<div class="card-header">
 					<h5 class="card-text">Project Info: <strong>@Model.Project.Name</strong></h5>
-					<a class="btn btn-sm btn-danger d-inline" asp-controller="Projects" asp-action="ConfirmDeleteProject" asp-route-projectId="@Model.Project.Id">Delete</a>
+					<div class="row d-flex justify-content-start">
+						<div class="col">
+							@if (User.IsInRole(nameof(Roles.Admin)) || currentUserIsProjectManager)
+							{
+								@if (!Model.Project.IsArchived)
+								{
+									<a class="btn btn-sm btn-outline-info mt-2" asp-controller="Projects" asp-action="EditProject" asp-route-projectId="@Model.Project.Id" title="Edit"><i class="bi bi-pencil-fill"></i></a>
+									<a class="btn btn-sm btn-outline-warning mt-2 ms-2" asp-controller="Projects" asp-action="ConfirmArchiveProject" asp-route-projectId="@Model.Project.Id" title="Archive"><i class="bi bi-archive"></i></a>
+								}
+								else
+								{
+									<a class="btn btn-sm btn-outline-warning mt-2 ms-2" asp-controller="Projects" asp-action="ConfirmUnarchiveProject" asp-route-projectId="@Model.Project.Id" title="Unarchive"><i class="bi bi-archive"></i></a>
+								}
+							}
+							@if (User.IsInRole(nameof(Roles.Admin)))
+							{
+								<a class="btn btn-sm btn-outline-danger mt-2  ms-2" asp-controller="Projects" asp-action="ConfirmDeleteProject" asp-route-projectId="@Model.Project.Id" title="Delete"><i class="bi bi-trash"></i></a>
+							}
+					</div>
+					</div>
 				</div>
 				<div class="card-body">
 
@@ -84,10 +114,10 @@
 					{
 						<div class="row d-flex justify-content-start align-items-center">
 							<div class="col-3 col-lg-1">
-								<img class="img-fluid rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(Model.ProjectManager.PictureData)">
+								<img class="rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(Model.ProjectManager.PictureData)">
 							</div>
 							<div class="col-9 col-lg-11">
-								<p class="card-text">@Model.ProjectManager.FullName</p>
+								<p class="card-text ms-3"><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@Model.ProjectManager.Id">@Model.ProjectManager.FullName</a></p>
 							</div>
 						</div>
 					}
@@ -104,10 +134,10 @@
 					{
 						<div class="row d-flex justify-content-start align-items-center mb-2">
 							<div class="col-3 col-lg-1">
-								<img class="img-fluid rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(developer.PictureData)">
+								<img class="rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(developer.PictureData)">
 							</div>
 							<div class="col-9 col-lg-11">
-								<p class="card-text">@developer.FullName</p>
+								<p class="card-text ms-3"><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@developer.Id">@developer.FullName</a></p>
 							</div>
 						</div>
 					}
@@ -124,10 +154,10 @@
 					{
 						<div class="row d-flex justify-content-start align-items-center mb-2">
 							<div class="col-3 col-lg-1">
-								<img class="img-fluid rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(member.PictureData)">
+								<img class="rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(member.PictureData)">
 							</div>
 							<div class="col-9 col-lg-11">
-								<p class="card-text">@member.FullName</p>
+								<p class="card-text ms-3"><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@member.Id">@member.FullName</a></p>
 							</div>
 						</div>
 					}
@@ -136,14 +166,13 @@
 		</div>
 	</div>
 
-	<!-- Tickets Card -->
+	<!-- Active Tickets Card -->
 	<div class="col">
 		
-
 		<div class="card">
 			<div class="card-header">
 				<h5 class="card-text d-inline">Active Tickets</h5>
-				@if (User.IsInRole(nameof(Roles.Admin)) || User.IsInRole(nameof(Roles.ProjectManager)) || User.IsInRole(nameof(Roles.Developer)))
+				@if (!Model.Project.IsArchived && (User.IsInRole(nameof(Roles.Admin)) || User.IsInRole(nameof(Roles.ProjectManager)) || User.IsInRole(nameof(Roles.Developer))))
 				{
 					<a class="btn btn-sm btn-success mb-3 d-inline ms-3" asp-controller="Tickets" asp-action="CreateTicket" asp-route-projectId="@Model.Project.Id">Create Ticket</a>
 				}
@@ -152,7 +181,7 @@
 			<div class="card-body">
 				<div class="table-responsive">
 
-					<table class="table table-sm table-bordered table-hover table-light mt-4">
+					<table class="table table-sm table-bordered table-light mt-4">
 
 						<thead class="table-light">
 							<tr>
@@ -166,21 +195,33 @@
 						</thead>
 
 						<tbody>
-							@foreach (Ticket ticket in Model.Tickets)
+
+							@if (Model.Tickets.Count() == 0)
 							{
 								<tr class="align-middle">
-									<td>
-										<a asp-controller="Tickets" asp-action="ViewTicket" asp-route-ticketId="@ticket.Id">
-											<img class="img-fluid me-2" src="~/img/ticket.png" />
-											<p class="text-primary d-inline">@ticket.Title</p>
-										</a>
+									<td class="text-center" colspan="6">
+										There are no active tickets!
 									</td>
-									<td>@ticket.Created.ToShortDateString()</td>
-									<td class="@Model.GetDeveloperTextFormat(ticket)">@(ticket.Developer is not null ? ticket.Developer.FullName : "")</td>
-									<td class="text-center"><span class="badge @Model.GetPriorityBadgeFormat(ticket)">@ticket.Priority!.Description</span></td>
-									<td>@ticket.Type!.Description</td>
-									<td class="text-center"><span class="@Model.GetStatusTextFormat(ticket)">@ticket.Status!.Description</span></td>
 								</tr>
+							}
+							else
+							{
+								@foreach (Ticket ticket in Model.Tickets)
+								{
+										<tr class="align-middle">
+											<td>
+												<a asp-controller="Tickets" asp-action="ViewTicket" asp-route-ticketId="@ticket.Id">
+													<img class="img-fluid me-2" src="~/img/ticket.png" />
+													<p class="text-primary d-inline">@ticket.Title</p>
+												</a>
+											</td>
+											<td>@ticket.Created.ToShortDateString()</td>
+											<td class="@Model.GetDeveloperTextFormat(ticket)">@(ticket.Developer is not null ? ticket.Developer.FullName : "")</td>
+											<td class="text-center"><span class="badge @Model.GetPriorityBadgeFormat(ticket)">@ticket.Priority!.Description</span></td>
+											<td>@ticket.Type!.Description</td>
+											<td class="text-center"><span class="@Model.GetStatusTextFormat(ticket)">@ticket.Status!.Description</span></td>
+										</tr>
+								}
 							}
 						</tbody>
 

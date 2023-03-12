@@ -10,4 +10,7 @@ public interface ICompanyService
     Task<List<AppUser>> GetAllProjectManagersAsync(int companyId);
     Task<List<AppUser>> GetAllDevelopersAsync(int companyId);
     Task<List<AppUser>> GetAllMembersAsync(int companyId);
+    Task<AppUser?> UpdateEmployeeProfileAsync(AppUser updatedUser);
+    Task DeleteProfilePictureAsync(AppUser appUser);
+    Task<bool> AddEmployeeAsync(AppUser appUser, int companyId);
 }

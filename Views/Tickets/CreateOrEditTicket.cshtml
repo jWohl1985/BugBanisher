@@ -70,7 +70,7 @@
 
             <div class="form-group mt-3 text-center">
                 <button type="submit" class="btn btn-success">@(createOrEdit == "Create" ? "Create" : "Save Changes")</button>
-                <a class="btn btn-outline-secondary ms-3" asp-controller="Tickets" asp-action="List">Cancel</a>
+                <a class="btn btn-outline-secondary ms-3" asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@Model.Ticket.ProjectId">Cancel</a>
             </div>
 
         </div>

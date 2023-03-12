@@ -1,11 +1,5 @@
 ﻿@model AppUser
 
-@inject UserManager<AppUser> UserManager
-
-@{
-    AppUser appUser = (await UserManager.GetUserAsync(User))!;
-}
-
 <div class="pagetitle">
     <h1>Invite User</h1>
     <nav>
@@ -19,7 +13,7 @@
 <section class="section">
     <div class="row">
 
-        <div class="col-6">
+        <div class="col col-md-6">
 
             @if (ViewData["Errors"] is not null)
             {

@@ -1,4 +1,10 @@
-﻿<div class="pagetitle">
+﻿@inject UserManager<AppUser> UserManager
+
+@{
+    AppUser user = await UserManager.GetUserAsync(User);
+}
+
+<div class="pagetitle">
     <h1>Success!</h1>
     <nav>
         <ol class="breadcrumb">
@@ -15,18 +21,9 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Congratulations! You're now a member of @ViewData["CompanyName"].</h5>
-                    <p>While you're waiting for the company administrator to assign you a role and job title, here are some links:</p>
-
-                    <button type="button" class="btn btn-secondary">
-                        Company Projects
-                    </button>
-                    <a class="btn btn-secondary" asp-controller="Projects" asp-action="ListActiveProjects">
-                        Project Tickets
-                    </a>
-                    <a class="btn btn-secondary" asp-controller="Notifications" asp-action="MyNotifications">
-                        Notifications
-                    </a>
-
+                    <p>The company administrator can now assign you a role and job title. While you're waiting, why not
+                        <a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@user.Id">edit your profile?</a>
+                    </p>
                 </div>
             </div>
 

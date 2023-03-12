@@ -86,8 +86,7 @@
                 <li class="nav-item dropdown pe-3">
 
                     <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-                        <img class="rounded-circle"
-                             src="data:image/*;base64,@(Convert.ToBase64String(appUser.PictureData))">
+                        <img class="rounded-circle" src="data:image/*;base64,@(Convert.ToBase64String(appUser.PictureData))" width="40" height="40">
                         <span class="d-none d-md-block dropdown-toggle ps-2">@(appUser.FullName)</span>
                     </a>
 
@@ -102,7 +101,7 @@
                         </li>
 
                         <li>
-                            <a class="dropdown-item d-flex align-items-center" asp-area="Identity" asp-page="/Account/Manage/Profile">
+                            <a class="dropdown-item d-flex align-items-center" asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@appUser.Id">
                                 <i class="bi bi-person"></i>
                                 <span>My Profile</span>
                             </a>
@@ -113,7 +112,7 @@
                         </li>
 
                         <li>
-                            <a class="dropdown-item d-flex align-items-center" asp-area="Identity" asp-page="/Account/Manage/Index">
+                            <a class="dropdown-item d-flex align-items-center" asp-area="Identity" asp-page="/Account/Manage/Email">
                                 <i class="bi bi-gear"></i>
                                 <span>Account Settings</span>
                             </a>

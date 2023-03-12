@@ -5,7 +5,7 @@
     Layout = "_LoginLayout.cshtml";
 }
 
-<section class="section register min-vh-100 d-flex flex-column align-items-center justify-content-center py-4">
+<section class="section register min-vh-100 d-flex flex-column align-items-center mt-5 py-4">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
@@ -13,7 +13,7 @@
                 <div class="d-flex justify-content-center py-4">
                     <a asp-controller="Home" asp-action="Index" class="logo d-flex align-items-center w-auto">
                         <img src="~/img/buglogo.png" alt="">
-                        <span class="d-none d-lg-block">BugBanisher</span>
+                        <span class="d-block">BugBanisher</span>
                     </a>
                 </div>
 
@@ -48,11 +48,23 @@
                             <div class="col-12">
                                 <button id="login-submit" class="btn btn-primary w-100" type="submit">Login</button>
                             </div>
-
-                            <div class="col-12">
-                                <p class="small mb-0">Don't have account? <a asp-area="Identity" asp-page="Register">Register</a></p>
-                            </div>
                         </form>
+
+                        <div class="mt-3 text-center">
+                            <p class="small mb-0">Don't have account? <a asp-area="Identity" asp-page="Register">Register</a>. Or log in as a demo user:</p>
+
+                            <form asp-page-handler="DemoAccount" asp-route-type="admin" method="post" class="mt-2 mb-2">
+                                <button class="btn btn btn-primary" type="submit"><i class="bi bi-key me-1"></i>Demo Admin</button>
+                            </form>
+                            
+                            <form asp-page-handler="DemoAccount" asp-route-type="pm" method="post" class="mb-2">
+                                <button class="btn btn btn-primary" type="submit">Demo Project Manager</button>
+                            </form>
+                            
+                            <form asp-page-handler="DemoAccount" asp-route-type="dev" method="post" class="mb-2">
+                                <button class="btn btn btn-primary" type="submit">Demo Developer</button>
+                            </form>
+                        </div>
 
                     </div>
                 </div>

@@ -11,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = SeedData.GetConnectionString(builder.Configuration);
 
 builder.Services.AddDbContext<BugBanisherContext>(options =>
-    options.UseSqlServer(connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
+    options.UseNpgsql(connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
 
 builder.Services.AddIdentity<AppUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<BugBanisherContext>()
@@ -33,6 +33,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 await SeedData.ManageDataAsync(app);
 
 // Configure the HTTP request pipeline.

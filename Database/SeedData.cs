@@ -110,8 +110,8 @@ public class SeedData
 
         AppUser defaultProjectManager = new()
         {
-            UserName = "drj986@hotmail.com",
-            Email = "drj986@hotmail.com",
+            UserName = "dennisjohnson@mailinator.com",
+            Email = "dennisjohnson@mailinator.com",
             FirstName = "Dennis",
             LastName = "Johnson",
             JobTitle = "Project Manager",
@@ -142,13 +142,13 @@ public class SeedData
 
         AppUser defaultDeveloper = new()
         {
-            UserName = "johnsonjeana@gmail.com",
-            Email = "johnsonjeana@gmail.com",
-            FirstName = "Eskerton",
-            LastName = "Coder",
+            UserName = "johnsmith@mailinator.com",
+            Email = "johnsmith@mailinator.com",
+            FirstName = "John",
+            LastName = "Smith",
             JobTitle = "Developer",
             EmailConfirmed = true,
-            CompanyId = null,
+            CompanyId = 1,
         };
 
         try

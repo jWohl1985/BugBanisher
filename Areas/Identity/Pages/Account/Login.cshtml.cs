@@ -145,8 +145,8 @@ namespace BugBanisher.Areas.Identity.Pages.Account
 
             var result = type switch
             {
-                "pm" => await _signInManager.PasswordSignInAsync("drj986@hotmail.com", "Abc&123!", false, lockoutOnFailure: false), // project manager
-                "dev" => await _signInManager.PasswordSignInAsync("johnsonjeana@gmail.com", "Abc&123!", false, lockoutOnFailure: false), // developer
+                "pm" => await _signInManager.PasswordSignInAsync("dennisjohnson@mailinator.com", "Abc&123!", false, lockoutOnFailure: false), // project manager
+                "dev" => await _signInManager.PasswordSignInAsync("johnsmith@mailinator.com", "Abc&123!", false, lockoutOnFailure: false), // developer
                 _ => await _signInManager.PasswordSignInAsync("jdwohl@gmail.com", "Abc&123!", false, lockoutOnFailure: false), // admin
             };
 
@@ -162,43 +162,5 @@ namespace BugBanisher.Areas.Identity.Pages.Account
                 return Page();
             }
         }
-
-        /*public async Task<IActionResult> OnPostDemoProjectManager(string returnUrl = null)
-        {
-            returnUrl = Url.Action("Index", "Home");
-
-            var result = await _signInManager.PasswordSignInAsync("drj986@hotmail.com", "Abc&123!", false, lockoutOnFailure: false);
-
-            if (result.Succeeded)
-            {
-                _logger.LogInformation("User logged in.");
-                return LocalRedirect(returnUrl);
-            }
-
-            else
-            {
-                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-                return Page();
-            }
-        }
-
-        public async Task<IActionResult> OnPostDemoDeveloper(string returnUrl = null)
-        {
-            returnUrl = Url.Action("Index", "Home");
-
-            var result = await _signInManager.PasswordSignInAsync("johnsonjeana@gmail.com", "Abc&123!", false, lockoutOnFailure: false);
-
-            if (result.Succeeded)
-            {
-                _logger.LogInformation("User logged in.");
-                return LocalRedirect(returnUrl);
-            }
-
-            else
-            {
-                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-                return Page();
-            }
-        }*/
     }
 }

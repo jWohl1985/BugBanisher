@@ -14,8 +14,8 @@ public class AppUser : IdentityUser
 
     [NotMapped]
     public IFormFile? ProfilePicture { get; set; }
-    public string PictureExtension { get; set; } = "png";
-    public byte[] PictureData { get; set; } = File.ReadAllBytes("wwwroot/img/ProfilePics/defaultUser.png");
+    public string PictureExtension { get; set; } = "image/png";
+    public byte[] PictureData { get; set; } = new byte[0];
 
     public Company? Company { get; set; }
     public ICollection<Project> Projects { get; set; } = new HashSet<Project>();

@@ -16,7 +16,7 @@ public class Project
 
     [NotMapped]
     public IFormFile? PictureFile { get; set; }
-    public byte[] PictureData { get; set; } = File.ReadAllBytes("wwwroot/img/default_project.png");
+    public byte[] PictureData { get; set; } = new byte[0];
     public string PictureExtension { get; set; } = "image/png";
 
 

@@ -43,6 +43,21 @@ public class CompanyService : ICompanyService
         return true;
     }
 
+    public async Task<List<AppUser>> GetAllAdminsAsync(int companyId)
+    {
+        List<AppUser> employees = await GetAllEmployeesAsync(companyId);
+
+        List<AppUser> admins = new List<AppUser>();
+
+        foreach (AppUser user in employees)
+        {
+            if (await _userManager.IsInRoleAsync(user, nameof(Roles.Admin)))
+                admins.Add(user);
+        }
+
+        return admins;
+    }
+
     public async Task<List<AppUser>> GetAllProjectManagersAsync(int companyId)
     {
         List<AppUser> employees = await GetAllEmployeesAsync(companyId);

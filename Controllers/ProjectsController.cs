@@ -126,10 +126,10 @@ public class ProjectsController : Controller
         project.Name = viewModel.Name;
         project.Description = viewModel.Description;
         project.Deadline = viewModel.Deadline;
-        await UpdateProjectImage(viewModel, project);
+        await UpdateProjectImageAsync(viewModel, project);
 
         project.Id = await _projectService.CreateNewProjectAsync(project);
-        await AssignSelectedTeamToProject(viewModel, project);
+        await AssignTeamToProjectAsync(viewModel, project);
 
         return RedirectToAction(nameof(ViewProject), new { projectId = project.Id });
     }
@@ -162,10 +162,10 @@ public class ProjectsController : Controller
         project.Name = viewModel.Name;
         project.Description = viewModel.Description;
         project.Deadline = viewModel.Deadline;
-		await UpdateProjectImage(viewModel, project);
+		await UpdateProjectImageAsync(viewModel, project);
 
 		await _projectService.UpdateProjectAsync(project);
-		await AssignSelectedTeamToProject(viewModel, project);
+		await AssignTeamToProjectAsync(viewModel, project);
 
 		return RedirectToAction(nameof(ViewProject), new { projectId = project.Id });
 	}
@@ -303,14 +303,14 @@ public class ProjectsController : Controller
         };
     }
 
-    private async Task AssignSelectedTeamToProject(CreateOrEditProjectViewModel viewModel, Project project)
+    private async Task AssignTeamToProjectAsync(CreateOrEditProjectViewModel viewModel, Project project)
     {
-        await AssignProjectManager(viewModel, project);
-        await AssignDevelopers(viewModel, project);
-        await AssignMembers(viewModel, project);
+        await AssignProjectManagerAsync(viewModel, project);
+        await AssignDevelopersAsync(viewModel, project);
+        await AssignMembersAsync(viewModel, project);
     }
 
-    private async Task AssignProjectManager(CreateOrEditProjectViewModel viewModel, Project project)
+    private async Task AssignProjectManagerAsync(CreateOrEditProjectViewModel viewModel, Project project)
     {
 		AppUser selectedProjectManager = await _userManager.FindByIdAsync(viewModel.SelectedManager);
 
@@ -321,7 +321,7 @@ public class ProjectsController : Controller
 			await _projectService.AssignProjectManagerAsync(selectedProjectManager.Id, project.Id);
 	}
 
-    private async Task AssignDevelopers(CreateOrEditProjectViewModel viewModel, Project project)
+    private async Task AssignDevelopersAsync(CreateOrEditProjectViewModel viewModel, Project project)
     {
 
         foreach (AppUser projectMember in project.Team)
@@ -347,7 +347,7 @@ public class ProjectsController : Controller
 		}
 	}
 
-    private async Task AssignMembers(CreateOrEditProjectViewModel viewModel, Project project)
+    private async Task AssignMembersAsync(CreateOrEditProjectViewModel viewModel, Project project)
     {
         foreach (AppUser projectMember in project.Team)
         {
@@ -372,7 +372,7 @@ public class ProjectsController : Controller
         }
 	}
 
-    private async Task UpdateProjectImage(CreateOrEditProjectViewModel viewModel, Project project)
+    private async Task UpdateProjectImageAsync(CreateOrEditProjectViewModel viewModel, Project project)
     {
 		if (viewModel.Image is not null)
 		{

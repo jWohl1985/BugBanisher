@@ -28,7 +28,6 @@ public class BugBanisherContext : IdentityDbContext<AppUser>
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfiguration(new SeedCompanies());
-        modelBuilder.ApplyConfiguration(new SeedProjects());
         modelBuilder.ApplyConfiguration(new SeedTicketPriorities());
         modelBuilder.ApplyConfiguration(new SeedTicketTypes());
         modelBuilder.ApplyConfiguration(new SeedTicketStatuses());

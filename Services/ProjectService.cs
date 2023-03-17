@@ -172,7 +172,7 @@ public class ProjectService : IProjectService
 
 		List<Project> activeCompanyProjects = await GetAllActiveCompanyProjectsAsync(user.CompanyId.Value);
 
-		return activeCompanyProjects.Where(p => p.Team.Any(t => t.Id == user.Id)).ToList();
+		return activeCompanyProjects.Where(p => p.Team.Any(t => t.Id == user.Id) || p.ProjectManagerId == user.Id).ToList();
 	}
 
 	public async Task<List<Project>> GetUserArchivedProjectsAsync(string userId)
@@ -184,7 +184,7 @@ public class ProjectService : IProjectService
 
 		List<Project> archivedCompanyProjects = await GetAllArchivedCompanyProjectsAsync(user.CompanyId.Value);
 
-		return archivedCompanyProjects.Where(p => p.Team.Any(t => t.Id == user.Id)).ToList();
+		return archivedCompanyProjects.Where(p => p.Team.Any(t => t.Id == user.Id) || p.ProjectManagerId == user.Id).ToList();
 	}
 
 	public async Task<bool> AssignProjectManagerAsync(string projectManagerId, int projectId)

@@ -145,8 +145,8 @@ namespace BugBanisher.Areas.Identity.Pages.Account
 
             var result = type switch
             {
-                "pm" => await _signInManager.PasswordSignInAsync("dennisjohnson@mailinator.com", "Abc&123!", false, lockoutOnFailure: false), // project manager
-                "dev" => await _signInManager.PasswordSignInAsync("johnsmith@mailinator.com", "Abc&123!", false, lockoutOnFailure: false), // developer
+                "pm" => await _signInManager.PasswordSignInAsync("darrenjohnson@jdwinc.com", "Abc&123!", false, lockoutOnFailure: false), // project manager
+                "dev" => await _signInManager.PasswordSignInAsync("hermancampos@jdwinc.com", "Abc&123!", false, lockoutOnFailure: false), // developer
                 _ => await _signInManager.PasswordSignInAsync("jdwohl@gmail.com", "Abc&123!", false, lockoutOnFailure: false), // admin
             };
 

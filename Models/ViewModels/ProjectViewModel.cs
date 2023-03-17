@@ -19,11 +19,11 @@ public class ProjectViewModel
 
     public string GetStatusTextFormat(Ticket ticket) => ticket.Status!.Id switch
     {
-        "unassigned" => "text-danger",
-        "pending" => "text-dark",
+        "unassigned" => "fw-bold text-danger",
+        "pending" => "fw-bold text-danger",
         "development" => "text-dark",
-        "hold" => "text-danger",
-        "complete" => "text-success",
+        "hold" => "fw-bold text-danger",
+        "complete" => "fw-bold text-success",
         _ => "text-danger",
     };
 

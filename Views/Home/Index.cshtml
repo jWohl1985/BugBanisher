@@ -62,7 +62,7 @@
 									<span class="small pt-1 fw-bold">@Model.OpenTickets.Count()</span> <span class="text-muted small pt-2 ps-1">open</span><br />
 									<span class="small pt-1 fw-bold">@Model.OpenTickets.Where(t => (t.DeveloperId is null || t.TicketStatusId == "hold" || t.TicketStatusId == "pending")).Count()</span> <span class="text-muted small pt-2 ps-1">action required</span><br />
 									<span class="small pt-1 fw-bold">@Model.OpenTickets.Where(t => (t.TicketPriorityId == "high")).Count()</span> <span class="text-muted small pt-2 ps-1">high priority</span><br />
-									<span class="small pt-1 fw-bold">@Model.OpenTickets.Where(t => (t.TicketStatusId == "complete")).Count()</span> <span class="text-muted small pt-2 ps-1">complete</span><br />
+									<span class="small pt-1 fw-bold">@Model.OpenTickets.Where(t => (t.TicketStatusId == "complete")).Count()</span> <span class="text-muted small pt-2 ps-1">ready to archive</span><br />
 								</div>
 							</div>
 						</div>
@@ -83,10 +83,10 @@
 									<i class="bi bi-people"></i>
 								</div>
 								<div class="ps-3">
-									<span class="small pt-1 fw-bold">@Model.AdminCount</span> <span class="text-muted small pt-2 ps-1">administrator</span><br/>
-									<span class="small pt-1 fw-bold">@Model.ProjectManagerCount</span> <span class="text-muted small pt-2 ps-1">project managers</span><br/>
-									<span class="small pt-1 fw-bold">@Model.DeveloperCount</span> <span class="text-muted small pt-2 ps-1">developers</span><br/>
-									<span class="small pt-1 fw-bold">@Model.MemberCount</span> <span class="text-muted small pt-2 ps-1">members</span>
+									<span class="small pt-1 fw-bold">@Model.AdminCount</span> <span class="text-muted small pt-2 ps-1">@(Model.AdminCount == 1 ? "administrator" : "administrators")</span><br/>
+									<span class="small pt-1 fw-bold">@Model.ProjectManagerCount</span> <span class="text-muted small pt-2 ps-1">@(Model.ProjectManagerCount == 1 ? "project manager" : "project managers")</span><br/>
+									<span class="small pt-1 fw-bold">@Model.DeveloperCount</span> <span class="text-muted small pt-2 ps-1">@(Model.DeveloperCount == 1 ? "developer" : "developers")</span><br/>
+									<span class="small pt-1 fw-bold">@Model.MemberCount</span> <span class="text-muted small pt-2 ps-1">@(Model.MemberCount == 1 ? "member" : "members")</span>
 								</div>
 							</div>
 
@@ -121,13 +121,16 @@
 											@if (ProjectManager is not null)
 											{
 												<td class="align-middle">
-													<img class="rounded-circle ms-1" width="60" height="60" src="data:image/*;base64,@(Convert.ToBase64String(ProjectManager.PictureData))">
+													<img class="rounded-circle ms-1" width="50" height="50" src="data:image/*;base64,@(Convert.ToBase64String(ProjectManager.PictureData))">
 													<a class="ms-2" asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@ProjectManager.Id">@ProjectManager.FullName</a>
 												</td>
 											}
 											else
 											{
-												<td class="align-middle text-danger">Unassigned!</td>
+												<td class="align-middle">
+													<img class="rounded-circle ms-1" width="50" height="50" src="img/ProfilePics/Default User.jpg"/>
+													<span class="ms-2 fw-bold text-danger">Unassigned!</span>
+												</td>
 											}
 											<td class="align-middle">@project.Deadline.ToShortDateString() (@((project.Deadline - DateTime.Now).Days) days)</td>
 											<td class="align-middle">@project.Tickets.Where(t => !t.IsArchived && t.TicketStatusId != "complete").Count()</td>
@@ -163,12 +166,12 @@
 									@foreach (Ticket ticket in Model.OpenTickets.OrderByDescending(t => t.Created))
 									{
 										<tr>
-											<td class="align-middle"><a asp-controller="Tickets" asp-action="ViewTicket" asp-route-ticketId="@ticket.Id">@ticket.Title</a></td>
+											<td class="align-middle"><a asp-controller="Tickets" asp-action="ViewTicket" asp-route-ticketId="@ticket.Id"><i class="bi bi-ticket-detailed-fill me-2"></i>@ticket.Title</a></td>
 											<td class="align-middle"><a asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@ticket.Id">@ticket.Project!.Name</a></td>
 											@if (ticket.Developer is not null)
 											{
 												<td class="align-middle">
-													<img class="rounded-circle ms-1" width="60" height="60" src="data:image/*;base64,@(Convert.ToBase64String(ticket.Developer.PictureData))">
+													<img class="rounded-circle ms-1" width="50" height="50" src="data:image/*;base64,@(Convert.ToBase64String(ticket.Developer.PictureData))">
 													<a class="ms-2" asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@ticket.Developer.Id">@ticket.Developer.FullName</a>
 												</td>
 											}
@@ -198,10 +201,11 @@
 							<div class="card-body pb-0">
 								<h5 class="card-title">Workloads</h5>
 
-								<table class="table table-borderless">
+								<table class="table table-borderless datatable">
 									<thead>
 										<tr>
 											<th scope="col">Employee</th>
+											<th scope="col">Job Title</th>
 											<th scope="col">Active Projects</th>
 											<th scope="col">Open Tickets</th>
 										</tr>
@@ -210,7 +214,8 @@
 										@foreach (AppUser employee in Model.Employees)
 										{
 											<tr>
-												<td><img class="rounded-circle ms-1" width="60" height="60" src="data:image/*;base64,@(Convert.ToBase64String(employee.PictureData))" /><a class="ms-2" asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@employee.Id">@employee.FullName</a></td>
+												<td><img class="rounded-circle ms-1" width="50" height="50" src="data:image/*;base64,@(Convert.ToBase64String(employee.PictureData))" /><a class="ms-2" asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@employee.Id">@employee.FullName</a></td>
+												<td>@employee.JobTitle</td>
 												<td>@Model.ActiveProjects.Where(p => p.Team.Contains(employee) || p.ProjectManagerId == employee.Id).Count()</td>
 												<td>@Model.OpenTickets.Where(t => t.Project!.ProjectManagerId == employee.Id || t.DeveloperId == employee.Id).Count()</td>
 											</tr>

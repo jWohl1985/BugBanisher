@@ -167,7 +167,7 @@
 	</div>
 
 	<!-- Active Tickets Card -->
-	<div class="col">
+	<div class="col-12">
 		
 		<div class="card">
 			<div class="card-header">
@@ -183,14 +183,25 @@
 
 					<table class="table table-sm table-bordered table-light mt-4">
 
+						<colgroup>
+							<col width="500">
+							<col width="150">
+							<col width="300">
+							<col width="150">
+							<col width="150">
+							<col width="150">
+							<col width="150">
+						</colgroup>
+
 						<thead class="table-light">
 							<tr>
 								<th>Ticket</th>
-								<th>Created</th>
-								<th>Assigned Developer</th>
-								<th>Priority</th>
-								<th>Type</th>
-								<th>Status</th>
+								<th class="text-center">Created</th>
+								<th class="text-center">Assigned Developer</th>
+								<th class="text-center">Priority</th>
+								<th class="text-center">Type</th>
+								<th class="text-center">Status</th>
+								<th class="text-center">Archive</th>
 							</tr>
 						</thead>
 
@@ -199,7 +210,7 @@
 							@if (Model.Tickets.Count() == 0)
 							{
 								<tr class="align-middle">
-									<td class="text-center" colspan="6">
+									<td class="text-center" colspan="7">
 										There are no active tickets!
 									</td>
 								</tr>
@@ -208,19 +219,29 @@
 							{
 								@foreach (Ticket ticket in Model.Tickets)
 								{
+									if (ticket.TicketStatusId != "complete" && !ticket.IsArchived)
+									{
 										<tr class="align-middle">
 											<td>
 												<a asp-controller="Tickets" asp-action="ViewTicket" asp-route-ticketId="@ticket.Id">
-													<img class="img-fluid me-2" src="~/img/ticket.png" />
+													<i class="bi bi-ticket-detailed-fill"></i>
 													<p class="text-primary d-inline">@ticket.Title</p>
 												</a>
 											</td>
-											<td>@ticket.Created.ToShortDateString()</td>
-											<td class="@Model.GetDeveloperTextFormat(ticket)">@(ticket.Developer is not null ? ticket.Developer.FullName : "")</td>
+											<td class="text-center">@ticket.Created.ToShortDateString()</td>
+											<td class="@Model.GetDeveloperTextFormat(ticket) text-center">
+												@(ticket.Developer is not null ? ticket.Developer.FullName : "Unassigned!")
+											</td>
 											<td class="text-center"><span class="badge @Model.GetPriorityBadgeFormat(ticket)">@ticket.Priority!.Description</span></td>
-											<td>@ticket.Type!.Description</td>
+											<td class="text-center">@ticket.Type!.Description</td>
 											<td class="text-center"><span class="@Model.GetStatusTextFormat(ticket)">@ticket.Status!.Description</span></td>
+											<td class="text-center">
+												<a class="btn btn-outline-warning" title="Archive" asp-controller="Tickets" asp-action="ArchiveTicket" asp-route-ticketId="@ticket.Id">
+													<i class="bi bi-archive"></i>
+												</a>
+											</td>
 										</tr>
+									}	
 								}
 							}
 						</tbody>
@@ -231,5 +252,170 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- Completed Tickets Card -->
+	<div class="col-12">
+
+		<div class="card">
+			<div class="card-header">
+				<h5 class="card-text d-inline">Completed Tickets</h5>
+				<h6 class="card-text d-block">(Consider archiving)</h6>
+			</div>
+
+			<div class="card-body">
+				<div class="table-responsive">
+
+					<table class="table table-sm table-bordered table-light mt-4">
+
+						<colgroup>
+							<col width="500">
+							<col width="150">
+							<col width="300">
+							<col width="150">
+							<col width="150">
+							<col width="150">
+							<col width="150">
+						</colgroup>
+						
+						<thead class="table-light">
+							<tr>
+								<th>Ticket</th>
+								<th class="text-center">Created</th>
+								<th class="text-center">Assigned Developer</th>
+								<th class="text-center">Priority</th>
+								<th class="text-center">Type</th>
+								<th class="text-center">Status</th>
+								<th class="text-center">Archive</th>
+							</tr>
+						</thead>
+
+						<tbody>
+
+							@if (Model.Tickets.Count() == 0)
+							{
+								<tr class="align-middle">
+									<td class="text-center" colspan="7">
+										There are no completed tickets (or they've all been archived)!
+									</td>
+								</tr>
+							}
+							else
+							{
+								@foreach (Ticket ticket in Model.Tickets)
+								{
+									if (ticket.TicketStatusId == "complete" && !ticket.IsArchived)
+									{
+										<tr class="align-middle">
+											<td>
+												<a asp-controller="Tickets" asp-action="ViewTicket" asp-route-ticketId="@ticket.Id">
+													<i class="bi bi-ticket-detailed-fill"></i>
+													<p class="text-primary d-inline">@ticket.Title</p>
+												</a>
+											</td>
+											<td class="text-center">@ticket.Created.ToShortDateString()</td>
+											<td class="text-center @Model.GetDeveloperTextFormat(ticket)">@(ticket.Developer is not null ? ticket.Developer.FullName : "")</td>
+											<td class="text-center"><span class="badge @Model.GetPriorityBadgeFormat(ticket)">@ticket.Priority!.Description</span></td>
+											<td class="text-center">@ticket.Type!.Description</td>
+											<td class="text-center"><span class="@Model.GetStatusTextFormat(ticket)">@ticket.Status!.Description</span></td>
+											<td class="text-center">
+												<a class="btn btn-outline-warning" title="Archive" asp-controller="Tickets" asp-action="ArchiveTicket" asp-route-ticketId="@ticket.Id">
+													<i class="bi bi-archive"></i>
+												</a>
+											</td>
+										</tr>
+									}
+								}
+							}
+						</tbody>
+
+					</table>
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Archived Tickets Card -->
+	<div class="col-12">
+
+		<div class="card">
+			<div class="card-header">
+				<h5 class="card-text d-inline">Archived Tickets</h5>
+			</div>
+
+			<div class="card-body">
+				<div class="table-responsive">
+
+					<table class="table table-sm table-bordered table-light mt-4">
+
+						<colgroup>
+							<col width="500">
+							<col width="150">
+							<col width="300">
+							<col width="150">
+							<col width="150">
+							<col width="150">
+							<col width="150">
+						</colgroup>
+
+						<thead class="table-light">
+							<tr>
+								<th>Ticket</th>
+								<th class="text-center">Created</th>
+								<th class="text-center">Assigned Developer</th>
+								<th class="text-center">Priority</th>
+								<th class="text-center">Type</th>
+								<th class="text-center">Status</th>
+								<th class="text-center">Unarchive</th>
+							</tr>
+						</thead>
+
+						<tbody>
+
+							@if (Model.Tickets.Count() == 0)
+							{
+								<tr class="align-middle">
+									<td class="text-center" colspan="7">
+										There are no archived tickets.
+									</td>
+								</tr>
+							}
+							else
+							{
+								@foreach (Ticket ticket in Model.Tickets)
+								{
+									if (ticket.IsArchived)
+									{
+										<tr class="align-middle">
+											<td>
+												<a class="text-muted" asp-controller="Tickets" asp-action="ViewTicket" asp-route-ticketId="@ticket.Id">
+													<i class="bi bi-ticket-detailed-fill"></i>
+													<p class="text-muted d-inline">@ticket.Title</p>
+												</a>
+											</td>
+											<td class="text-center">@ticket.Created.ToShortDateString()</td>
+											<td class="text-center @Model.GetDeveloperTextFormat(ticket)">@(ticket.Developer is not null ? ticket.Developer.FullName : "")</td>
+											<td class="text-center"><span>@ticket.Priority!.Description</span></td>
+											<td class="text-center">@ticket.Type!.Description</td>
+											<td class="text-center"><span>@ticket.Status!.Description</span></td>
+											<td class="text-center">
+												<a class="btn btn-outline-warning" title="Unarchive" asp-controller="Tickets" asp-action="UnarchiveTicket" asp-route-ticketId="@ticket.Id">
+													<i class="bi bi-archive"></i>
+												</a>
+											</td>
+										</tr>
+									}
+								}
+							}
+						</tbody>
+
+					</table>
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+</div>
 
 </div>

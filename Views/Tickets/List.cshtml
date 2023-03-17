@@ -14,9 +14,11 @@
 
     IEnumerable<Ticket> sortedTickets = Model.SortBy switch
     {
-        "Project Name" => Model.Tickets.OrderBy(t => t.Project!.Name),
+        "Title" => Model.Tickets.OrderBy(t => t.Title),
+        "Project" => Model.Tickets.OrderBy(t => t.Project!.Id),
         "Priority" => Model.Tickets.OrderBy(t => t.TicketPriorityId),
         "Developer" => Model.Tickets.OrderBy(t => t.DeveloperId),
+        "Type" => Model.Tickets.OrderBy(t => t.TicketTypeId),
         "Status" or _ => Model.Tickets.OrderBy(t => t.TicketStatusId),
     };
 }
@@ -64,7 +66,7 @@
 
         <form asp-controller="Tickets" asp-action="List@(Model.TicketListType)Tickets" method="get">
 
-            <span>Sort by</span>
+            <span>Sort</span>
             <select class="d-inline" asp-items="@Model.SortByOptions" asp-for="SortBy">
             </select>
 
@@ -92,7 +94,7 @@
             <th>Developer</th>
             <th class="text-center">Priority</th>
             <th>Type</th>
-            <th>Status</th>
+            <th class="text-center">Status</th>
         </tr>
     </thead>
 
@@ -108,7 +110,7 @@
         @foreach (Ticket ticket in sortedTickets.Skip((pageNumber - 1) * perPage).Take(perPage))
         {
             <tr>
-                <td><a asp-action="ViewTicket" asp-route-ticketId="@ticket.Id">@ticket.Title</a></td>
+                <td><a asp-action="ViewTicket" asp-route-ticketId="@ticket.Id"><i class="bi bi-ticket-detailed-fill me-2"></i>@ticket.Title</a></td>
                 <td>@ticket.Project!.Name</td>
                 @if (ticket.Developer is not null)
                 {
@@ -120,12 +122,8 @@
                 }
                 <td class="text-center"><span class="@Model.GetPriorityFormatting(@ticket.TicketPriorityId)">@ticket.Priority!.Description</span></td>
                 <td>@ticket.Type!.Description</td>
-                <td class="@Model.GetStatusFormatting(@ticket.TicketStatusId)">
+                <td class="@Model.GetStatusFormatting(@ticket.TicketStatusId) text-center">
                     @ticket.Status!.Description 
-                    @if (ticketListType == "Completed")
-                    {
-                        <a asp-action="ArchiveTicket" asp-route-ticketId="@ticket.Id">Archive</a>
-                    }
                 </td>
             </tr>
         }

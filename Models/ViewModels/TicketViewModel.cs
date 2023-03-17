@@ -14,11 +14,11 @@ public class TicketViewModel
 
 	public string StatusTextFormat => Ticket.Status is null ? "" : Ticket.Status.Id switch
 	{
-		"unassigned" => "text-danger",
-		"pending" => "text-dark",
-		"development" => "text-dark",
-		"hold" => "text-danger",
-		"complete" => "text-success",
+		"unassigned" => "fw-bold text-danger",
+		"pending" => "fw-bold text-danger",
+		"development" => "fw-bold text-dark",
+		"hold" => "fw-bold text-danger",
+		"complete" => "fw-bold text-success",
 		_ => "text-danger"
 	};
 
@@ -26,7 +26,7 @@ public class TicketViewModel
 	{
 		"low" => "bg-success",
 		"medium" => "bg-primary",
-		"high" => "bg-warning",
+		"high" => "bg-danger",
 		_ => "bg-danger",
 	};
 

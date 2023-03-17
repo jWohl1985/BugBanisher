@@ -24,11 +24,11 @@ public class TicketListViewModel
 
     public string GetStatusFormatting(string statusId) => statusId switch
     {
-        "unassigned" => "text-danger",
-        "hold" => "text-danger",
+        "unassigned" => "fw-bold text-danger",
+        "hold" => "fw-bold text-danger",
         "development" => "text-dark",
-        "pending" => "text-warning",
-        "complete" => "text-success",
+        "pending" => "fw-bold text-danger",
+        "complete" => "fw-bold text-success",
         _ => "",
     };
 }

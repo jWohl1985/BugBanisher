@@ -483,19 +483,6 @@ namespace BugBanisher.Migrations
                     { "UI", "UI change" }
                 });
 
-            migrationBuilder.InsertData(
-                table: "Projects",
-                columns: new[] { "Id", "CompanyId", "Created", "Deadline", "Description", "IsArchived", "Name", "PictureData", "PictureExtension", "ProjectManagerId" },
-                values: new object[,]
-                {
-                    { 1, 1, new DateTime(2023, 2, 20, 21, 19, 57, 889, DateTimeKind.Local).AddTicks(961), new DateTime(2023, 9, 10, 21, 19, 57, 889, DateTimeKind.Local).AddTicks(985), "Build an enterprise application that can track, manage, and generate reports for WidgetCo's inventory.", false, "WidgetCo Inventory System", new byte[0], "image/png", null },
-                    { 2, 1, new DateTime(2023, 3, 13, 21, 19, 57, 889, DateTimeKind.Local).AddTicks(987), new DateTime(2023, 9, 10, 21, 19, 57, 889, DateTimeKind.Local).AddTicks(990), "Design and deploy a simple static website for JW's Diner.", false, "JW's Diner Website", new byte[0], "image/png", null },
-                    { 3, 1, new DateTime(2023, 3, 11, 21, 19, 57, 889, DateTimeKind.Local).AddTicks(992), new DateTime(2023, 4, 3, 21, 19, 57, 889, DateTimeKind.Local).AddTicks(992), "Our customer had one of our competitors build them a website. It's an ASP.Net Core MVC project, and they are not happy with the result. Apparently there are a lot of bugs, missing features, and it crashes often. They want us to give them an estimate to fix it. We need to dive into the code and see if this is feasible, or if we're better off starting from scratch. This is our chance to get in with this customer!", false, "Estimate - Existing Website Fix", new byte[0], "image/png", null },
-                    { 4, 1, new DateTime(2023, 1, 13, 21, 19, 57, 889, DateTimeKind.Local).AddTicks(1039), new DateTime(2024, 1, 13, 21, 19, 57, 889, DateTimeKind.Local).AddTicks(1039), "The client wants us to build them a web application they can use to manage their projects. It will be an issue tracking application similar to the BugBanisher we use. We need to meet with them to determine what their projects entail and the scope of work. This is going to a big project that will keep several people tied up for the foreseeable future. Dennis is the project manager. Let's get meetings under way as soon as possible.", false, "Project Management Software", new byte[0], "image/png", null },
-                    { 5, 1, new DateTime(2022, 12, 14, 21, 19, 57, 889, DateTimeKind.Local).AddTicks(1041), new DateTime(2023, 5, 13, 21, 19, 57, 889, DateTimeKind.Local).AddTicks(1043), "Create a Windows desktop application for diet and meal planning.", true, "WPF Meal Planning Application", new byte[0], "image/png", null },
-                    { 6, 1, new DateTime(2022, 11, 14, 21, 19, 57, 889, DateTimeKind.Local).AddTicks(1046), new DateTime(2023, 6, 12, 21, 19, 57, 889, DateTimeKind.Local).AddTicks(1046), "Create a portfolio website to start your career in tech.", true, "Portfolio Website", new byte[0], "image/png", null }
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",

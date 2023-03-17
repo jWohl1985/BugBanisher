@@ -124,8 +124,15 @@ public class CompanyService : ICompanyService
 
     public async Task DeleteProfilePictureAsync(AppUser appUser)
     {
-        appUser.PictureExtension = "png";
-        appUser.PictureData = File.ReadAllBytes("wwwroot/img/ProfilePics/defaultUser.png");
+        using (FileStream fs = File.OpenRead("wwwroot/img/ProfilePics/Default User.png"))
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                await fs.CopyToAsync(ms);
+                appUser.PictureData = ms.ToArray();
+                appUser.PictureExtension = "image/png";
+            }
+        }
 
         _context.Users.Update(appUser);
         await _context.SaveChangesAsync();

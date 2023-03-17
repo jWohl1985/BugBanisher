@@ -63,7 +63,7 @@ public class TicketsController : Controller
 
 	[HttpGet]
 	[Authorize]
-	public async Task<ViewResult> ListOpenTickets(string sortBy = "Project Name", int pageNumber = 1, int perPage = 10)
+	public async Task<ViewResult> ListOpenTickets(string sortBy = "Title", int pageNumber = 1, int perPage = 10)
 	{
         int companyId = User.Identity!.GetCompanyId();
         AppUser user = await _userManager.GetUserAsync(User);
@@ -79,7 +79,7 @@ public class TicketsController : Controller
             PerPage = perPage.ToString(),
 			SortBy = sortBy,
 
-            SortByOptions = new SelectList(new string[] { "Project Name", "Developer", "Priority", "Type", "Status" }, sortBy),
+            SortByOptions = new SelectList(new string[] { "Title", "Project", "Developer", "Priority", "Type", "Status" }, sortBy),
             PerPageOptions = new SelectList(new string[] { "5", "10", "20", "30", "40", "50" }, perPage.ToString()),
         };
 

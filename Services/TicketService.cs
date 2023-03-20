@@ -192,10 +192,56 @@ public class TicketService : ITicketService
 		return await _context.TicketAttachments.FirstOrDefaultAsync(ta => ta.Id == ticketAttachmentId);
 	}
 
-	public async Task UpdateTicketAsync(Ticket ticket)
+	public async Task<bool> ArchiveTicketAsync(Ticket ticket)
+	{
+		ticket.IsArchived = true;
+
+		try
+		{
+            _context.Tickets.Update(ticket);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+		catch (DbUpdateConcurrencyException)
+		{
+			return false;
+		}
+	}
+
+    public async Task<bool> UnarchiveTicketAsync(Ticket ticket)
+    {
+        ticket.IsArchived = false;
+
+        try
+        {
+            _context.Tickets.Update(ticket);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return false;
+        }
+    }
+
+    public async Task UpdateTicketAsync(Ticket ticket)
 	{
 		_context.Tickets.Update(ticket);
 		await _context.SaveChangesAsync();
+	}
+
+	public async Task<bool> DeleteTicketAsync(Ticket ticket)
+	{
+		try
+		{
+            _context.Tickets.Remove(ticket);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+		catch (DbUpdateConcurrencyException)
+		{
+			return false;
+		}
 	}
 
 	public async Task<bool> AddTicketCommentAsync(int ticketId, TicketComment comment)

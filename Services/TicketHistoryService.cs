@@ -30,6 +30,9 @@ namespace BugBanisher.Services
                 Created = DateTime.Now,
                 Description = $"{userMakingChange.FullName} {archivedOrUnarchived} the ticket.",
             };
+
+            await _context.TicketHistories.AddAsync(archiveEvent);
+            await _context.SaveChangesAsync();
         }
 
         public async Task AddAttachmentEventAsync(Ticket ticket, TicketAttachment attachment)

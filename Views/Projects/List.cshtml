@@ -36,20 +36,24 @@
 <form asp-controller="Projects" asp-action="List@(Model.ActiveOrArchived)Projects" method="get" class="row mb-3 align-items-end">
 
     <div class="col-12">
-        <span>Sort by:</span>
-        <select class="d-block" asp-items="@Model.SortByOptions" asp-for="SortBy">
-        </select>
-        <span>Per page:</span>
-        <select class="d-block" asp-items="@Model.PerPageOptions" asp-for="PerPage">
-        </select>
+        <div class="d-block d-md-inline ms-0">
+            <span>Sort by:</span>
+            <select asp-items="@Model.SortByOptions" asp-for="SortBy">
+            </select>
+        </div>
+        <div class="d-block d-md-inline ms-0 ms-md-2 mt-2 mt-md-0">
+            <span>Per page:</span>
+            <select asp-items="@Model.PerPageOptions" asp-for="PerPage">
+            </select>
+        </div>
+        <div class="d-block d-md-inline ms-0 ms-md-2 mt-2 mt-md-0">
+            <button class="btn btn-sm btn-success" type="submit" asp-action="List@(Model.ActiveOrArchived)Projects" asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@Model.PageNumber" asp-route-perPage="@Model.PerPage">
+                Go
+            </button>
+        </div>
     </div>
     
-    <div class="col-12 mt-3">
-        <button class="btn btn-sm btn-success" type="submit" asp-action="List@(Model.ActiveOrArchived)Projects"
-                asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@Model.PageNumber" asp-route-perPage="@Model.PerPage">
-            Go
-        </button>
-    </div>
+        
 
 </form>
 
@@ -102,7 +106,7 @@
                                         <img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle align-self-center ms-1 me-1" width="60" height="60">
                                     }
                                     </div>
-                                    <div class="flex-grow-1 ms-3">
+                                    <div class="flex-grow-1 mt-2 ms-3">
                                         <span><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@projectManager.Id">@projectManager.FullName</a></span>
                                     </div>
                                 </div>
@@ -114,7 +118,7 @@
                                     <div class="flex-shrink-0 mt-2">
                                         <img class="rounded-circle align-self-center ms-1 me-1" width="60" height="60" src="~/@(FileService.GetDefaultUserPicPath())" />
                                     </div>
-                                    <div class="flex-grow-1 ms-3">
+                                    <div class="flex-grow-1 mt-2 ms-3">
                                         <span class="fw-bold text-danger">Unassigned!</span>
                                     </div>
                                 </div>

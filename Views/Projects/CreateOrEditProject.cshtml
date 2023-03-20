@@ -64,7 +64,7 @@
                 }
                 else
                 {
-                    <img src="@FileService.GetDefaultProjectPicPath()" width="100" height="100"/>
+                    <img src="~/@FileService.GetDefaultProjectPicPath()" width="100" height="100"/>
                 }
             </div>
 
@@ -82,14 +82,12 @@
                 <label asp-for="Developers">Developers</label><br />
                 <select class="form-select" multiple style="width: 200px" asp-items="@Model.Developers" asp-for="SelectedDevelopers">
                 </select>
-                <span class="text-dark mb-0">(Hold Control to multi-select)</span>
             </div>
 
             <div class="form-group mt-3">
                 <label asp-for="Members">Members</label><br />
                 <select class="form-select" multiple style="width: 200px;" asp-items="@Model.Members" asp-for="SelectedMembers">
                 </select>
-                <span class="text-dark mb-0">(Hold Control to multi-select)</span>
             </div>
         </div>
     </div>
@@ -98,7 +96,14 @@
         <div class="col-12 col-md-6">
             <div class="form-group mt-3 text-center">
                 <button type="submit" class="btn btn-success">@(createOrEdit == "Create" ? "Create" : "Save Changes")</button>
-                <a class="btn btn-outline-secondary ms-3" asp-controller="Projects" asp-action="ListActiveProjects">Cancel</a>
+                @if (createOrEdit == "Create")
+                {
+                    <a class="btn btn-outline-secondary ms-3" asp-controller="Projects" asp-action="ListActiveProjects">Cancel</a>
+                }
+                else
+                {
+                    <a class="btn btn-outline-secondary ms-3" asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@Model.Project.Id">Cancel</a>
+                }
             </div>
         </div>
     </div>

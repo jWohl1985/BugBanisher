@@ -33,7 +33,7 @@
 		}
 		else
 		{
-			<img src="@FileService.GetDefaultProjectPicPath()" class="img-fluid" width="225" height="225"/>
+			<img src="~/@FileService.GetDefaultProjectPicPath()" class="img-fluid" width="225" height="225"/>
 		}
 
 		@if (Model.Project.IsArchived)
@@ -115,14 +115,19 @@
 
 					<!-- Project Manager -->
 					<p class="card-text mt-3"><strong>Project Manager:</strong></p>
-					@if(Model.ProjectManager is null)
-					{
-						<p class="card-text text-danger">Project manager is unassigned!</p>
+					<div class="d-flex">
+						@if (Model.ProjectManager is null)
+						{
+							<div class="flex-shrink-0">
+								<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle" width="50" height="50">
+							</div>
+							<div class="flex-grow-1 align-self-center">
+								<p class="card-text text-danger fw-bold ms-3">Unassigned!</p>
+						</div>
 					}
 					else
 					{
-						<div class="row d-flex justify-content-start align-items-center">
-							<div class="col-3 col-lg-1">
+						<div class="flex-shrink-0">
 							@if (Model.ProjectManager.PictureData is not null)
 							{
 								<img src="data:image/*;base64,@(Convert.ToBase64String(Model.ProjectManager.PictureData))" class="rounded-circle" width="50" height="50">
@@ -131,12 +136,12 @@
 							{
 								<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle" width="50" height="50">
 							}
-							</div>
-							<div class="col-9 col-lg-11">
+						</div>
+							<div class="flex-grow-1 align-self-center">
 								<p class="card-text ms-3"><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@Model.ProjectManager.Id">@Model.ProjectManager.FullName</a></p>
 							</div>
-						</div>
-					}
+						}
+					</div>
 				
 					<hr />
 
@@ -148,18 +153,18 @@
 					}
 					@foreach (AppUser developer in Model.Developers)
 					{
-						<div class="row d-flex justify-content-start align-items-center mb-2">
-							<div class="col-3 col-lg-1">
-							@if (developer.PictureData is not null)
-							{
-								<img src="data:image/*;base64,@(Convert.ToBase64String(developer.PictureData))" class="rounded-circle" width="50" height="50">
-							}
-							else
-							{
-								<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle" width="50" height="50">
-							}
+						<div class="d-flex mt-2 mb-2">
+							<div class="flex-shrink-0">
+								@if (developer.PictureData is not null)
+								{
+									<img src="data:image/*;base64,@(Convert.ToBase64String(developer.PictureData))" class="rounded-circle" width="50" height="50">
+								}
+								else
+								{
+									<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle" width="50" height="50">
+								}
 							</div>
-							<div class="col-9 col-lg-11">
+							<div class="flex-grow-1 align-self-center">
 								<p class="card-text ms-3"><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@developer.Id">@developer.FullName</a></p>
 							</div>
 						</div>
@@ -175,18 +180,18 @@
 					}
 					@foreach (AppUser member in Model.Members)
 					{
-						<div class="row d-flex justify-content-start align-items-center mb-2">
-							<div class="col-3 col-lg-1">
-							@if (member.PictureData is not null)
-							{
-								<img src="data:image/*;base64,@(Convert.ToBase64String(member.PictureData))" class="rounded-circle" width="50" height="50">
-							}
-							else
-							{
-								<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle" width="50" height="50">
-							}
+						<div class="d-flex">
+							<div class="flex-shrink-0">
+								@if (member.PictureData is not null)
+								{
+									<img src="data:image/*;base64,@(Convert.ToBase64String(member.PictureData))" class="rounded-circle" width="50" height="50">
+								}
+								else
+								{
+									<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle" width="50" height="50">
+								}
 							</div>
-							<div class="col-9 col-lg-11">
+							<div class="flex-grow-1 align-self-center">
 								<p class="card-text ms-3"><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@member.Id">@member.FullName</a></p>
 							</div>
 						</div>
@@ -209,76 +214,62 @@
 			</div>
 
 			<div class="card-body">
-				<div class="table-responsive">
+					@if (Model.Tickets.Where(t => t.TicketStatusId != "complete" && !t.IsArchived).Count() == 0)
+					{
+						<p class="card-text text-center mt-2">There are no active tickets.</p>
+					}
+					else
+					{
+						<div class="table-responsive">
+							<table class="table table-sm table-bordered table-light mt-4">
 
-					<table class="table table-sm table-bordered table-light mt-4">
+								<colgroup>
+									<col width="350">
+									<col width="150">
+									<col width="300">
+									<col width="150">
+									<col width="150">
+									<col width="150">
+								</colgroup>
 
-						<colgroup>
-							<col width="500">
-							<col width="150">
-							<col width="300">
-							<col width="150">
-							<col width="150">
-							<col width="150">
-							<col width="150">
-						</colgroup>
+								<thead class="table-light">
+									<tr>
+										<th>Ticket</th>
+										<th class="text-center">Created</th>
+										<th class="text-center">Assigned Developer</th>
+										<th class="text-center">Priority</th>
+										<th class="text-center">Type</th>
+										<th class="text-center">Status</th>
+									</tr>
+								</thead>
 
-						<thead class="table-light">
-							<tr>
-								<th>Ticket</th>
-								<th class="text-center">Created</th>
-								<th class="text-center">Assigned Developer</th>
-								<th class="text-center">Priority</th>
-								<th class="text-center">Type</th>
-								<th class="text-center">Status</th>
-								<th class="text-center">Archive</th>
-							</tr>
-						</thead>
+								<tbody>
+										@foreach (Ticket ticket in Model.Tickets)
+										{
+											if (ticket.TicketStatusId != "complete" && !ticket.IsArchived)
+											{
+												<tr class="align-middle">
+													<td>
+														<a asp-controller="Tickets" asp-action="ViewTicket" asp-route-ticketId="@ticket.Id">
+															<i class="bi bi-ticket-detailed-fill"></i>
+															<p class="text-primary d-inline">@ticket.Title</p>
+														</a>
+													</td>
+													<td class="text-center">@ticket.Created.ToShortDateString()</td>
+													<td class="@Model.GetDeveloperTextFormat(ticket) text-center">
+														@(ticket.Developer is not null ? ticket.Developer.FullName : "Unassigned!")
+													</td>
+													<td class="text-center"><span class="badge @Model.GetPriorityBadgeFormat(ticket)">@ticket.Priority!.Description</span></td>
+													<td class="text-center">@ticket.Type!.Description</td>
+													<td class="text-center"><span class="@Model.GetStatusTextFormat(ticket)">@ticket.Status!.Description</span></td>
+												</tr>
+											}	
+										}
+								</tbody>
 
-						<tbody>
-
-							@if (Model.Tickets.Count() == 0)
-							{
-								<tr class="align-middle">
-									<td class="text-center" colspan="7">
-										There are no active tickets!
-									</td>
-								</tr>
-							}
-							else
-							{
-								@foreach (Ticket ticket in Model.Tickets)
-								{
-									if (ticket.TicketStatusId != "complete" && !ticket.IsArchived)
-									{
-										<tr class="align-middle">
-											<td>
-												<a asp-controller="Tickets" asp-action="ViewTicket" asp-route-ticketId="@ticket.Id">
-													<i class="bi bi-ticket-detailed-fill"></i>
-													<p class="text-primary d-inline">@ticket.Title</p>
-												</a>
-											</td>
-											<td class="text-center">@ticket.Created.ToShortDateString()</td>
-											<td class="@Model.GetDeveloperTextFormat(ticket) text-center">
-												@(ticket.Developer is not null ? ticket.Developer.FullName : "Unassigned!")
-											</td>
-											<td class="text-center"><span class="badge @Model.GetPriorityBadgeFormat(ticket)">@ticket.Priority!.Description</span></td>
-											<td class="text-center">@ticket.Type!.Description</td>
-											<td class="text-center"><span class="@Model.GetStatusTextFormat(ticket)">@ticket.Status!.Description</span></td>
-											<td class="text-center">
-												<a class="btn btn-outline-warning" title="Archive" asp-controller="Tickets" asp-action="ArchiveTicket" asp-route-ticketId="@ticket.Id">
-													<i class="bi bi-archive"></i>
-												</a>
-											</td>
-										</tr>
-									}	
-								}
-							}
-						</tbody>
-
-					</table>
-
-				</div>
+							</table>
+						</div>
+					}
 			</div>
 		</div>
 	</div>
@@ -289,48 +280,43 @@
 		<div class="card">
 			<div class="card-header">
 				<h5 class="card-text d-inline">Completed Tickets</h5>
-				<h6 class="card-text d-block">(Consider archiving)</h6>
 			</div>
 
 			<div class="card-body">
-				<div class="table-responsive">
 
-					<table class="table table-sm table-bordered table-light mt-4">
+				@if (Model.Tickets.Where(t => t.TicketStatusId == "complete" && !t.IsArchived).Count() == 0)
+				{
+					<p class="card-text text-center mt-2">
+						There are no completed tickets (or they've all been archived).
+					</p>
+				}
+				else
+				{
+					<div class="table-responsive">
 
-						<colgroup>
-							<col width="500">
-							<col width="150">
-							<col width="300">
-							<col width="150">
-							<col width="150">
-							<col width="150">
-							<col width="150">
-						</colgroup>
+						<table class="table table-sm table-bordered table-light mt-4">
+
+							<colgroup>
+								<col width="350">
+								<col width="150">
+								<col width="300">
+								<col width="150">
+								<col width="150">
+								<col width="150">
+							</colgroup>
 						
-						<thead class="table-light">
-							<tr>
-								<th>Ticket</th>
-								<th class="text-center">Created</th>
-								<th class="text-center">Assigned Developer</th>
-								<th class="text-center">Priority</th>
-								<th class="text-center">Type</th>
-								<th class="text-center">Status</th>
-								<th class="text-center">Archive</th>
-							</tr>
-						</thead>
-
-						<tbody>
-
-							@if (Model.Tickets.Count() == 0)
-							{
-								<tr class="align-middle">
-									<td class="text-center" colspan="7">
-										There are no completed tickets (or they've all been archived)!
-									</td>
+							<thead class="table-light">
+								<tr>
+									<th>Ticket</th>
+									<th class="text-center">Created</th>
+									<th class="text-center">Assigned Developer</th>
+									<th class="text-center">Priority</th>
+									<th class="text-center">Type</th>
+									<th class="text-center">Status</th>
 								</tr>
-							}
-							else
-							{
+							</thead>
+
+							<tbody>
 								@foreach (Ticket ticket in Model.Tickets)
 								{
 									if (ticket.TicketStatusId == "complete" && !ticket.IsArchived)
@@ -347,20 +333,15 @@
 											<td class="text-center"><span class="badge @Model.GetPriorityBadgeFormat(ticket)">@ticket.Priority!.Description</span></td>
 											<td class="text-center">@ticket.Type!.Description</td>
 											<td class="text-center"><span class="@Model.GetStatusTextFormat(ticket)">@ticket.Status!.Description</span></td>
-											<td class="text-center">
-												<a class="btn btn-outline-warning" title="Archive" asp-controller="Tickets" asp-action="ArchiveTicket" asp-route-ticketId="@ticket.Id">
-													<i class="bi bi-archive"></i>
-												</a>
-											</td>
 										</tr>
 									}
 								}
-							}
-						</tbody>
+							</tbody>
 
-					</table>
+						</table>
 
-				</div>
+					</div>
+				}
 			</div>
 		</div>
 	</div>
@@ -374,78 +355,45 @@
 			</div>
 
 			<div class="card-body">
-				<div class="table-responsive">
+				@if (Model.Tickets.Where(t => t.IsArchived).Count() == 0)
+				{
+					<p class="card-text text-center mt-2">
+						There are no archived tickets.
+					</p>
+				}
+				else
+				{
+					<div class="table-responsive">
 
-					<table class="table table-sm table-bordered table-light mt-4">
+						<table class="table table-sm table-bordered table-light mt-4">
 
-						<colgroup>
-							<col width="500">
-							<col width="150">
-							<col width="300">
-							<col width="150">
-							<col width="150">
-							<col width="150">
-							<col width="150">
-						</colgroup>
-
-						<thead class="table-light">
-							<tr>
-								<th>Ticket</th>
-								<th class="text-center">Created</th>
-								<th class="text-center">Assigned Developer</th>
-								<th class="text-center">Priority</th>
-								<th class="text-center">Type</th>
-								<th class="text-center">Status</th>
-								<th class="text-center">Unarchive</th>
-							</tr>
-						</thead>
-
-						<tbody>
-
-							@if (Model.Tickets.Count() == 0)
-							{
-								<tr class="align-middle">
-									<td class="text-center" colspan="7">
-										There are no archived tickets.
-									</td>
+							<thead class="table-light">
+								<tr>
+									<th>Ticket</th>
 								</tr>
-							}
-							else
-							{
-								@foreach (Ticket ticket in Model.Tickets)
-								{
-									if (ticket.IsArchived)
+							</thead>
+
+							<tbody>
+									@foreach (Ticket ticket in Model.Tickets)
 									{
-										<tr class="align-middle">
-											<td>
-												<a class="text-muted" asp-controller="Tickets" asp-action="ViewTicket" asp-route-ticketId="@ticket.Id">
-													<i class="bi bi-ticket-detailed-fill"></i>
-													<p class="text-muted d-inline">@ticket.Title</p>
-												</a>
-											</td>
-											<td class="text-center">@ticket.Created.ToShortDateString()</td>
-											<td class="text-center @Model.GetDeveloperTextFormat(ticket)">@(ticket.Developer is not null ? ticket.Developer.FullName : "")</td>
-											<td class="text-center"><span>@ticket.Priority!.Description</span></td>
-											<td class="text-center">@ticket.Type!.Description</td>
-											<td class="text-center"><span>@ticket.Status!.Description</span></td>
-											<td class="text-center">
-												<a class="btn btn-outline-warning" title="Unarchive" asp-controller="Tickets" asp-action="UnarchiveTicket" asp-route-ticketId="@ticket.Id">
-													<i class="bi bi-archive"></i>
-												</a>
-											</td>
-										</tr>
+										if (ticket.IsArchived)
+										{
+											<tr class="align-middle">
+												<td>
+													<a class="text-muted" asp-controller="Tickets" asp-action="ViewTicket" asp-route-ticketId="@ticket.Id">
+														<i class="bi bi-ticket-detailed-fill"></i>
+														<p class="text-muted d-inline">@ticket.Title</p>
+													</a>
+												</td>
+											</tr>
+										}
 									}
-								}
-							}
-						</tbody>
+							</tbody>
 
-					</table>
-
-				</div>
+						</table>
+					</div>
+				}
 			</div>
 		</div>
 	</div>
-
-</div>
-
 </div>

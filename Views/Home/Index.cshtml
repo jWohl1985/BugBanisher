@@ -103,53 +103,52 @@
 
 						<div class="card-body">
 							<h5 class="card-title">Project Status</h5>
-
-							<table class="table table-borderless datatable">
-								<thead>
-									<tr>
-										<th scope="col">Project</th>
-										<th scope="col">Manager</th>
-										<th scope="col">Deadline</th>
-										<th scope="col">Open Tickets</th>
-									</tr>
-								</thead>
-								<tbody>
-									@foreach (Project project in Model.ActiveProjects.OrderBy(p => p.Deadline))
-									{
-										AppUser? ProjectManager = await ProjectService.GetProjectManagerAsync(project.Id);
-
+							<div class="table-responsive">
+								<table class="table table-borderless datatable">
+									<thead>
 										<tr>
-											<td class="align-middle"><a class="link" asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@project.Id">@project.Name</a></td>
-											@if (ProjectManager is not null)
-											{
-												<td class="d-flex align-middle">
-													@if (ProjectManager.PictureData is not null)
-													{
-														<img src="data:image/*;base64,@(Convert.ToBase64String(ProjectManager.PictureData))" class="rounded-circle ms-1" width="50" height="50">
-													}
-													else
-													{
-														<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle ms-1" width="50" height="50">
-													}
-													<a class="ms-2" asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@ProjectManager.Id">@ProjectManager.FullName</a>
-												</td>
-											}
-											else
-											{
-												<td class="d-flex align-middle">
-													<img class="rounded-circle ms-1" width="50" height="50" src="@FileService.GetDefaultUserPicPath()"/>
-													<span class="ms-2 fw-bold text-danger align-self-center">Unassigned!</span>
-												</td>
-											}
-											<td class="align-middle">@project.Deadline.ToShortDateString() (@((project.Deadline - DateTime.Now).Days) days)</td>
-											<td class="align-middle">@project.Tickets.Where(t => !t.IsArchived && t.TicketStatusId != "complete").Count()</td>
+											<th scope="col">Project</th>
+											<th scope="col">Manager</th>
+											<th scope="col">Deadline</th>
+											<th scope="col">Open Tickets</th>
 										</tr>
-									}
-								</tbody>
-							</table>
+									</thead>
+									<tbody>
+										@foreach (Project project in Model.ActiveProjects.OrderBy(p => p.Deadline))
+										{
+											AppUser? ProjectManager = await ProjectService.GetProjectManagerAsync(project.Id);
 
+											<tr>
+												<td class="align-middle"><a class="link" asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@project.Id">@project.Name</a></td>
+												@if (ProjectManager is not null)
+												{
+													<td class="d-flex align-middle">
+														@if (ProjectManager.PictureData is not null)
+														{
+															<img src="data:image/*;base64,@(Convert.ToBase64String(ProjectManager.PictureData))" class="rounded-circle ms-1" width="50" height="50">
+														}
+														else
+														{
+															<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle ms-1" width="50" height="50">
+														}
+														<a class="ms-2 align-self-center" asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@ProjectManager.Id">@ProjectManager.FullName</a>
+													</td>
+												}
+												else
+												{
+													<td class="d-flex align-middle">
+														<img class="rounded-circle ms-1" width="50" height="50" src="~/@FileService.GetDefaultUserPicPath()"/>
+														<span class="ms-2 fw-bold text-danger align-self-center">Unassigned!</span>
+													</td>
+												}
+												<td class="align-middle">@project.Deadline.ToShortDateString() (@((project.Deadline - DateTime.Now).Days) days)</td>
+												<td class="align-middle">@project.Tickets.Where(t => !t.IsArchived && t.TicketStatusId != "complete").Count()</td>
+											</tr>
+										}
+									</tbody>
+								</table>
+							</div>
 						</div>
-
 					</div>
 				</div>
 
@@ -159,52 +158,54 @@
 
 						<div class="card-body">
 							<h5 class="card-title">Recent Tickets</h5>
-
-							<table class="table table-borderless datatable">
-								<thead>
-									<tr>
-										<th scope="col">Ticket Name</th>
-										<th scope="col">Project</th>
-										<th scope="col">Developer</th>
-										<th scope="col">Type</th>
-										<th scope="col">Priority</th>
-										<th scope="col">Status</th>
-									</tr>
-								</thead>
-								<tbody>
-									@foreach (Ticket ticket in Model.OpenTickets.OrderByDescending(t => t.Created))
-									{
+							<div class="table-responsive">
+								<table class="table table-borderless datatable">
+									<thead>
 										<tr>
-											<td class="align-middle"><a asp-controller="Tickets" asp-action="ViewTicket" asp-route-ticketId="@ticket.Id"><i class="bi bi-ticket-detailed-fill me-2"></i>@ticket.Title</a></td>
-											<td class="align-middle"><a asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@ticket.Id">@ticket.Project!.Name</a></td>
-											@if (ticket.Developer is not null)
-											{
-												<td class="align-middle">
-													@if (ticket.Developer.PictureData is not null)
-													{
-														<img src="data:image/*;base64,@(Convert.ToBase64String(ticket.Developer.PictureData))" class="rounded-circle ms-1" width="50" height="50">
-													}
-													else
-													{
-														<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle ms-1" width="50" height="50">
-													}
-													<a class="ms-2" asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@ticket.Developer.Id">@ticket.Developer.FullName</a>
-												</td>
-											}
-											else
-											{
-												<td class="text-danger align-middle">Unassigned!</td>
-											}
-											<td class="align-middle">@ticket.Type!.Description</td>
-											<td class="align-middle">@ticket.Priority!.Description</td>
-											<td class="align-middle">@ticket.Status!.Description</td>
+											<th scope="col">Ticket Name</th>
+											<th scope="col">Project</th>
+											<th scope="col">Developer</th>
+											<th scope="col">Type</th>
+											<th scope="col">Priority</th>
+											<th scope="col">Status</th>
 										</tr>
-									}
-								</tbody>
-							</table>
-
+									</thead>
+									<tbody>
+										@foreach (Ticket ticket in Model.OpenTickets.OrderByDescending(t => t.Created))
+										{
+											<tr>
+												<td class="align-middle"><a asp-controller="Tickets" asp-action="ViewTicket" asp-route-ticketId="@ticket.Id"><i class="bi bi-ticket-detailed-fill me-2"></i>@ticket.Title</a></td>
+												<td class="align-middle"><a asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@ticket.Id">@ticket.Project!.Name</a></td>
+												@if (ticket.Developer is not null)
+												{
+													<td class="align-middle">
+														@if (ticket.Developer.PictureData is not null)
+														{
+															<img src="data:image/*;base64,@(Convert.ToBase64String(ticket.Developer.PictureData))" class="rounded-circle ms-1" width="50" height="50">
+														}
+														else
+														{
+															<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle ms-1" width="50" height="50">
+														}
+														<a class="ms-2" asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@ticket.Developer.Id">@ticket.Developer.FullName</a>
+													</td>
+												}
+												else
+												{
+													<td class="d-flex align-middle">
+														<img class="rounded-circle ms-1" width="50" height="50" src="~/@FileService.GetDefaultUserPicPath()" />
+														<span class="ms-2 fw-bold text-danger align-self-center">Unassigned!</span>
+													</td>
+												}
+												<td class="align-middle">@ticket.Type!.Description</td>
+												<td class="align-middle">@ticket.Priority!.Description</td>
+												<td class="align-middle">@ticket.Status!.Description</td>
+											</tr>
+										}
+									</tbody>
+								</table>
+							</div>
 						</div>
-
 					</div>
 				</div>
 
@@ -216,39 +217,39 @@
 
 							<div class="card-body pb-0">
 								<h5 class="card-title">Workloads</h5>
-
-								<table class="table table-borderless datatable">
-									<thead>
-										<tr>
-											<th scope="col">Employee</th>
-											<th scope="col">Job Title</th>
-											<th scope="col">Active Projects</th>
-											<th scope="col">Open Tickets</th>
-										</tr>
-									</thead>
-									<tbody>
-										@foreach (AppUser employee in Model.Employees)
-										{
+								<div class="table-responsive">
+									<table class="table table-borderless datatable">
+										<thead>
 											<tr>
-												<td>
-													@if (employee.PictureData is not null)
-													{
-														<img src="data:image/*;base64,@(Convert.ToBase64String(employee.PictureData))" class="rounded-circle ms-1" width="50" height="50">
-													}
-													else
-													{
-														<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle ms-1" width="50" height="50">
-													}
-													<a class="ms-2" asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@employee.Id">@employee.FullName</a>
-												</td>
-												<td>@employee.JobTitle</td>
-												<td>@Model.ActiveProjects.Where(p => p.Team.Contains(employee) || p.ProjectManagerId == employee.Id).Count()</td>
-												<td>@Model.OpenTickets.Where(t => t.Project!.ProjectManagerId == employee.Id || t.DeveloperId == employee.Id).Count()</td>
+												<th scope="col">Employee</th>
+												<th scope="col">Job Title</th>
+												<th scope="col">Active Projects</th>
+												<th scope="col">Open Tickets</th>
 											</tr>
-										}
-									</tbody>
-								</table>
-
+										</thead>
+										<tbody>
+											@foreach (AppUser employee in Model.Employees)
+											{
+												<tr>
+													<td>
+														@if (employee.PictureData is not null)
+														{
+															<img src="data:image/*;base64,@(Convert.ToBase64String(employee.PictureData))" class="rounded-circle ms-1" width="50" height="50">
+														}
+														else
+														{
+															<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle ms-1" width="50" height="50">
+														}
+														<a class="ms-2" asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@employee.Id">@employee.FullName</a>
+													</td>
+													<td>@employee.JobTitle</td>
+													<td>@Model.ActiveProjects.Where(p => p.Team.Contains(employee) || p.ProjectManagerId == employee.Id).Count()</td>
+													<td>@Model.OpenTickets.Where(t => t.Project!.ProjectManagerId == employee.Id || t.DeveloperId == employee.Id).Count()</td>
+												</tr>
+											}
+										</tbody>
+									</table>
+								</div>
 							</div>
 
 						</div>

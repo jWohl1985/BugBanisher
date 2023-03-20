@@ -33,103 +33,107 @@
     </nav>
 </div>
 
-<div class="card p-2 pt-4">
-    <div class="card-body mb-0">
-        <div class="card-text">
-                @if (ticketListType == "Action Required")
-                {
-                    <text>
-                        These tickets require some action by the developer or project manager.<br/>
-                        Either the developer has not been assigned, has not accepted the assignment, or they have placed the ticket on hold.
-                    </text>
-                }
-                else if (ticketListType == "Open")
-                {
-                    <text>
-                        These are all of the open tickets (not archived or complete) across all projects.
-                    </text>
-                }
-                else if (ticketListType == "Completed")
-                {
-                    <text>
-                        These tickets have been marked as completed but have not been archived. Consider archiving them - you will still be able to view the ticket
-                        details, but changes cannot be made and the ticket won't appear on any of the active ticket lists.
-                    </text>
-                }
+@if (ticketListType == "Action Required")
+{
+    <div class="card p-2 pt-4">
+        <div class="card-body mb-0">
+            <div class="card-text">
+                <text>
+                    These tickets require some action by the developer or project manager.<br/>
+                    Either the developer has not been assigned, has not accepted the assignment, or they have placed the ticket on hold.
+                </text>
+            </div>
         </div>
     </div>
-</div>
+}
 
 <!-- Sort & Paging Options -->
-<div class="row mb-3">
-    <div class="col">
 
-        <form asp-controller="Tickets" asp-action="List@(Model.TicketListType)Tickets" method="get">
+<form asp-controller="Tickets" asp-action="List@(Model.TicketListType)Tickets" method="get" class="row mb-3 align-items-end">
 
-            <span>Sort</span>
-            <select class="d-inline" asp-items="@Model.SortByOptions" asp-for="SortBy">
+    <div class="col-12">
+
+        <div class="d-block d-md-inline ms-0">
+            <span>Sort by:</span>
+            <select asp-items="@Model.SortByOptions" asp-for="SortBy">
             </select>
+        </div>
 
-            <span class="ms-3">Show</span>
-            <select class="d-inline" asp-items="@Model.PerPageOptions" asp-for="PerPage">
+        <div class="d-block d-md-inline ms-0 ms-md-2 mt-2 mt-md-0">
+            <span>Per page:</span>
+            <select asp-items="@Model.PerPageOptions" asp-for="PerPage">
             </select>
-            <span>per page</span>
-
-            <button class="btn btn-sm btn-success ms-3" type="submit"
-                    asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@Model.PageNumber" asp-route-perPage="@Model.PerPage">
-                Go
+        </div>
+        
+        <div class="d-block d-md-inline ms-0 ms-md-2 mt-2 mt-md-0">
+            <button class="btn btn-sm btn-success ms-0 ms-md-2 mt-md-0" type="submit" asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@Model.PageNumber" asp-route-perPage="@Model.PerPage">
+            Go
             </button>
-        </form>
-
+        </div>
+        
     </div>
-</div>
+
+</form>
 
 <!-- Tickets Table -->
-<table class="table table-bordered table-hover bg-light">
 
-    <thead>
-        <tr>
-            <th>Ticket Title</th>
-            <th>Project</th>
-            <th>Developer</th>
-            <th class="text-center">Priority</th>
-            <th>Type</th>
-            <th class="text-center">Status</th>
-        </tr>
-    </thead>
+@if (sortedTickets.Count() == 0)
+{
+    <div class="card">
+        <div class="card-body">
+            <p class="card-text text-center">There are no tickets to show.</p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
 
-    <tbody>
-        @if (sortedTickets.Count() == 0)
-        {
-            <tr>
-                <td class="text-center" colspan="6">
-                    There are no @Model.TicketListType.ToLower() tickets to show.
-                </td>
-            </tr>
-        }
-        @foreach (Ticket ticket in sortedTickets.Skip((pageNumber - 1) * perPage).Take(perPage))
-        {
-            <tr>
-                <td><a asp-action="ViewTicket" asp-route-ticketId="@ticket.Id"><i class="bi bi-ticket-detailed-fill me-2"></i>@ticket.Title</a></td>
-                <td>@ticket.Project!.Name</td>
-                @if (ticket.Developer is not null)
+        <table class="table table-bordered bg-light">
+
+            <colgroup>
+                <col width="450">
+                <col width="400">
+            </colgroup>
+
+            <thead>
+                <tr>
+                    <th>Ticket Title</th>
+                    <th>Project</th>
+                    <th class="text-center">Developer</th>
+                    <th class="text-center">Priority</th>
+                    <th class="text-center">Type</th>
+                    <th class="text-center">Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+        
+                @foreach (Ticket ticket in sortedTickets.Skip((pageNumber - 1) * perPage).Take(perPage))
                 {
-                    <td>@ticket.Developer.FullName</td>
+                    <tr class="align-middle">
+                        <td><a asp-action="ViewTicket" asp-route-ticketId="@ticket.Id"><i class="bi bi-ticket-detailed-fill me-2"></i>@ticket.Title</a></td>
+                        <td>@ticket.Project!.Name</td>
+                        @if (ticket.Developer is not null)
+                        {
+                            <td class="text-center">@ticket.Developer.FullName</td>
+                        }
+                        else
+                        {
+                            <td class="text-center text-danger">Unassigned</td>
+                        }
+                        <td class="text-center"><span class="@Model.GetPriorityFormatting(@ticket.TicketPriorityId)">@ticket.Priority!.Description</span></td>
+                        <td class="text-center">@ticket.Type!.Description</td>
+                        <td class="@Model.GetStatusFormatting(@ticket.TicketStatusId) text-center">
+                            @ticket.Status!.Description 
+                        </td>
+                    </tr>
                 }
-                else
-                {
-                    <td class="text-danger">Unassigned</td>
-                }
-                <td class="text-center"><span class="@Model.GetPriorityFormatting(@ticket.TicketPriorityId)">@ticket.Priority!.Description</span></td>
-                <td>@ticket.Type!.Description</td>
-                <td class="@Model.GetStatusFormatting(@ticket.TicketStatusId) text-center">
-                    @ticket.Status!.Description 
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
-    
+            </tbody>
+        </table>
+
+    </div>
+}
 
 <!-- Paging -->
 

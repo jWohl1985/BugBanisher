@@ -87,7 +87,14 @@
 
             <div class="form-group mt-3 text-center">
                 <button type="submit" class="btn btn-success">@(createOrEdit == "Create" ? "Create" : "Save Changes")</button>
-                <a class="btn btn-outline-secondary ms-3" asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@Model.Ticket.ProjectId">Cancel</a>
+                @if (createOrEdit == "Create")
+                {
+                    <a class="btn btn-outline-secondary ms-3" asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@Model.Ticket.ProjectId">Cancel</a>
+                }
+                else
+                {
+                    <a class="btn btn-outline-secondary ms-3" asp-controller="Tickets" asp-action="ViewTicket" asp-route-ticketId="@Model.Ticket.Id">Cancel</a>
+                }
             </div>
 
         </div>

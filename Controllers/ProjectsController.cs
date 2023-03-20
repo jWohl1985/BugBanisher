@@ -213,7 +213,7 @@ public class ProjectsController : Controller
         if (!await _projectService.ArchiveProjectAsync(project.Id))
             return Problem($"Could not archive project. Id: {project.Id}, Name: {project.Name}");
 
-		return RedirectToAction(nameof(ListArchivedProjects));
+		return RedirectToAction(nameof(ViewProject), new { projectId = project.Id });
 	}
 
 	[HttpGet]
@@ -236,7 +236,7 @@ public class ProjectsController : Controller
 		if (!await _projectService.UnarchiveProjectAsync(project.Id))
 			return Problem($"Could not unarchive project. Id: {project.Id}, Name: {project.Name}");
 
-		return RedirectToAction(nameof(ListActiveProjects));
+		return RedirectToAction(nameof(ViewProject), new { projectId = project.Id });
 	}
 
 	#region Private Helper Methods

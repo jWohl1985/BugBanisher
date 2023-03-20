@@ -171,7 +171,7 @@ public class TicketsController : Controller
 
 		await _ticketHistoryService.AddTicketCreatedEventAsync(ticket.Id);
 
-		return RedirectToAction("Index", "Home");
+		return RedirectToAction("ViewTicket", new { ticketId = ticket.Id });
 	}
 
 	[HttpGet]
@@ -309,6 +309,89 @@ public class TicketsController : Controller
 		Response.Headers.Add("Content-Disposition", $"inline; filename={fileName}");
 		return File(fileData, $"application/{ext}");
 	}
+
+	[HttpGet]
+	[Authorize]
+	public async Task<ViewResult> ConfirmArchiveTicket(int ticketId)
+	{
+		Ticket? ticket = await _ticketService.GetTicketByIdAsync(ticketId);
+
+		if (ticket is null)
+			return View("NotFound");
+
+		return View(ticket);
+	}
+
+	[HttpPost]
+	[Authorize]
+	public async Task<IActionResult> ArchiveTicketConfirmed(Ticket ticket)
+	{
+		Ticket? ticketToArchive = await _ticketService.GetTicketByIdAsync(ticket.Id);
+
+		if (ticketToArchive is null)
+			return View("NotFound");
+
+		AppUser user = await _userManager.GetUserAsync(User);
+
+		await _ticketService.ArchiveTicketAsync(ticketToArchive);
+		await _ticketHistoryService.AddArchiveChangeEventAsync(ticketToArchive, user.Id);
+
+		return RedirectToAction("ViewProject", "Projects", new { projectId = ticketToArchive.ProjectId });
+	}
+
+    [HttpGet]
+    [Authorize]
+    public async Task<ViewResult> ConfirmUnarchiveTicket(int ticketId)
+    {
+        Ticket? ticket = await _ticketService.GetTicketByIdAsync(ticketId);
+
+        if (ticket is null)
+            return View("NotFound");
+
+        return View(ticket);
+    }
+
+    [HttpPost]
+    [Authorize]
+    public async Task<IActionResult> UnarchiveTicketConfirmed(Ticket ticket)
+    {
+        Ticket? ticketToUnarchive = await _ticketService.GetTicketByIdAsync(ticket.Id);
+
+        if (ticketToUnarchive is null)
+            return View("NotFound");
+
+        AppUser user = await _userManager.GetUserAsync(User);
+
+        await _ticketService.UnarchiveTicketAsync(ticketToUnarchive);
+        await _ticketHistoryService.AddArchiveChangeEventAsync(ticketToUnarchive, user.Id);
+
+        return RedirectToAction(nameof(ViewTicket), new { ticketId = ticketToUnarchive.Id });
+    }
+
+	[HttpGet]
+	[Authorize]
+	public async Task<ViewResult> ConfirmDeleteTicket(int ticketId)
+	{
+		Ticket? ticket = await _ticketService.GetTicketByIdAsync(ticketId);
+
+		if (ticket is null)
+			return View("NotFound");
+
+		return View(ticket);
+	}
+
+    [HttpPost]
+    [Authorize]
+    public async Task<IActionResult> DeleteTicketConfirmed(Ticket ticket)
+    {
+        Ticket? ticketToDelete = await _ticketService.GetTicketByIdAsync(ticket.Id);
+
+        if (ticketToDelete is null)
+            return View("NotFound");
+
+		await _ticketService.DeleteTicketAsync(ticketToDelete);
+        return RedirectToAction("ViewProject", "Projects", new { projectId = ticketToDelete.ProjectId });
+    }
 
     #region Private helper methods
 

@@ -1,6 +1,7 @@
 ﻿@using BugBanisher.Models.ViewModels
 
 @inject UserManager<AppUser> UserManager
+@inject IFileService FileService
 
 @model ProjectListViewModel
 
@@ -35,18 +36,18 @@
 <form asp-controller="Projects" asp-action="List@(Model.ActiveOrArchived)Projects" method="get" class="row mb-3 align-items-end">
 
     <div class="col-12">
-        <span>Sort:</span>
-        <select class="d-inline" asp-items="@Model.SortByOptions" asp-for="SortBy">
+        <span>Sort by:</span>
+        <select class="d-block" asp-items="@Model.SortByOptions" asp-for="SortBy">
         </select>
         <span>Per page:</span>
-        <select class="d-inline" asp-items="@Model.PerPageOptions" asp-for="PerPage">
+        <select class="d-block" asp-items="@Model.PerPageOptions" asp-for="PerPage">
         </select>
     </div>
     
     <div class="col-12 mt-3">
         <button class="btn btn-sm btn-success" type="submit" asp-action="List@(Model.ActiveOrArchived)Projects"
                 asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@Model.PageNumber" asp-route-perPage="@Model.PerPage">
-            Search
+            Go
         </button>
     </div>
 
@@ -62,16 +63,23 @@
     int onHoldTickets = openTickets.Where(t => t.TicketStatusId == "hold").Count();
     int priorityTickets = openTickets.Where(t => t.TicketPriorityId == "high").Count();
 
-    string ticketSummary = $"{openTickets.Count} open, {unassignedTickets} unassigned, {onHoldTickets} on hold, {priorityTickets} high priority";
+    string ticketSummary = $"{openTickets.Count} open ({unassignedTickets} unassigned, {onHoldTickets} on hold, {priorityTickets} high priority)";
 
     <div class="row mb-1">
-            <div class="card col-md-8">
-                <div class="card-body">
-                    <div class="row d-flex align-items-center justify-content-start mt-3">
-                        <div class="col-4 col-md-2">
-                            <a asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@project.Id">
-                                <img class="img-fluid" style="max-height: 100px;" src="data:image/*;base64,@Convert.ToBase64String(project.PictureData)"/> 
-                            </a>
+        <div class="card col-md-8">
+            <div class="card-body">
+                <div class="row d-flex align-items-center justify-content-start mt-3">
+                    <div class="col-4 col-md-2">
+                        <a asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@project.Id">
+                            @if (project.PictureData is not null)
+                            {
+                                <img class="img-fluid" style="max-height: 100px;" src="data:image/*;base64,@Convert.ToBase64String(project.PictureData)"/>
+                            }
+                            else
+                            {
+                                <img class="img-fluid" style="max-height: 100px;" src="@FileService.GetDefaultProjectPicPath()"/>
+                            }
+                        </a>
                         </div>
                         <div class="col-8 col-md-5">
                             <strong>Project Name:</strong>
@@ -83,18 +91,33 @@
                             @if (projectManager is not null)
                             {
                                 <span><strong>Project Manager:</strong></span>
-                                <div class="row d-flex align-items-center">
-                                    <div class="col-2">
-								        <img class="rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(projectManager.PictureData)">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0 mt-2">
+                                    @if (projectManager.PictureData is not null)
+                                    {
+                                        <img src="data:image/*;base64,@(Convert.ToBase64String(projectManager.PictureData))" class="rounded-circle align-self-center ms-1 me-1" width="60" height="60">
+                                    }
+                                    else
+                                    {
+                                        <img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle align-self-center ms-1 me-1" width="60" height="60">
+                                    }
                                     </div>
-                                    <div class="col-10">
-								        <p class="card-text ms-3"><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@projectManager.Id">@projectManager.FullName</a></p>
+                                    <div class="flex-grow-1 ms-3">
+                                        <span><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@projectManager.Id">@projectManager.FullName</a></span>
                                     </div>
                                 </div>
                             }
                             else
                             {
-                                <p class="card-text">Project Manager: <span class="text-danger">Unassigned</span></p>
+                                <span><strong>Project Manager:</strong></span>
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0 mt-2">
+                                        <img class="rounded-circle align-self-center ms-1 me-1" width="60" height="60" src="~/@(FileService.GetDefaultUserPicPath())" />
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <span class="fw-bold text-danger">Unassigned!</span>
+                                    </div>
+                                </div>
                             }
                         </div>
                     </div>

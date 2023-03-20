@@ -395,8 +395,14 @@ public class TicketsController : Controller
 
         if (ticket.DeveloperId != viewModel.SelectedDeveloper)
         {
-            AppUser? newDeveloper = await _userManager.FindByIdAsync(viewModel.SelectedDeveloper);
-            historyItem.Description += $"<li>Changed the ticket developer to <strong>{newDeveloper.FullName ?? "Unassigned"}</strong></li>";
+			if (viewModel.SelectedDeveloper is null)
+				historyItem.Description += $"<li>Changed the ticket developer to <strong>Unassigned</strong></li>";
+
+			else
+			{
+				AppUser? newDeveloper = await _userManager.FindByIdAsync(viewModel.SelectedDeveloper);
+				historyItem.Description += $"<li>Changed the ticket developer to <strong>{newDeveloper.FullName ?? "Unassigned"}</strong></li>";
+			}
         }
 
 		historyItem.Description += "</ul>";

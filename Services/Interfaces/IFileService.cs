@@ -6,4 +6,6 @@ public interface IFileService
     string ConvertByteArrayToFile(byte[] fileData, string extension);
     string GetFileIcon(string file);
     string FormatFileSize(long bytes);
+    string GetDefaultUserPicPath();
+    string GetDefaultProjectPicPath();
 }

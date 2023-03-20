@@ -1,4 +1,6 @@
-﻿@{
+﻿@inject UserManager<AppUser> UserManager
+
+@{
     if (ViewData.TryGetValue("ParentLayout", out var parentLayout))
     {
         Layout = (string?)parentLayout;
@@ -7,6 +9,10 @@
     {
         Layout = "/Areas/Identity/Pages/_Layout.cshtml";
     }
+
+    AppUser user = await UserManager.GetUserAsync(User);
+
+    bool IsDemoUser = (user.Email == "jdwohl@gmail.com" || user.Email == "darrenjohnson@jdwinc.com" || user.Email == "hermancampos@jdwinc.com");
 }
 
 <div class="pagetitle">
@@ -20,12 +26,24 @@
 </div>
 
 <div class="row">
-    <div class="col-md-3">
-        <partial name="_ManageNav" />
+        @if (IsDemoUser)
+        {
+            <div class="col-md-6">
+                <div class="alert alert-danger">Demo users are not allowed to change their e-mail or password settings.</div>
+            </div>
+        }
+        else
+        {
+            <div class="col-md-3">
+                <partial name="_ManageNav" />
+            </div>
+            <div class="col-md-9">
+                @RenderBody()
+            </div>
+        }
+
     </div>
-    <div class="col-md-9">
-        @RenderBody()
-    </div>
+    
 </div>
 
 

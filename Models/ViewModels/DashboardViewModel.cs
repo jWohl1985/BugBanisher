@@ -4,6 +4,7 @@ public class DashboardViewModel
 {
     public List<Project> ActiveProjects { get; set; } = default!;
     public List<Ticket> OpenTickets { get; set; } = default!;
+    public List<Ticket> CompletedTickets { get; set; } = default!;
     public List<AppUser> Employees { get; set; } = default!;
     public int AdminCount { get; set; }
     public int ProjectManagerCount { get; set; }

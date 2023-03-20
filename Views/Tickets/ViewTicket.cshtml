@@ -2,6 +2,8 @@
 
 @model TicketViewModel
 
+@inject IFileService FileService
+
 <div class="pagetitle">
     <h1>View Ticket</h1>
     <nav>
@@ -33,7 +35,14 @@
                     <div class="row">
                         <div class="row d-flex justify-content-start align-items-center">
                             <div class="col-3 col-lg-1">
-                                <img class="rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(Model.Ticket.Creator!.PictureData)">
+                                @if (Model.Ticket.Creator!.PictureData is not null)
+                                {
+                                    <img src="data:image/*;base64,@(Convert.ToBase64String(Model.Ticket.Creator.PictureData))" class="rounded-circle" width="50" height="50">
+                                }
+                                else
+                                {
+                                    <img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle" width="50" height="50">
+                                }
                             </div>
                             <div class="col-9 col-lg-11">
                                 <p class="card-text"><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@Model.Ticket.Creator!.Id">@Model.Ticket.Creator!.FullName</a></p>
@@ -91,7 +100,14 @@
                     {
                         <div class="row d-flex justify-content-start align-items-center">
                             <div class="col-3 col-lg-1">
-                                <img class="rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(Model.ProjectManager.PictureData)">
+                                @if (Model.ProjectManager.PictureData is not null)
+                                {
+                                    <img src="data:image/*;base64,@(Convert.ToBase64String(Model.ProjectManager.PictureData))" class="rounded-circle" width="50" height="50">
+                                }
+                                else
+                                {
+                                    <img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle" width="50" height="50">
+                                }
                             </div>
                             <div class="col-9 col-lg-11">
                                 <p class="card-text"><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@Model.ProjectManager.Id">@Model.ProjectManager.FullName</a></p>
@@ -112,7 +128,14 @@
                 {
                     <div class="row d-flex justify-content-start align-items-center">
                         <div class="col-3 col-lg-1">
-                            <img class="rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(Model.Developer.PictureData)">
+                            @if (Model.Developer.PictureData is not null)
+                            {
+                                <img src="data:image/*;base64,@(Convert.ToBase64String(Model.Developer.PictureData))" class="rounded-circle" width="50" height="50">
+                            }
+                            else
+                            {
+                                <img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle" width="50" height="50">
+                            }
                         </div>
                         <div class="col-9 col-lg-11">
                             <p class="card-text"><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@Model.Developer.Id">@Model.Developer.FullName</a></p>
@@ -224,7 +247,14 @@
                 {
                     <div class="row d-flex justify-content-start mt-3 ms-3">
                         <div class="col-3 col-lg-1">
-                            <img class="img-fluid rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(comment.AppUser!.PictureData)">
+                            @if (comment.AppUser!.PictureData is not null)
+                            {
+                                <img src="data:image/*;base64,@(Convert.ToBase64String(comment.AppUser.PictureData))" class="img-fluid rounded-circle" width="50" height="50">
+                            }
+                            else
+                            {
+                                <img src="~/@FileService.GetDefaultUserPicPath()" class="img-fluid rounded-circle" width="50" height="50">
+                            }
                         </div>
                         <div class="col-9 col-lg-11">
                             <div class="row">

@@ -3,6 +3,7 @@
 @model ProjectViewModel
 
 @inject UserManager<AppUser> UserManager
+@inject IFileService FileService
 
 @{
 	AppUser user = await UserManager.GetUserAsync(User);
@@ -26,7 +27,15 @@
 
 	<!-- Project Info Card -->
 	<div class="col-lg-2 mb-3 mb-lg-0">
-		<img src="data:image/*;base64,@Convert.ToBase64String(Model.Project.PictureData)" class="img-fluid" width="225" height="225" />
+		@if (Model.Project.PictureData is not null)
+		{
+			<img src="data:image/*;base64,@Convert.ToBase64String(Model.Project.PictureData)" class="img-fluid" width="225" height="225" />
+		}
+		else
+		{
+			<img src="@FileService.GetDefaultProjectPicPath()" class="img-fluid" width="225" height="225"/>
+		}
+
 		@if (Model.Project.IsArchived)
 		{
 			<div class="d-flex justify-content-start mt-2">
@@ -114,7 +123,14 @@
 					{
 						<div class="row d-flex justify-content-start align-items-center">
 							<div class="col-3 col-lg-1">
-								<img class="rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(Model.ProjectManager.PictureData)">
+							@if (Model.ProjectManager.PictureData is not null)
+							{
+								<img src="data:image/*;base64,@(Convert.ToBase64String(Model.ProjectManager.PictureData))" class="rounded-circle" width="50" height="50">
+							}
+							else
+							{
+								<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle" width="50" height="50">
+							}
 							</div>
 							<div class="col-9 col-lg-11">
 								<p class="card-text ms-3"><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@Model.ProjectManager.Id">@Model.ProjectManager.FullName</a></p>
@@ -134,7 +150,14 @@
 					{
 						<div class="row d-flex justify-content-start align-items-center mb-2">
 							<div class="col-3 col-lg-1">
-								<img class="rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(developer.PictureData)">
+							@if (developer.PictureData is not null)
+							{
+								<img src="data:image/*;base64,@(Convert.ToBase64String(developer.PictureData))" class="rounded-circle" width="50" height="50">
+							}
+							else
+							{
+								<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle" width="50" height="50">
+							}
 							</div>
 							<div class="col-9 col-lg-11">
 								<p class="card-text ms-3"><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@developer.Id">@developer.FullName</a></p>
@@ -154,7 +177,14 @@
 					{
 						<div class="row d-flex justify-content-start align-items-center mb-2">
 							<div class="col-3 col-lg-1">
-								<img class="rounded-circle" width="50" height="50" src="data:img/*;base64,@Convert.ToBase64String(member.PictureData)">
+							@if (member.PictureData is not null)
+							{
+								<img src="data:image/*;base64,@(Convert.ToBase64String(member.PictureData))" class="rounded-circle" width="50" height="50">
+							}
+							else
+							{
+								<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle" width="50" height="50">
+							}
 							</div>
 							<div class="col-9 col-lg-11">
 								<p class="card-text ms-3"><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@member.Id">@member.FullName</a></p>

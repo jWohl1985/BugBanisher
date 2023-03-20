@@ -253,7 +253,7 @@ public static class SeedData
 					Name = "Project Management Software",
 					Description = "The client wants us to build them a web application they can use to manage their projects. It will be an issue tracking application similar to" +
 					" the BugBanisher we use. We need to meet with them to determine what their projects entail and the scope of work. This is going to a big project that will keep" +
-					" several people tied up for the foreseeable future. Dennis is the project manager. Let's get meetings under way as soon as possible.",
+					" several people tied up for the foreseeable future. Darren will be the project manager. Let's get meetings under way as soon as possible.",
 					Created = DateTime.Now - new TimeSpan(days: 60, hours: 0, minutes: 0, seconds: 0),
 					Deadline = DateTime.Now + new TimeSpan(days: 305, hours: 0, minutes: 0, seconds: 0),
 					ProjectManagerId = darrenJohnson.Id,
@@ -428,6 +428,61 @@ public static class SeedData
 				Created = DateTime.Now - new TimeSpan(days: 20, hours: 0, minutes: 0, seconds: 0),
 				IsArchived = true,
 			},
+
+			new Ticket()
+			{
+				ProjectId = diner.Id,
+				TicketTypeId = "feature",
+				TicketStatusId = "development",
+				TicketPriorityId = "medium",
+				CreatorId = williamCasey.Id,
+				DeveloperId = hermanCampos.Id,
+				Title = "Menu page",
+				Description = "Can we add a link in the nav bar to a new page that shows the current menu? See the attachment.",
+				Created = DateTime.Now - new TimeSpan(days: 1, hours: 0, minutes: 0, seconds: 0),
+			},
+
+			new Ticket()
+			{
+				ProjectId = diner.Id,
+				TicketTypeId = "other",
+				TicketStatusId = "pending",
+				TicketPriorityId = "low",
+				CreatorId = williamCasey.Id,
+				DeveloperId = hermanCampos.Id,
+				Title = "New contact info",
+				Description = "See the attachment, can we please update the \"Contact Us\" page with this new information?",
+				Created = DateTime.Now,
+			},
+
+			new Ticket()
+			{
+				ProjectId = diner.Id,
+				TicketTypeId = "bug",
+				TicketStatusId = "complete",
+				TicketPriorityId = "high",
+				CreatorId = williamCasey.Id,
+				DeveloperId = hermanCampos.Id,
+				Title = "Dead links",
+				Description = "Some of the links in the footer are going to the Not Found page, I think it's because we renamed some of the files. Can you update the references please?",
+				Created = DateTime.Now - new TimeSpan(days: 1, hours: 0, minutes: 0, seconds: 0),
+			},
+
+			new Ticket()
+			{
+				ProjectId = diner.Id,
+				TicketTypeId = "other",
+				TicketStatusId = "complete",
+				TicketPriorityId = "high",
+				CreatorId = hermanCampos.Id,
+				DeveloperId = hermanCampos.Id,
+				Title = "Presentation meeting",
+				Description = "We finished the initial design based on our meetings, we need to present the final look to the client and make sure they're happy with it." +
+				" I have a Zoom call with the customer at 9:30am tomorrow. I'll present the layout and examples we came up with and then we should be able to get started" +
+				" if they like it. Link to the meeting if you want to join: https://teams.microsoft.com/l/app/not-a-real-link",
+				Created = DateTime.Now - new TimeSpan(days: 3, hours: 0, minutes: 0, seconds: 0),
+				IsArchived = true,
+			}
 		};
 
 		try

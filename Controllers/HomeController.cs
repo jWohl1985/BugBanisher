@@ -55,7 +55,8 @@ public class HomeController : Controller
         int companyId = User.Identity!.GetCompanyId();
 
         List<Project> projects = await _projectService.GetAllActiveCompanyProjectsAsync(companyId);
-        List<Ticket> tickets = await _ticketService.GetAllOpenCompanyTicketsAsync(companyId);
+        List<Ticket> openTickets = await _ticketService.GetAllOpenCompanyTicketsAsync(companyId);
+        List<Ticket> completedTickets = await _ticketService.GetCompletedTicketsAsync(companyId);
         List<AppUser> employees = await _companyService.GetAllEmployeesAsync(companyId);
 
         int adminCount = (await _companyService.GetAllAdminsAsync(companyId)).Count();
@@ -66,7 +67,8 @@ public class HomeController : Controller
         return new DashboardViewModel()
         {
             ActiveProjects = projects,
-            OpenTickets = tickets,
+            OpenTickets = openTickets,
+            CompletedTickets = completedTickets,
             Employees = employees,
             AdminCount = adminCount,
             ProjectManagerCount = projectManagerCount,
@@ -83,12 +85,14 @@ public class HomeController : Controller
 
         List<Project> projects = await _projectService.GetProjectsByProjectManagerAsync(user.Id);
         List<Ticket> tickets = await _ticketService.GetUserOpenTicketsAsync(user.Id);
+        List<Ticket> completedTickets = await _ticketService.GetCompletedTicketsAsync(companyId);
         List<AppUser> employees = await _companyService.GetAllEmployeesAsync(companyId);
 
         return new DashboardViewModel()
         {
             ActiveProjects = projects,
             OpenTickets = tickets,
+            CompletedTickets = completedTickets,
             Employees = employees,
         };
     }

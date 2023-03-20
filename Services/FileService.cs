@@ -60,4 +60,7 @@ public class FileService : IFileService
         fileImage = Path.GetExtension(file).Replace(".", "");
         return $"/img/contenttype/{fileImage}.png";
     }
+
+    public string GetDefaultUserPicPath() => "img/ProfilePics/Default User.jpg";
+    public string GetDefaultProjectPicPath() => "img/ProjectPics/defaultProject.jpg";
 }

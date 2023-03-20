@@ -35,7 +35,7 @@
                         </a>
                     </li>
                     <li>
-                        <a class="@(IsAction("ManageTeamMembers") ? "active" : "")" asp-controller="Company" asp-action="ManageEmployees" asp-route-companyId="@appUser!.CompanyId">
+                        <a class="@(IsAction("ManageEmployees") ? "active" : "")" asp-controller="Company" asp-action="ManageEmployees" asp-route-companyId="@appUser!.CompanyId">
                             <i class="bi bi-circle"></i><span>Manage Employees</span>
                         </a>
                     </li>
@@ -61,7 +61,7 @@
                             </a>
                         </li>
                         <li>
-                            <a class="@(IsAction("ListArchivedCompanyProjects") ? "active" : "")"
+                            <a class="@(IsAction("ListArchivedProjects") ? "active" : "")"
                             asp-controller="Projects" asp-action="ListArchivedProjects">
                                 <i class="bi bi-circle"></i><span>All Archived Projects</span>
                             </a>

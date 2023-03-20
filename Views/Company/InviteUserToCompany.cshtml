@@ -35,7 +35,7 @@
                     <h5 class="card-title">Invite a user to @ViewData["CompanyName"]</h5>
 
                     <p>Once the user has registered their e-mail address on the site, you can use it to invite them to your company.
-                        After they accept, use the Manage Roles page under "Company" to assign them a role.</p>
+                        After they accept, use the <a asp-controller="Company" asp-action="ManageEmployees">Manage Employees</a> to assign them a role.</p>
 
                     <form class="row g-3 mt-3" method="post" asp-controller="Company" asp-action="InviteUserToCompany">
                         <div class="col-12">

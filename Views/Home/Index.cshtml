@@ -3,6 +3,7 @@
 @model DashboardViewModel
 
 @inject IProjectService ProjectService
+@inject IFileService FileService
 
 <section class="section dashboard">
 	<div class="row">
@@ -40,6 +41,7 @@
 									<span class="small pt-1 fw-bold">@Model.ActiveProjects.Count()</span> <span class="text-muted small pt-2 ps-1">active</span><br />
 									<span class="small pt-1 fw-bold">@Model.ActiveProjects.Where(p => p.ProjectManagerId is null).Count()</span> <span class="text-muted small pt-2 ps-1">no PM assigned</span><br />
 									<span class="small pt-1 fw-bold">@Model.ActiveProjects.Where(p => (p.Deadline - DateTime.Now) < new TimeSpan(30,0,0,0)).Count()</span> <span class="text-muted small pt-2 ps-1">deadline &lt; 1 month</span><br />
+									<span class="small pt-1 fw-bold">@Model.ActiveProjects.Where(p => (p.Deadline - DateTime.Now) < new TimeSpan(7, 0, 0, 0)).Count()</span> <span class="text-muted small pt-2 ps-1">deadline &lt; 1 week</span>
 								</div>
 							</div>
 						</div>
@@ -62,7 +64,7 @@
 									<span class="small pt-1 fw-bold">@Model.OpenTickets.Count()</span> <span class="text-muted small pt-2 ps-1">open</span><br />
 									<span class="small pt-1 fw-bold">@Model.OpenTickets.Where(t => (t.DeveloperId is null || t.TicketStatusId == "hold" || t.TicketStatusId == "pending")).Count()</span> <span class="text-muted small pt-2 ps-1">action required</span><br />
 									<span class="small pt-1 fw-bold">@Model.OpenTickets.Where(t => (t.TicketPriorityId == "high")).Count()</span> <span class="text-muted small pt-2 ps-1">high priority</span><br />
-									<span class="small pt-1 fw-bold">@Model.OpenTickets.Where(t => (t.TicketStatusId == "complete")).Count()</span> <span class="text-muted small pt-2 ps-1">ready to archive</span><br />
+									<span class="small pt-1 fw-bold">@Model.CompletedTickets.Count()</span> <span class="text-muted small pt-2 ps-1">ready to archive</span><br />
 								</div>
 							</div>
 						</div>
@@ -120,16 +122,23 @@
 											<td class="align-middle"><a class="link" asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@project.Id">@project.Name</a></td>
 											@if (ProjectManager is not null)
 											{
-												<td class="align-middle">
-													<img class="rounded-circle ms-1" width="50" height="50" src="data:image/*;base64,@(Convert.ToBase64String(ProjectManager.PictureData))">
+												<td class="d-flex align-middle">
+													@if (ProjectManager.PictureData is not null)
+													{
+														<img src="data:image/*;base64,@(Convert.ToBase64String(ProjectManager.PictureData))" class="rounded-circle ms-1" width="50" height="50">
+													}
+													else
+													{
+														<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle ms-1" width="50" height="50">
+													}
 													<a class="ms-2" asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@ProjectManager.Id">@ProjectManager.FullName</a>
 												</td>
 											}
 											else
 											{
-												<td class="align-middle">
-													<img class="rounded-circle ms-1" width="50" height="50" src="img/ProfilePics/Default User.jpg"/>
-													<span class="ms-2 fw-bold text-danger">Unassigned!</span>
+												<td class="d-flex align-middle">
+													<img class="rounded-circle ms-1" width="50" height="50" src="@FileService.GetDefaultUserPicPath()"/>
+													<span class="ms-2 fw-bold text-danger align-self-center">Unassigned!</span>
 												</td>
 											}
 											<td class="align-middle">@project.Deadline.ToShortDateString() (@((project.Deadline - DateTime.Now).Days) days)</td>
@@ -171,7 +180,14 @@
 											@if (ticket.Developer is not null)
 											{
 												<td class="align-middle">
-													<img class="rounded-circle ms-1" width="50" height="50" src="data:image/*;base64,@(Convert.ToBase64String(ticket.Developer.PictureData))">
+													@if (ticket.Developer.PictureData is not null)
+													{
+														<img src="data:image/*;base64,@(Convert.ToBase64String(ticket.Developer.PictureData))" class="rounded-circle ms-1" width="50" height="50">
+													}
+													else
+													{
+														<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle ms-1" width="50" height="50">
+													}
 													<a class="ms-2" asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@ticket.Developer.Id">@ticket.Developer.FullName</a>
 												</td>
 											}
@@ -214,7 +230,17 @@
 										@foreach (AppUser employee in Model.Employees)
 										{
 											<tr>
-												<td><img class="rounded-circle ms-1" width="50" height="50" src="data:image/*;base64,@(Convert.ToBase64String(employee.PictureData))" /><a class="ms-2" asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@employee.Id">@employee.FullName</a></td>
+												<td>
+													@if (employee.PictureData is not null)
+													{
+														<img src="data:image/*;base64,@(Convert.ToBase64String(employee.PictureData))" class="rounded-circle ms-1" width="50" height="50">
+													}
+													else
+													{
+														<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle ms-1" width="50" height="50">
+													}
+													<a class="ms-2" asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@employee.Id">@employee.FullName</a>
+												</td>
 												<td>@employee.JobTitle</td>
 												<td>@Model.ActiveProjects.Where(p => p.Team.Contains(employee) || p.ProjectManagerId == employee.Id).Count()</td>
 												<td>@Model.OpenTickets.Where(t => t.Project!.ProjectManagerId == employee.Id || t.DeveloperId == employee.Id).Count()</td>

@@ -16,8 +16,8 @@ public class Project
 
     [NotMapped]
     public IFormFile? PictureFile { get; set; }
-    public byte[] PictureData { get; set; } = new byte[0];
-    public string PictureExtension { get; set; } = "image/png";
+    public byte[]? PictureData { get; set; }
+    public string? PictureExtension { get; set; }
 
 
     public Company? Company { get; set; }

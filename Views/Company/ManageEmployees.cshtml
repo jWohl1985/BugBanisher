@@ -47,6 +47,17 @@
 	</div>
 }
 
+<!-- Error alert -->
+@if (TempData.ContainsKey("Error"))
+{
+	<div class="col-lg-6">
+		<div class="alert alert-danger alert-dismissible fade show" role="alert">
+			@TempData["Error"]
+			<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+		</div>
+	</div>
+}
+
 <h5>Administrators</h5>
 @if (admins.Count() == 0)
 {
@@ -65,15 +76,22 @@
 	<div class="card col col-md-8 col-lg-5 p-3">
 		<div class="d-flex">
 			<div class="flex-shrink-0">
-				<img class="rounded-circle align-self-center ms-1 me-1" width="60" height="60" src="data:image/*;base64,@(Convert.ToBase64String(user.PictureData))">
+				@if (user.PictureData is not null)
+				{
+					<img src="data:image/*;base64,@(Convert.ToBase64String(user.PictureData))" class="rounded-circle align-self-center ms-1 me-1" width="60" height="60">
+				}
+				else
+				{
+					<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle align-self-center ms-1 me-1" width="60" height="60">
+				}
 			</div>
 			<div class="flex-grow-1 ms-3">
-				<div class="row">
+				<div class="row row-cols-1 row-cols-md-2">
 					<div class="col-auto">
 						<h5 class="card-title d-inline"><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@user.Id">@user.FullName</a></h5>
 						<h6 class="card-subtitle mt-2">Title: @user.JobTitle</h6>
 					</div>
-					<div class="col d-flex align-items-center">
+					<div class="col d-flex align-items-center mt-2 mt-md-0">
 						<a class="btn btn-sm btn-outline-info" asp-controller="Company" asp-action="EditEmployee" asp-route-id="@user.Id"><i class="bi bi-pencil-square"></i></a>
 						<a class="btn btn-sm btn-outline-danger ms-1" asp-controller="Company" asp-action="ConfirmRemoveEmployee" asp-route-employeeId="@user.Id"><i class="bi bi-trash"></i></a>
 					</div>
@@ -101,15 +119,22 @@
 	<div class="card col col-md-8 col-lg-5 p-3">
 		<div class="d-flex">
 			<div class="flex-shrink-0">
-				<img class="rounded-circle align-self-center ms-1 me-1" width="60" height="60" src="data:image/*;base64,@(Convert.ToBase64String(user.PictureData))">
+				@if (user.PictureData is not null)
+				{
+					<img src="data:image/*;base64,@(Convert.ToBase64String(user.PictureData))" class="rounded-circle align-self-center ms-1 me-1" width="60" height="60">
+				}
+				else
+				{
+					<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle align-self-center ms-1 me-1" width="60" height="60">
+				}
 			</div>
 			<div class="flex-grow-1 ms-2">
-				<div class="row">
+				<div class="row row-cols-1 row-cols-md-2">
 					<div class="col-auto">
 						<h5 class="card-title d-inline"><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@user.Id">@user.FullName</a></h5>
 						<h6 class="card-subtitle mt-2">Title: @user.JobTitle</h6>
 					</div>
-					<div class="col d-flex align-items-center">
+					<div class="col d-flex align-items-center mt-2 mt-md-0">
 						<a class="btn btn-sm btn-outline-info" asp-controller="Company" asp-action="EditEmployee" asp-route-id="@user.Id"><i class="bi bi-pencil-square"></i></a>
 						<a class="btn btn-sm btn-outline-danger ms-1" asp-controller="Company" asp-action="ConfirmRemoveEmployee" asp-route-employeeId="@user.Id"><i class="bi bi-trash"></i></a>
 					</div>
@@ -137,15 +162,22 @@
 	<div class="card col col-md-8 col-lg-5 p-3">
 		<div class="d-flex">
 			<div class="flex-shrink-0">
-				<img class="rounded-circle align-self-center ms-1 me-1" width="60" height="60" src="data:image/*;base64,@(Convert.ToBase64String(user.PictureData))">
+				@if (user.PictureData is not null)
+				{
+					<img src="data:image/*;base64,@(Convert.ToBase64String(user.PictureData))" class="rounded-circle align-self-center ms-1 me-1" width="60" height="60">
+				}
+				else
+				{
+					<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle align-self-center ms-1 me-1" width="60" height="60">
+				}
 			</div>
 			<div class="flex-grow-1 ms-2">
-				<div class="row">
+				<div class="row row-cols-1 row-cols-md-2">
 					<div class="col-auto">
 						<h5 class="card-title d-inline"><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@user.Id">@user.FullName</a></h5>
 						<h6 class="card-subtitle mt-2">Title: @user.JobTitle</h6>
 					</div>
-					<div class="col d-flex align-items-center">
+					<div class="col d-flex align-items-center mt-2 mt-md-0">
 						<a class="btn btn-sm btn-outline-info" asp-controller="Company" asp-action="EditEmployee" asp-route-id="@user.Id"><i class="bi bi-pencil-square"></i></a>
 						<a class="btn btn-sm btn-outline-danger ms-1" asp-controller="Company" asp-action="ConfirmRemoveEmployee" asp-route-employeeId="@user.Id"><i class="bi bi-trash"></i></a>
 					</div>
@@ -174,15 +206,22 @@
 	<div class="card col col-md-8 col-lg-5 p-3">
 		<div class="d-flex">
 			<div class="flex-shrink-0">
-				<img class="rounded-circle align-self-center ms-1 me-1" width="60" height="60" src="data:image/*;base64,@(Convert.ToBase64String(user.PictureData))">
+				@if (user.PictureData is not null)
+				{
+					<img src="data:image/*;base64,@(Convert.ToBase64String(user.PictureData))" class="rounded-circle align-self-center ms-1 me-1" width="60" height="60">
+				}
+				else
+				{
+					<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle align-self-center ms-1 me-1" width="60" height="60">
+				}
 			</div>
 			<div class="flex-grow-1 ms-2">
-				<div class="row">
+				<div class="row row-cols-1 row-cols-md-2">
 					<div class="col-auto">
 						<h5 class="card-title d-inline"><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@user.Id">@user.FullName</a></h5>
 						<h6 class="card-subtitle mt-2">Title: @user.JobTitle</h6>
 					</div>
-					<div class="col d-flex align-items-center">
+					<div class="col d-flex align-items-center mt-2 mt-md-0">
 						<a class="btn btn-sm btn-outline-info" asp-controller="Company" asp-action="EditEmployee" asp-route-id="@user.Id"><i class="bi bi-pencil-square"></i></a>
 						<a class="btn btn-sm btn-outline-danger ms-1" asp-controller="Company" asp-action="ConfirmRemoveEmployee" asp-route-employeeId="@user.Id"><i class="bi bi-trash"></i></a>
 					</div>

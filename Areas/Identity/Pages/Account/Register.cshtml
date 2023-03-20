@@ -5,7 +5,7 @@
     Layout = "_LoginLayout.cshtml";
 }
 
-<section class="section register min-vh-100 d-flex flex-column align-items-center justify-content-center py-4">
+<section class="section register min-vh-100 d-flex flex-column align-items-center mt-5 py-4">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
@@ -23,7 +23,7 @@
 
                         <div class="pt-4 pb-2">
                             <h5 class="card-title text-center pb-0 fs-4">Create an Account</h5>
-                            <p class="text-center small">Enter your details to create account</p>
+                            <p class="text-center small">Enter your details to create an account</p>
                         </div>
 
                         <form id="registerForm" asp-route-returnUrl="/" method="post" class="row g-3">
@@ -56,7 +56,7 @@
                             <div class="col-12">
                                 <button class="btn btn-primary w-100" type="submit">Create Account</button>
                             </div>
-                            <div class="col-12">
+                            <div class="col-12 text-center">
                                 <p class="small mb-0">Already have an account? <a asp-area="Identity" asp-page="Login">Log in</a></p>
                             </div>
                         </form>

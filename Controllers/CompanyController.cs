@@ -7,6 +7,7 @@ using BugBanisher.Models;
 using BugBanisher.Models.Enums;
 using BugBanisher.Models.ViewModels;
 using BugBanisher.Services.Interfaces;
+using System.Data;
 
 namespace BugBanisher.Controllers;
 
@@ -128,6 +129,27 @@ public class CompanyController : Controller
         if (employeeToEdit is null)
             return View("NotFound");
 
+        if (await _userManager.IsInRoleAsync(employeeToEdit, nameof(Roles.Admin)))
+        {
+            List<AppUser> admins = await _companyService.GetAllAdminsAsync(employeeToEdit.CompanyId!.Value);
+
+            if (admins.Count == 1)
+            {
+                ViewData["Error"] = "You cannot remove the last administrator for your company! You must designate another user as an administrator first.";
+                IEnumerable<IdentityRole> roles = await _roleService.GetRolesAsync();
+
+                EditEmployeeViewModel newViewModel = new()
+                {
+                    Employee = employeeToEdit,
+                    JobTitle = viewModel.JobTitle,
+                    AvailableRoles = new SelectList(roles, "Name", "Name", "Admin"),
+                    SelectedRole = "Admin",
+                };
+
+                return View(newViewModel);
+            }
+        }
+
         if (viewModel.JobTitle != employeeToEdit.JobTitle)
         {
             employeeToEdit.JobTitle = viewModel.JobTitle;
@@ -140,20 +162,31 @@ public class CompanyController : Controller
             await _roleService.AddUserToRoleAsync(employeeToEdit, viewModel.SelectedRole);
         }
 
-        viewModel.AvailableRoles = new SelectList(await _roleService.GetRolesAsync(), "Name", "Name", viewModel.SelectedRole);
-
         TempData["Message"] = "Employee changes saved!";
         return RedirectToAction(nameof(ManageEmployees));
     }
 
     [HttpGet]
     [Authorize]
-    public async Task<ViewResult> ConfirmRemoveEmployee(string employeeId)
+    public async Task<IActionResult> ConfirmRemoveEmployee(string employeeId)
     {
         AppUser? employee = await _userManager.FindByIdAsync(employeeId);
 
         if (employee is null)
             return View("NotFound");
+
+        if (await _userManager.IsInRoleAsync(employee, nameof(Roles.Admin)))
+        {
+            List<AppUser> admins = await _companyService.GetAllAdminsAsync(employee.CompanyId!.Value);
+
+            if (admins.Count == 1)
+            {
+                TempData["Error"] = "You cannot remove the last administrator for your company! You must designate another user as an administrator first.";
+                IEnumerable<IdentityRole> roles = await _roleService.GetRolesAsync();
+
+                return RedirectToAction(nameof(ManageEmployees));
+            }
+        }
 
         return View(employee);
     }

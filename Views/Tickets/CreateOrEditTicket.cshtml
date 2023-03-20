@@ -2,9 +2,10 @@
 
 @model CreateOrEditTicketViewModel
 
+@inject UserManager<AppUser> UserManager
+
 @{
     string createOrEdit = (string)ViewData["Action"]!;
-    bool isStatusDropdownDisabled = User.IsInRole(nameof(Roles.Developer)) ? false : true;
 }
 
 <div class="pagetitle">
@@ -21,6 +22,7 @@
     <input type="hidden" asp-for="Ticket.Id"/>
     <input type="hidden" asp-for="Ticket.Title"/>
     <input type="hidden" asp-for="Ticket.ProjectId"/>
+    <input type="hidden" asp-for="Ticket.DeveloperId" />
     <input type="hidden" asp-for="Ticket.Created" />
     <input type="hidden" asp-for="Ticket.CreatorId" />
     <input type="hidden" asp-for="Ticket.Description"/>
@@ -47,6 +49,7 @@
                 <select class="form-select" asp-items="@Model.Developers" asp-for="SelectedDeveloper">
                     <option value="@null">Unassigned</option>
                 </select>
+                <span class="ms-2 text-muted">Don't see who you're looking for? Make sure they're a member of the project.</span>
             </div>
 
             <div class="form-group mt-3">
@@ -61,12 +64,26 @@
                 </select>
             </div>
 
-            <div class="form-group mt-3">
-                <label asp-for="Statuses">Status</label>
-                <select class="form-select" asp-items="@Model.Statuses" asp-for="SelectedStatus" disabled="@(!Model.IsStatusDropdownEnabled)">
+            @if (Model.Ticket.Developer is not null && (await UserManager.GetUserAsync(User)).Id == Model.Ticket.Developer.Id)
+            {
+                <div class="form-group mt-3">
+                    <label asp-for="Statuses">Status</label>
+                    <select class="form-select" asp-items="@Model.Statuses" asp-for="SelectedStatus">
 
-                </select>
-            </div>
+                    </select>
+                </div>
+            }
+            else
+            {
+                <div class="form-group mt-3">
+                    <label asp-for="Statuses">Status</label>
+                    <select class="form-select" asp-items="@Model.Statuses" asp-for="SelectedStatus" disabled>
+
+                    </select>
+                    <span class="ms-2 text-danger text-small">Only the developer can set the ticket status</span>
+                    <input type="hidden" asp-for="SelectedStatus" value="@Model.Ticket.TicketStatusId">
+                </div>
+            }
 
             <div class="form-group mt-3 text-center">
                 <button type="submit" class="btn btn-success">@(createOrEdit == "Create" ? "Create" : "Save Changes")</button>

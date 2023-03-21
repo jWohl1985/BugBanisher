@@ -17,7 +17,7 @@
         "Title" => Model.Tickets.OrderBy(t => t.Title),
         "Project" => Model.Tickets.OrderBy(t => t.Project!.Id),
         "Priority" => Model.Tickets.OrderBy(t => t.TicketPriorityId),
-        "Developer" => Model.Tickets.OrderBy(t => t.DeveloperId),
+        "Assigned" => Model.Tickets.OrderBy(t => t.DeveloperId),
         "Type" => Model.Tickets.OrderBy(t => t.TicketTypeId),
         "Status" or _ => Model.Tickets.OrderBy(t => t.TicketStatusId),
     };
@@ -81,7 +81,7 @@
 {
     <div class="card">
         <div class="card-body">
-            <p class="card-text text-center">There are no tickets to show.</p>
+            <p class="card-text text-center mt-3">There are no tickets to show.</p>
         </div>
     </div>
 }
@@ -100,7 +100,7 @@ else
                 <tr>
                     <th>Ticket Title</th>
                     <th>Project</th>
-                    <th class="text-center">Developer</th>
+                    <th class="text-center">Assigned To</th>
                     <th class="text-center">Priority</th>
                     <th class="text-center">Type</th>
                     <th class="text-center">Status</th>
@@ -149,7 +149,7 @@ else
 {
     @if (canPrevPage)
     {
-        <a class="btn btn-sm btn-outline-info" asp-action="List@(Model.TicketListType)Tickets"
+        <a class="btn btn-sm btn-outline-dark" asp-action="List@(Model.TicketListType)Tickets"
             asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(pageNumber-1)" asp-route-perPage="@Model.PerPage">
             Prev
         </a>
@@ -162,7 +162,7 @@ else
 
     @for (int i = Math.Max(pageNumber - 3, 1); i <= Math.Min(pageNumber + 3, numberOfPages); i++)
     {
-        string active = i == pageNumber ? "btn-info" : "btn-outline-info";
+        string active = i == pageNumber ? "btn-dark" : "btn-outline-dark";
 
         <a class="btn btn-sm @active ms-2" type="button" asp-action="List@(Model.TicketListType)Tickets"
             asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@i" asp-route-perPage="@Model.PerPage">
@@ -177,7 +177,7 @@ else
 
     @if (canNextPage)
     {
-        <a class="btn btn-sm btn-outline-info ms-2" asp-action="List@(Model.TicketListType)Tickets"
+        <a class="btn btn-sm btn-outline-dark ms-2" asp-action="List@(Model.TicketListType)Tickets"
             asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(pageNumber+1)" asp-route-perPage="@Model.PerPage">
             Next
         </a>

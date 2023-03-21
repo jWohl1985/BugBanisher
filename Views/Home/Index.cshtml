@@ -164,7 +164,7 @@
 										<tr>
 											<th scope="col">Ticket Name</th>
 											<th scope="col">Project</th>
-											<th scope="col">Developer</th>
+											<th scope="col">Assigned To</th>
 											<th scope="col">Type</th>
 											<th scope="col">Priority</th>
 											<th scope="col">Status</th>
@@ -175,7 +175,7 @@
 										{
 											<tr>
 												<td class="align-middle"><a asp-controller="Tickets" asp-action="ViewTicket" asp-route-ticketId="@ticket.Id"><i class="bi bi-ticket-detailed-fill me-2"></i>@ticket.Title</a></td>
-												<td class="align-middle"><a asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@ticket.Id">@ticket.Project!.Name</a></td>
+												<td class="align-middle"><a asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@ticket.Project!.Id">@ticket.Project!.Name</a></td>
 												@if (ticket.Developer is not null)
 												{
 													<td class="align-middle">

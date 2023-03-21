@@ -84,65 +84,74 @@
                                 <img class="img-fluid" style="max-height: 100px;" src="@FileService.GetDefaultProjectPicPath()"/>
                             }
                         </a>
-                        </div>
-                        <div class="col-8 col-md-5">
-                            <strong>Project Name:</strong>
-                            <a asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@project.Id">
-                                <h5 class="card-text">@project.Name</h5>
-                            </a>
-                        </div>
-                        <div class="col-12 col-md-5 mt-3 mb-2 mt-md-0 mb-md-0">
-                            @if (projectManager is not null)
-                            {
-                                <span><strong>Project Manager:</strong></span>
-                                <div class="d-flex align-items-center">
-                                    <div class="flex-shrink-0 mt-2">
-                                    @if (projectManager.PictureData is not null)
-                                    {
-                                        <img src="data:image/*;base64,@(Convert.ToBase64String(projectManager.PictureData))" class="rounded-circle align-self-center ms-1 me-1" width="60" height="60">
-                                    }
-                                    else
-                                    {
-                                        <img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle align-self-center ms-1 me-1" width="60" height="60">
-                                    }
-                                    </div>
-                                    <div class="flex-grow-1 mt-2 ms-3">
-                                        <span><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@projectManager.Id">@projectManager.FullName</a></span>
-                                    </div>
-                                </div>
-                            }
-                            else
-                            {
-                                <span><strong>Project Manager:</strong></span>
-                                <div class="d-flex align-items-center">
-                                    <div class="flex-shrink-0 mt-2">
-                                        <img class="rounded-circle align-self-center ms-1 me-1" width="60" height="60" src="~/@(FileService.GetDefaultUserPicPath())" />
-                                    </div>
-                                    <div class="flex-grow-1 mt-2 ms-3">
-                                        <span class="fw-bold text-danger">Unassigned!</span>
-                                    </div>
-                                </div>
-                            }
-                        </div>
                     </div>
+                    <div class="col-8 col-md-5">
+                        <strong>Project Name:</strong>
+                        <a asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@project.Id">
+                            <h5 class="card-text">@project.Name</h5>
+                        </a>
+                    </div>
+                    <div class="col-12 col-md-5 mt-3 mb-2 mt-md-0 mb-md-0">
+                        @if (projectManager is not null)
+                        {
+                            <span><strong>Project Manager:</strong></span>
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 mt-2">
+                                @if (projectManager.PictureData is not null)
+                                {
+                                    <img src="data:image/*;base64,@(Convert.ToBase64String(projectManager.PictureData))" class="rounded-circle align-self-center ms-1 me-1" width="60" height="60">
+                                }
+                                else
+                                {
+                                    <img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle align-self-center ms-1 me-1" width="60" height="60">
+                                }
+                                </div>
+                                <div class="flex-grow-1 mt-2 ms-3">
+                                    <span><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@projectManager.Id">@projectManager.FullName</a></span>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <span><strong>Project Manager:</strong></span>
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 mt-2">
+                                    <img class="rounded-circle align-self-center ms-1 me-1" width="60" height="60" src="~/@(FileService.GetDefaultUserPicPath())" />
+                                </div>
+                                <div class="flex-grow-1 mt-2 ms-3">
+                                    <span class="fw-bold text-danger">Unassigned!</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+                @if (!project.IsArchived)
+                {
                     <div class="row d-flex align-items-end justify-content-start">
                         <div class="col col-md-6">
-                            <p class="card-text mt-3">Deadline: @project.Deadline.ToShortDateString() - @((project.Deadline - DateTime.Now).Days) days remaining</p>
-					        <div class="progress mt-0">
-					        @{
-						        float daysUsed = (DateTime.Now - project.Created).Days;
-						        float totalDays = (project.Deadline - project.Created).Days;
-						        float percentComplete = (daysUsed / totalDays) * 100;
-					        }
-						        <div class="progress-bar progress-bar-striped" role="progressbar" style="width: @(percentComplete)%" aria-valuenow="@percentComplete" aria-valuemin="0" aria-valuemax="100"></div>
-					        </div>
+                            <p class="card-text mt-3 @(project.Deadline < DateTime.Now ? "text-danger" : "")">Deadline: @project.Deadline.ToShortDateString() - @((project.Deadline - DateTime.Now).Days) days remaining</p>
+                            <div class="progress mt-0">
+                                @{
+                                    float daysUsed = (DateTime.Now - project.Created).Days;
+                                    float totalDays = (project.Deadline - project.Created).Days;
+                                    float percentComplete = (daysUsed / totalDays) * 100;
+                                }
+                                <div class="progress-bar progress-bar-striped" role="progressbar" style="width: @(percentComplete)%" aria-valuenow="@percentComplete" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
                         </div>
                         <div class="col col-md-6">
                             <p class="card-text"><strong>Tickets: </strong>@ticketSummary</p>
                         </div>
-                        </div>
-                </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="row d-flex align-items-end justify-content-start">
+                        <p class="card-text text-muted mt-2">Project is archived.</p>
+                    </div>
+                }
             </div>
+        </div>
     </div>
 }
 

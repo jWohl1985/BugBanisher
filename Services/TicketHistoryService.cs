@@ -60,7 +60,7 @@ namespace BugBanisher.Services
                 TicketId = ticket.Id,
                 AppUserId = userMakingChangeId,
                 Created = DateTime.Now,
-                Description = $"{userMakingChange.FullName} changed the developer to {ticket.Developer!.FullName}",
+                Description = $"{userMakingChange.FullName} changed the ticket assignment to {ticket.Developer!.FullName}",
             };
 
             await _context.TicketHistories.AddAsync(developerAssignmentEvent);
@@ -96,7 +96,7 @@ namespace BugBanisher.Services
                 $"Title: {ticket.Title}</br>" +
                 $"Priority: {ticket.Priority!.Description}</br>" +
                 $"Type: {ticket.Type!.Description}</br>" +
-                $"Developer: {(ticket.Developer is not null ? ticket.Developer.FullName : "Unassigned")}</br></br>" +
+                $"Assigned To: {(ticket.Developer is not null ? ticket.Developer.FullName : "Unassigned")}</br></br>" +
                 $"Description: {ticket.Description}",
             };
 

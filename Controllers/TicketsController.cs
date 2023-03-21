@@ -79,7 +79,7 @@ public class TicketsController : Controller
             PerPage = perPage.ToString(),
 			SortBy = sortBy,
 
-            SortByOptions = new SelectList(new string[] { "Title", "Project", "Developer", "Priority", "Type", "Status" }, sortBy),
+            SortByOptions = new SelectList(new string[] { "Title", "Project", "Assigned", "Priority", "Type", "Status" }, sortBy),
             PerPageOptions = new SelectList(new string[] { "5", "10", "20", "30", "40", "50" }, perPage.ToString()),
         };
 
@@ -104,7 +104,7 @@ public class TicketsController : Controller
             PerPage = perPage.ToString(),
             SortBy = sortBy,
 
-            SortByOptions = new SelectList(new string[] { "Project Name", "Developer", "Priority", "Type", "Status" }, sortBy),
+            SortByOptions = new SelectList(new string[] { "Project Name", "Assigned", "Priority", "Type", "Status" }, sortBy),
             PerPageOptions = new SelectList(new string[] { "5", "10", "20", "30", "40", "50" }, perPage.ToString()),
         };
 
@@ -129,7 +129,7 @@ public class TicketsController : Controller
             PerPage = perPage.ToString(),
             SortBy = sortBy,
 
-            SortByOptions = new SelectList(new string[] { "Project Name", "Developer", "Priority", "Type", "Status" }, sortBy),
+            SortByOptions = new SelectList(new string[] { "Project Name", "Assigned", "Priority", "Type", "Status" }, sortBy),
             PerPageOptions = new SelectList(new string[] { "5", "10", "20", "30", "40", "50" }, perPage.ToString()),
         };
 
@@ -405,10 +405,15 @@ public class TicketsController : Controller
 			CreatorId = appUser.Id,
 		};
 
+		List<AppUser> usersAvailableToAssign = await _projectService.GetDevelopersOnProjectAsync(ticket.ProjectId);
+
+		if (!usersAvailableToAssign.Contains(appUser))
+			usersAvailableToAssign.Add(appUser); // creator should be able to assign themself the ticket
+
 		CreateOrEditTicketViewModel viewModel = new CreateOrEditTicketViewModel
 		{
 			Ticket = ticket,
-			Developers = new SelectList(await _projectService.GetDevelopersOnProjectAsync(ticket.ProjectId), "Id", "FullName", "Unassigned"),
+			Developers = new SelectList(usersAvailableToAssign, "Id", "FullName", "Unassigned"),
 			Priorities = new SelectList(await _ticketService.GetTicketPrioritiesAsync(), "Id", "Description", "medium"),
 			Types = new SelectList(await _ticketService.GetTicketTypesAsync(), "Id", "Description", "bug"),
 			Statuses = new SelectList(await _ticketService.GetTicketStatusesAsync(), "Id", "Description", "unassigned"),
@@ -421,12 +426,17 @@ public class TicketsController : Controller
 	{
 		AppUser appUser = await _userManager.GetUserAsync(User);
 
-		CreateOrEditTicketViewModel viewModel = new CreateOrEditTicketViewModel()
+        List<AppUser> usersAvailableToAssign = await _projectService.GetDevelopersOnProjectAsync(ticket.ProjectId);
+
+        if (!usersAvailableToAssign.Contains(appUser))
+            usersAvailableToAssign.Add(appUser); // creator/editor should be able to assign themself the ticket
+
+        CreateOrEditTicketViewModel viewModel = new CreateOrEditTicketViewModel()
 		{
 			Ticket = ticket,
 			Title = ticket.Title,
 			Description = ticket.Description,
-			Developers = new SelectList(await _projectService.GetDevelopersOnProjectAsync(ticket.ProjectId), "Id", "FullName", ticket.DeveloperId),
+			Developers = new SelectList(usersAvailableToAssign, "Id", "FullName", ticket.DeveloperId),
 			Priorities = new SelectList(await _ticketService.GetTicketPrioritiesAsync(), "Id", "Description", ticket.TicketPriorityId),
 			Types = new SelectList(await _ticketService.GetTicketTypesAsync(), "Id", "Description", ticket.TicketTypeId),
 			Statuses = new SelectList(await _ticketService.GetTicketStatusesAsync(), "Id", "Description", ticket.TicketStatusId),
@@ -458,7 +468,7 @@ public class TicketsController : Controller
             TicketId = ticket.Id,
             AppUserId = (await _userManager.GetUserAsync(User)).Id,
             Created = DateTime.Now,
-            Description = $"{editingUser.FullName} made the following changes:</br></br><ul>",
+            Description = $"{editingUser.FullName} made the following changes:</br><ul>",
         };
 
         if (ticket.Title != viewModel.Title)
@@ -474,7 +484,7 @@ public class TicketsController : Controller
             historyItem.Description += $"<li>Changed the ticket priority to <strong>{await _ticketService.GetTicketPriorityDescriptionByIdAsync(viewModel.SelectedPriority)}</strong></li>";
 
         if (ticket.TicketStatusId != viewModel.SelectedStatus && ticket.TicketStatusId != "unassigned")
-            historyItem.Description += $"<li>Changed the ticket status to {await _ticketService.GetTicketStatusDescriptionByIdAsync(viewModel.SelectedStatus)}</strong></li>";
+            historyItem.Description += $"<li>Changed the ticket status to <strong>{await _ticketService.GetTicketStatusDescriptionByIdAsync(viewModel.SelectedStatus)}</strong></li>";
 
         if (ticket.DeveloperId != viewModel.SelectedDeveloper)
         {

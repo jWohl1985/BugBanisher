@@ -15,7 +15,7 @@
 
     IEnumerable<Project> sortedProjects = Model.SortBy switch
     {
-        "Open Tickets" => Model.Projects.OrderBy(p => p.Tickets.Count),
+        "Open Tickets" => Model.Projects.OrderByDescending(p => p.Tickets.Count),
         "Due Date" => Model.Projects.OrderBy(p => p.Deadline),
         "Project Manager" => Model.Projects.OrderBy(p => p.ProjectManagerId),
         "Project Name" or _ => Model.Projects.OrderBy(p => p.Name),
@@ -53,8 +53,6 @@
         </div>
     </div>
     
-        
-
 </form>
 
 @foreach (Project project in sortedProjects.Skip((pageNumber - 1) * perPage).Take(perPage))
@@ -67,10 +65,15 @@
     int onHoldTickets = openTickets.Where(t => t.TicketStatusId == "hold").Count();
     int priorityTickets = openTickets.Where(t => t.TicketPriorityId == "high").Count();
 
-    string ticketSummary = $"{openTickets.Count} open ({unassignedTickets} unassigned, {onHoldTickets} on hold, {priorityTickets} high priority)";
+    string ticketSummary = $"{openTickets.Count} open ({unassignedTickets} unassigned/pending, {onHoldTickets} on hold, {priorityTickets} high priority)";
+
+    float daysRemaining = (project.Deadline - DateTime.Now).Days;
+    float daysUsed = (DateTime.Now - project.Created).Days;
+    float totalDays = (project.Deadline - project.Created).Days;
+    float percentComplete = daysRemaining > 0 ? (daysUsed / totalDays) * 100 : 100;
 
     <div class="row mb-1">
-        <div class="card col-md-8">
+        <div class="card col-md-9">
             <div class="card-body">
                 <div class="row d-flex align-items-center justify-content-start mt-3">
                     <div class="col-4 col-md-2">
@@ -81,7 +84,7 @@
                             }
                             else
                             {
-                                <img class="img-fluid" style="max-height: 100px;" src="@FileService.GetDefaultProjectPicPath()"/>
+                                <img class="img-fluid" style="max-height: 100px;" src="~/@FileService.GetDefaultProjectPicPath()"/>
                             }
                         </a>
                     </div>
@@ -129,16 +132,12 @@
                 {
                     <div class="row d-flex align-items-end justify-content-start">
                         <div class="col col-md-6">
-                            <p class="card-text mt-3 @(project.Deadline < DateTime.Now ? "text-danger" : "")">Deadline: @project.Deadline.ToShortDateString() - @((project.Deadline - DateTime.Now).Days) days remaining</p>
+                            <p class="card-text mt-3 @(daysRemaining <= 0 ? "text-danger" : "")"><strong>Deadline:</strong> @(daysRemaining <= 0 ? "Project is due!" : $"{project.Deadline.ToShortDateString()} - {daysRemaining} days remaining")</p>
                             <div class="progress mt-0">
-                                @{
-                                    float daysUsed = (DateTime.Now - project.Created).Days;
-                                    float totalDays = (project.Deadline - project.Created).Days;
-                                    float percentComplete = (daysUsed / totalDays) * 100;
-                                }
-                                <div class="progress-bar progress-bar-striped" role="progressbar" style="width: @(percentComplete)%" aria-valuenow="@percentComplete" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
+						        <div class="progress-bar progress-bar-striped" role="progressbar" style="width: @(percentComplete)%" aria-valuenow="@percentComplete" aria-valuemin="0" aria-valuemax="100"></div>
+					        </div>
                         </div>
+
                         <div class="col col-md-6">
                             <p class="card-text"><strong>Tickets: </strong>@ticketSummary</p>
                         </div>

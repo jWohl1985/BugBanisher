@@ -7,7 +7,7 @@
 
     int pageNumber = int.Parse(Model.PageNumber);
     int perPage = int.Parse(Model.PerPage);
-    int numberOfPages = (Model.Tickets.Count / perPage) + 1;
+    int numberOfPages = Model.Tickets.Count % perPage == 0 ? (Model.Tickets.Count / perPage) : (Model.Tickets.Count / perPage) + 1;
 
     bool canPrevPage = pageNumber > 1;
     bool canNextPage = pageNumber < numberOfPages;

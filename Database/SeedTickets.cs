@@ -389,18 +389,36 @@ public static class SeedTickets
         }
 
         await SeedCommentsAsync();
-        //await SeedAttachmentsAsync();
+        await SeedAttachmentsAsync();
         await SeedHistoryItemsAsync();
     }
 
     private static async Task SeedCommentsAsync()
     {
         await SeedEstimateProjectCommentsAsync();
+        await SeedDinerProjectCommentsAsync();
+        await SeedProjectManagementProjectCommentsAsync();
+        await SeedInventoryProjectCommentsAsync();
+        await SeedPortfolioProjectCommentsAsync();
+        await SeedDietProjectCommentsAsync();
+    }
+
+    private static async Task SeedAttachmentsAsync()
+    {
+        await SeedDinerProjectAttachmentsAsync();
+        await SeedProjectManagementProjectAttachmentsAsync();
+        await SeedInventoryProjectAttachmentsAsync();
+        await SeedDietProjectAttachmentsAsync();
     }
 
     private static async Task SeedHistoryItemsAsync()
     {
         await SeedEstimateProjectHistoryItemsAsync();
+        await SeedDinerProjectHistoryItemsAsync();
+        await SeedProjectManagementProjectHistoryItemsAsync();
+        await SeedInventoryProjectHistoryItemsAsync();
+        await SeedPortfolioProjectHistoryItemsAsync();
+        await SeedDietProjectHistoryItemsAsync();
     }
 
     private static async Task SeedEstimateProjectCommentsAsync()
@@ -425,6 +443,484 @@ public static class SeedTickets
 
         await _ticketService.AddTicketCommentAsync(assignAPM.Id, williamComment);
         await _ticketService.AddTicketCommentAsync(assignAPM.Id, jeremyComment);
+    }
+
+    private static async Task SeedDinerProjectCommentsAsync()
+    {
+        Ticket presentationMeeting = _context.Tickets.Where(t => t.Title == "Presentation meeting").First();
+        Ticket menuPage = _context.Tickets.Where(t => t.Title == "Menu page").First();
+
+        TicketComment hermanComment = new TicketComment()
+        {
+            TicketId = presentationMeeting.Id,
+            AppUserId = hermanCampos.Id,
+            Created = presentationMeeting.Created + new TimeSpan(days: 1, hours: 0, minutes: 0, seconds: 0),
+            Comment = "They liked it! Marking this complete and archiving. Thanks for jumping in Will.",
+        };
+
+        TicketComment hermanComment2 = new TicketComment()
+        {
+            TicketId = menuPage.Id,
+            AppUserId = hermanCampos.Id,
+            Created = menuPage.Created + new TimeSpan(days: 1, hours: 0, minutes: 0, seconds: 0),
+            Comment = "Working on it now...should be easy!",
+        };
+
+        await _ticketService.AddTicketCommentAsync(presentationMeeting.Id, hermanComment);
+        await _ticketService.AddTicketCommentAsync(menuPage.Id, hermanComment2);
+    }
+
+    private static async Task SeedProjectManagementProjectCommentsAsync()
+    {
+        Ticket ticketPageClarifications = _context.Tickets.Where(t => t.Title == "Ticket page clarifications").First();
+
+        TicketComment darrenComment = new TicketComment()
+        {
+            TicketId = ticketPageClarifications.Id,
+            AppUserId = darrenJohnson.Id,
+            Created = ticketPageClarifications.Created + new TimeSpan(days: 0, hours: 6, minutes: 0, seconds: 0),
+            Comment = "@Amanda Gallup Does 10:00am tomorrow work?",
+        };
+
+        TicketComment amandaComment = new TicketComment()
+        {
+            TicketId = ticketPageClarifications.Id,
+            AppUserId = amandaGallup.Id,
+            Created = ticketPageClarifications.Created + new TimeSpan(days: 0, hours: 6, minutes: 24, seconds: 0),
+            Comment = "Yes, thanks. Talk to you then.",
+        };
+
+        await _ticketService.AddTicketCommentAsync(ticketPageClarifications.Id, darrenComment);
+        await _ticketService.AddTicketCommentAsync(ticketPageClarifications.Id, amandaComment);
+
+        Ticket pdfGeneration = _context.Tickets.Where(t => t.Title == "PDF generation").First();
+
+        TicketComment darrenComment2 = new TicketComment()
+        {
+            TicketId = pdfGeneration.Id,
+            AppUserId = darrenJohnson.Id,
+            Created = pdfGeneration.Created + new TimeSpan(days: 1, hours: 6, minutes: 0, seconds: 0),
+            Comment = "Sounds good!",
+        };
+
+        await _ticketService.AddTicketCommentAsync(pdfGeneration.Id, darrenComment2);
+
+        Ticket newView = _context.Tickets.Where(t => t.Title == "New view - employee workload").First();
+
+        TicketComment amandaComment2 = new TicketComment()
+        {
+            TicketId = newView.Id,
+            AppUserId = amandaGallup.Id,
+            Created = newView.Created + new TimeSpan(days: 0, hours: 3, minutes: 59, seconds: 0),
+            Comment = "@Darren Johnson -- there's no attachment. When we spoke you weren't sure if we actually had it yet. Placing this on hold for now.",
+        };
+
+        TicketComment darrenComment3 = new TicketComment()
+        {
+            TicketId = newView.Id,
+            AppUserId = darrenJohnson.Id,
+            Created = newView.Created + new TimeSpan(days: 0, hours: 5, minutes: 13, seconds: 0),
+            Comment = "@Amanda Gallup Yeah sorry I thought it was in my emails and I created this ticket a little early. I'll let you know when we get it.",
+        };
+
+        await _ticketService.AddTicketCommentAsync(newView.Id, amandaComment2);
+        await _ticketService.AddTicketCommentAsync(newView.Id, darrenComment3);
+
+        Ticket mobileView = _context.Tickets.Where(t => t.Title == "Fix mobile view").First();
+
+        TicketComment hermanComment = new TicketComment()
+        {
+            TicketId = mobileView.Id,
+            AppUserId = hermanCampos.Id,
+            Created = mobileView.Created + new TimeSpan(days: 0, hours: 11, minutes: 28, seconds: 0),
+            Comment = "Might be a good one for the intern. @Shawn Blankenship you want to give this one a try? Remember what I taught you about Bootstrap breakpoints?",
+        };
+
+        TicketComment seanComment = new TicketComment()
+        {
+            TicketId = mobileView.Id,
+            AppUserId = shawnBlankenship.Id,
+            Created = mobileView.Created + new TimeSpan(days: 0, hours: 12, minutes: 13, seconds: 0),
+            Comment = "@Herman Campos Sure!",
+        };
+
+        await _ticketService.AddTicketCommentAsync(mobileView.Id, hermanComment);
+        await _ticketService.AddTicketCommentAsync(mobileView.Id, seanComment);
+
+        Ticket lastProjectMissing = _context.Tickets.Where(t => t.Title == "Last project missing").First();
+
+        TicketComment amandaComment3 = new TicketComment()
+        {
+            TicketId = lastProjectMissing.Id,
+            AppUserId = amandaGallup.Id,
+            Created = lastProjectMissing.Created + new TimeSpan(days: 0, hours: 16, minutes: 17, seconds: 0),
+            Comment = "We let Shawn code this part and it's proving...interesting...to track down. Still working on it!",
+        };
+
+        TicketComment seanComment2 = new TicketComment()
+        {
+            TicketId = lastProjectMissing.Id,
+            AppUserId = shawnBlankenship.Id,
+            Created = lastProjectMissing.Created + new TimeSpan(days: 0, hours: 18, minutes: 12, seconds: 0),
+            Comment = "Haha sorry Amanda. Let me know if you need help understanding my code...although I'm not sure I understand it either!",
+        };
+
+        TicketComment amandaComment4 = new TicketComment()
+        {
+            TicketId = lastProjectMissing.Id,
+            AppUserId = amandaGallup.Id,
+            Created = lastProjectMissing.Created + new TimeSpan(days: 0, hours: 20, minutes: 12, seconds: 0),
+            Comment = "Whew, ok I fixed it, and cleaned it up. @Shawn Blankenship take a look at the attachment I added on the DRY principle of coding ;)",
+        };
+
+        await _ticketService.AddTicketCommentAsync(lastProjectMissing.Id, amandaComment3);
+        await _ticketService.AddTicketCommentAsync(lastProjectMissing.Id, seanComment2);
+        await _ticketService.AddTicketCommentAsync(lastProjectMissing.Id, amandaComment4);
+    }
+
+    private static async Task SeedInventoryProjectCommentsAsync()
+    {
+        Ticket databaseSwap = _context.Tickets.Where(t => t.Title == "Database swap").First();
+
+        TicketComment amandaComment = new TicketComment()
+        {
+            TicketId = databaseSwap.Id,
+            AppUserId = amandaGallup.Id,
+            Created = databaseSwap.Created + new TimeSpan(days: 0, hours: 4, minutes: 17, seconds: 0),
+            Comment = "Since we're using dependency injection it shouldn't be that big of a deal at all...just need to change a few lines.",
+        };
+
+        await _ticketService.AddTicketCommentAsync(databaseSwap.Id, amandaComment);
+
+        Ticket automaticReorder = _context.Tickets.Where(t => t.Title == "Automatic reorder feature").First();
+
+        TicketComment amandaComment2 = new TicketComment()
+        {
+            TicketId = automaticReorder.Id,
+            AppUserId = amandaGallup.Id,
+            Created = automaticReorder.Created + new TimeSpan(days: 0, hours: 0, minutes: 12, seconds: 0),
+            Comment = "I think I will need to rework the models a bit to make this work, so it might take a little extra time.",
+        };
+
+        TicketComment darrenComment = new TicketComment()
+        {
+            TicketId = automaticReorder.Id,
+            AppUserId = darrenJohnson.Id,
+            Created = automaticReorder.Created + new TimeSpan(days: 0, hours: 1, minutes: 38, seconds: 0),
+            Comment = "Alright, no problem, thanks for the heads up.",
+        };
+
+        await _ticketService.AddTicketCommentAsync(automaticReorder.Id, amandaComment2);
+        await _ticketService.AddTicketCommentAsync(automaticReorder.Id, darrenComment);
+
+        Ticket purchasingViewFreeze = _context.Tickets.Where(t => t.Title == "Purchasing view occasionally freezing").First();
+
+        TicketComment amandaComment3 = new TicketComment()
+        {
+            TicketId = purchasingViewFreeze.Id,
+            AppUserId = amandaGallup.Id,
+            Created = purchasingViewFreeze.Created + new TimeSpan(days: 0, hours: 11, minutes: 15, seconds: 0),
+            Comment = "@Darren Johnson -- I have not been able to reproduce this. The code there is pretty simple and I cannot" +
+            " see what the issue could be. Could we try to get more information from them to pin this down? Placing on hold.",
+        };
+
+        TicketComment darrenComment2 = new TicketComment()
+        {
+            TicketId = purchasingViewFreeze.Id,
+            AppUserId = darrenJohnson.Id,
+            Created = purchasingViewFreeze.Created + new TimeSpan(days: 0, hours: 12, minutes: 9, seconds: 0),
+            Comment = "Ok, I couldn't get it to happen either. I'll bring it up in our meeting tomorrow and see if we can find out more.",
+        };
+
+        await _ticketService.AddTicketCommentAsync(purchasingViewFreeze.Id, amandaComment3);
+        await _ticketService.AddTicketCommentAsync(purchasingViewFreeze.Id, darrenComment2);
+
+        Ticket uiColors = _context.Tickets.Where(t => t.Title == "UI colors").First();
+
+        TicketComment shawnComment = new TicketComment()
+        {
+            TicketId = uiColors.Id,
+            AppUserId = shawnBlankenship.Id,
+            Created = uiColors.Created + new TimeSpan(days: 2, hours: 3, minutes: 25, seconds: 0),
+            Comment = "@Amanda Gallup I think I can handle this, I'll see if I can sneak it in today.",
+        };
+
+        TicketComment amandaComment4 = new TicketComment()
+        {
+            TicketId = uiColors.Id,
+            AppUserId = amandaGallup.Id,
+            Created = uiColors.Created + new TimeSpan(days: 2, hours: 3, minutes: 42, seconds: 0),
+            Comment = "Thank you!",
+        };
+
+        await _ticketService.AddTicketCommentAsync(uiColors.Id, shawnComment);
+        await _ticketService.AddTicketCommentAsync(uiColors.Id, amandaComment4);
+
+        Ticket newColumn = _context.Tickets.Where(t => t.Title == "New report column").First();
+
+        TicketComment amandaComment5 = new TicketComment()
+        {
+            TicketId = newColumn.Id,
+            AppUserId = amandaGallup.Id,
+            Created = newColumn.Created + new TimeSpan(days: 1, hours: 15, minutes: 59, seconds: 0),
+            Comment = "Sounds easy in theory (famous last words!) Working on this now.",
+        };
+
+        await _ticketService.AddTicketCommentAsync(newColumn.Id, amandaComment5);
+    }
+
+    private static async Task SeedPortfolioProjectCommentsAsync()
+    {
+        Ticket portfolio = _context.Tickets.Where(t => t.Title == "Finish portfolio website").First();
+
+        TicketComment hermanComment = new TicketComment()
+        {
+            TicketId = portfolio.Id,
+            AppUserId = hermanCampos.Id,
+            Created = portfolio.Created + new TimeSpan(days: 4, hours: 2, minutes: 39, seconds: 0),
+            Comment = "Here you go. I think it turned out pretty good! https://jdwohl.up.railway.app",
+        };
+
+        await _ticketService.AddTicketCommentAsync(portfolio.Id, hermanComment);
+
+        Ticket blog = _context.Tickets.Where(t => t.Title == "Blog posts").First();
+
+        TicketComment hermanComment2 = new TicketComment()
+        {
+            TicketId = blog.Id,
+            AppUserId = hermanCampos.Id,
+            Created = blog.Created + new TimeSpan(days: 4, hours: 2, minutes: 39, seconds: 0),
+            Comment = "I took some of the boss's book reviews and articles and put them up. https://jdwohl.up.railway.app/Blog",
+        };
+
+        await _ticketService.AddTicketCommentAsync(blog.Id, hermanComment2);
+    }
+
+    private static async Task SeedDietProjectCommentsAsync()
+    {
+        Ticket logo = _context.Tickets.Where(t => t.Title == "Logo placement").First();
+
+        TicketComment amandaComment = new TicketComment
+        {
+            TicketId = logo.Id,
+            AppUserId = amandaGallup.Id,
+            Created = logo.Created + new TimeSpan(days: 0, hours: 16, minutes: 28, seconds: 0),
+            Comment = "All done!",
+        };
+
+        await _ticketService.AddTicketCommentAsync(logo.Id, amandaComment);
+
+        Ticket calories = _context.Tickets.Where(t => t.Title == "Calorie calculations, unit tests").First();
+
+        TicketComment amandaComment2 = new TicketComment
+        {
+            TicketId = calories.Id,
+            AppUserId = amandaGallup.Id,
+            Created = calories.Created + new TimeSpan(days: 1, hours: 10, minutes: 21, seconds: 0),
+            Comment = "Aha, I accidentally used Math.Log instead of Math.Log10. Who named these?! I'm blaming Microsoft! Math.Log should be Math.Ln... Anyway," +
+            " I added an xUnit test project that confirms the calorie calculations for a wide range of users. It should catch any more problems.",
+        };
+
+        await _ticketService.AddTicketCommentAsync(calories.Id, amandaComment2);
+
+
+        Ticket dataValidation = _context.Tickets.Where(t => t.Title == "Data validation").First();
+
+        TicketComment amandaComment3 = new TicketComment
+        {
+            TicketId = dataValidation.Id,
+            AppUserId = amandaGallup.Id,
+            Created = dataValidation.Created + new TimeSpan(days: 0, hours: 2, minutes: 39, seconds: 0),
+            Comment = "@William Casey -- check it out, the program displays errors if you leave a field blank or input wrong information now. You also can't" +
+            " save changes until the errors are cleaned up."
+        };
+
+        TicketComment williamComment = new TicketComment
+        {
+            TicketId = dataValidation.Id,
+            AppUserId = williamCasey.Id,
+            Created = dataValidation.Created + new TimeSpan(days: 0, hours: 3, minutes: 0, seconds: 0),
+            Comment = "Cool! That little change makes it feel like a real app now.",
+        };
+
+        await _ticketService.AddTicketCommentAsync(dataValidation.Id, amandaComment3);
+        await _ticketService.AddTicketCommentAsync(dataValidation.Id, williamComment);
+
+        Ticket importExport = _context.Tickets.Where(t => t.Title == "Import/export").First();
+
+        TicketComment amandaComment4 = new TicketComment
+        {
+            TicketId = importExport.Id,
+            AppUserId = amandaGallup.Id,
+            Created = importExport.Created + new TimeSpan(days: 1, hours: 6, minutes: 38, seconds: 0),
+            Comment = "This should be pretty simple, I'll see if I can squeeze it in today.",
+        };
+
+        await _ticketService.AddTicketCommentAsync(importExport.Id, amandaComment4);
+    }
+
+    private static async Task SeedDinerProjectAttachmentsAsync()
+    {
+        Ticket newContactInfo = _context.Tickets.Where(t => t.Title == "New contact info").First();
+        Ticket menuPage = _context.Tickets.Where(t => t.Title == "Menu page").First();
+
+        TicketAttachment exampleAttachment = new TicketAttachment()
+        {
+            TicketId = newContactInfo.Id,
+            AppUserId = williamCasey.Id,
+            Created = newContactInfo.Created + new TimeSpan(days: 0, hours: 0, minutes: 2, seconds: 0),
+            Description = "Updated info",
+            FileName = "Contact info.pdf",
+        };
+
+        TicketAttachment exampleAttachment2 = new TicketAttachment()
+        {
+            TicketId = menuPage.Id,
+            AppUserId = williamCasey.Id,
+            Created = menuPage.Created + new TimeSpan(days: 0, hours: 1, minutes: 17, seconds: 0),
+            Description = "Updated menu",
+            FileName = "New menu.pdf",
+        };
+
+        using (FileStream fs = File.OpenRead($"wwwroot/ExampleAttachment.pdf"))
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                fs.CopyTo(memoryStream);
+                exampleAttachment.FileData = memoryStream.ToArray();
+                exampleAttachment.FileType = "application/pdf";
+                exampleAttachment2.FileData = memoryStream.ToArray();
+                exampleAttachment2.FileType = "application/pdf";
+            }
+        }
+
+        await _ticketService.AddTicketAttachmentAsync(newContactInfo.Id, exampleAttachment);
+        await _ticketService.AddTicketAttachmentAsync(menuPage.Id, exampleAttachment2);
+        await _ticketHistoryService.AddAttachmentEventAsync(newContactInfo, exampleAttachment);
+        await _ticketHistoryService.AddAttachmentEventAsync(menuPage, exampleAttachment2);
+    }
+
+    private static async Task SeedProjectManagementProjectAttachmentsAsync()
+    {
+        Ticket ticketPageClarifications = _context.Tickets.Where(t => t.Title == "Ticket page clarifications").First();
+        Ticket lastProjectMissing = _context.Tickets.Where(t => t.Title == "Last project missing").First();
+
+        TicketAttachment exampleAttachment = new TicketAttachment()
+        {
+            TicketId = ticketPageClarifications.Id,
+            AppUserId = amandaGallup.Id,
+            Created = ticketPageClarifications.Created + new TimeSpan(days: 0, hours: 0, minutes: 1, seconds: 0),
+            Description = "Questions email",
+            FileName = "Email.pdf",
+        };
+
+        TicketAttachment exampleAttachment2 = new TicketAttachment()
+        {
+            TicketId = lastProjectMissing.Id,
+            AppUserId = amandaGallup.Id,
+            Created = lastProjectMissing.Created + new TimeSpan(days: 0, hours: 20, minutes: 9, seconds: 0),
+            Description = "Some reading material for Shawn",
+            FileName = "The DRY Principal.pdf",
+        };
+
+        using (FileStream fs = File.OpenRead($"wwwroot/ExampleAttachment.pdf"))
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                fs.CopyTo(memoryStream);
+                exampleAttachment.FileData = memoryStream.ToArray();
+                exampleAttachment.FileType = "application/pdf";
+                exampleAttachment2.FileData = memoryStream.ToArray();
+                exampleAttachment2.FileType = "application/pdf";
+            }
+        }
+
+        await _ticketService.AddTicketAttachmentAsync(ticketPageClarifications.Id, exampleAttachment);
+        await _ticketService.AddTicketAttachmentAsync(lastProjectMissing.Id, exampleAttachment2);
+        await _ticketHistoryService.AddAttachmentEventAsync(ticketPageClarifications, exampleAttachment);
+        await _ticketHistoryService.AddAttachmentEventAsync(lastProjectMissing, exampleAttachment2);
+    }
+
+    private static async Task SeedInventoryProjectAttachmentsAsync()
+    {
+        Ticket uiColors = _context.Tickets.Where(t => t.Title == "UI colors").First();
+        Ticket crash = _context.Tickets.Where(t => t.Title == "Crash when deleting certain products").First();
+
+        TicketAttachment exampleAttachment = new TicketAttachment()
+        {
+            TicketId = uiColors.Id,
+            AppUserId = amandaGallup.Id,
+            Created = uiColors.Created + new TimeSpan(days: 0, hours: 0, minutes: 3, seconds: 0),
+            Description = "Replacement colors",
+            FileName = "Colors.pdf",
+        };
+
+        TicketAttachment exampleAttachment2 = new TicketAttachment()
+        {
+            TicketId = crash.Id,
+            AppUserId = darrenJohnson.Id,
+            Created = crash.Created + new TimeSpan(days: 0, hours: 0, minutes: 1, seconds: 0),
+            Description = "List of products",
+            FileName = "Crashing products.pdf",
+        };
+
+        using (FileStream fs = File.OpenRead($"wwwroot/ExampleAttachment.pdf"))
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                fs.CopyTo(memoryStream);
+                exampleAttachment.FileData = memoryStream.ToArray();
+                exampleAttachment.FileType = "application/pdf";
+                exampleAttachment2.FileData = memoryStream.ToArray();
+                exampleAttachment2.FileType = "application/pdf";
+            }
+        }
+
+        await _ticketService.AddTicketAttachmentAsync(uiColors.Id, exampleAttachment);
+        await _ticketService.AddTicketAttachmentAsync(crash.Id, exampleAttachment2);
+        await _ticketHistoryService.AddAttachmentEventAsync(uiColors, exampleAttachment);
+        await _ticketHistoryService.AddAttachmentEventAsync(crash, exampleAttachment2);
+    }
+
+    private static async Task SeedDietProjectAttachmentsAsync()
+    {
+        Ticket logo = _context.Tickets.Where(t => t.Title == "Logo placement").First();
+        Ticket calories = _context.Tickets.Where(t => t.Title == "Calorie calculations, unit tests").First();
+
+        TicketAttachment exampleAttachment = new TicketAttachment()
+        {
+            TicketId = logo.Id,
+            AppUserId = williamCasey.Id,
+            Created = logo.Created + new TimeSpan(days: 0, hours: 0, minutes: 7, seconds: 0),
+            Description = "Logo placement markup",
+            FileName = "Logo location.png",
+        };
+
+        TicketAttachment exampleAttachment2 = new TicketAttachment()
+        {
+            TicketId = calories.Id,
+            AppUserId = williamCasey.Id,
+            Created = calories.Created + new TimeSpan(days: 0, hours: 0, minutes: 1, seconds: 0),
+            Description = "User info",
+            FileName = "Example.pdf",
+        };
+
+        using (FileStream fs = File.OpenRead($"wwwroot/ExampleAttachment.png"))
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                fs.CopyTo(memoryStream);
+                exampleAttachment.FileData = memoryStream.ToArray();
+                exampleAttachment.FileType = "image/png";
+                exampleAttachment2.FileData = memoryStream.ToArray();
+                exampleAttachment2.FileType = "application/pdf";
+            }
+        }
+
+        await _ticketService.AddTicketAttachmentAsync(logo.Id, exampleAttachment);
+        await _ticketService.AddTicketAttachmentAsync(calories.Id, exampleAttachment2);
+        await _ticketHistoryService.AddAttachmentEventAsync(logo, exampleAttachment);
+        await _ticketHistoryService.AddAttachmentEventAsync(calories, exampleAttachment2);
     }
 
     private static async Task SeedEstimateProjectHistoryItemsAsync()
@@ -467,5 +963,531 @@ public static class SeedTickets
         accepted.Description += "</ul>";
 
         await _ticketHistoryService.AddTicketHistoryItemAsync(accepted);
+    }
+
+    private static async Task SeedDinerProjectHistoryItemsAsync()
+    {
+        Ticket presentationMeeting = _context.Tickets.Where(t => t.Title == "Presentation meeting").First();
+        Ticket deadLinks = _context.Tickets.Where(t => t.Title == "Dead links").First();
+        Ticket menuPage = _context.Tickets.Where(t => t.Title == "Menu page").First();
+
+        TicketHistory statusChange = new TicketHistory()
+        {
+            TicketId = presentationMeeting.Id,
+            AppUserId = hermanCampos.Id,
+            Created = presentationMeeting.Created + new TimeSpan(days: 1, hours: 4, minutes: 8, seconds: 0),
+            Description = $"{hermanCampos.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange.Description += $"<li>Changed the ticket status to <strong>Complete</strong></li>";
+        statusChange.Description += "</ul>";
+
+        TicketHistory archiveChange = new TicketHistory()
+        {
+            TicketId = presentationMeeting.Id,
+            AppUserId = hermanCampos.Id,
+            Created = presentationMeeting.Created + new TimeSpan(days: 1, hours: 4, minutes: 10, seconds: 0),
+            Description = "Herman Campos archived the ticket."
+        };
+
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange);
+        await _ticketHistoryService.AddTicketHistoryItemAsync(archiveChange);
+
+        TicketHistory statusChange2 = new TicketHistory()
+        {
+            TicketId = deadLinks.Id,
+            AppUserId = hermanCampos.Id,
+            Created = deadLinks.Created + new TimeSpan(days: 0, hours: 4, minutes: 8, seconds: 0),
+            Description = $"{hermanCampos.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange2.Description += $"<li>Changed the ticket status to <strong>In Development</strong></li>";
+        statusChange2.Description += "</ul>";
+
+        TicketHistory statusChange3 = new TicketHistory()
+        {
+            TicketId = deadLinks.Id,
+            AppUserId = hermanCampos.Id,
+            Created = deadLinks.Created + new TimeSpan(days: 0, hours: 4, minutes: 38, seconds: 0),
+            Description = $"{hermanCampos.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange3.Description += $"<li>Changed the ticket status to <strong>Complete</strong></li>";
+        statusChange3.Description += "</ul>";
+
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange2);
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange3);
+
+        TicketHistory statusChange4 = new TicketHistory()
+        {
+            TicketId = menuPage.Id,
+            AppUserId = hermanCampos.Id,
+            Created = menuPage.Created + new TimeSpan(days: 1, hours: 1, minutes: 38, seconds: 0),
+            Description = $"{hermanCampos.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange4.Description += $"<li>Changed the ticket status to <strong>In Development</strong></li>";
+        statusChange4.Description += "</ul>";
+
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange4);
+    }
+
+    private static async Task SeedProjectManagementProjectHistoryItemsAsync()
+    {
+        Ticket ticketPageClarifications = _context.Tickets.Where(t => t.Title == "Ticket page clarifications").First();
+
+        TicketHistory statusChange = new TicketHistory()
+        {
+            TicketId = ticketPageClarifications.Id,
+            AppUserId = amandaGallup.Id,
+            Created = ticketPageClarifications.Created + new TimeSpan(days: 0, hours: 0, minutes: 2, seconds: 0),
+            Description = $"{amandaGallup.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange.Description += $"<li>Changed the ticket status to <strong>In Development</strong></li>";
+        statusChange.Description += "</ul>";
+
+        TicketHistory statusChange2 = new TicketHistory()
+        {
+            TicketId = ticketPageClarifications.Id,
+            AppUserId = amandaGallup.Id,
+            Created = ticketPageClarifications.Created + new TimeSpan(days: 1, hours: 3, minutes: 2, seconds: 0),
+            Description = $"{amandaGallup.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange2.Description += $"<li>Changed the ticket status to <strong>Complete</strong></li>";
+        statusChange2.Description += "</ul>";
+
+        TicketHistory archiveChange = new TicketHistory()
+        {
+            TicketId = ticketPageClarifications.Id,
+            AppUserId = amandaGallup.Id,
+            Created = ticketPageClarifications.Created + new TimeSpan(days: 1, hours: 6, minutes: 15, seconds: 0),
+            Description = "Amanda Gallup archived the ticket."
+        };
+
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange);
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange2);
+        await _ticketHistoryService.AddTicketHistoryItemAsync(archiveChange);
+
+        Ticket pdfGeneration = _context.Tickets.Where(t => t.Title == "PDF generation").First();
+
+        TicketHistory statusChange3 = new TicketHistory()
+        {
+            TicketId = pdfGeneration.Id,
+            AppUserId = hermanCampos.Id,
+            Created = pdfGeneration.Created + new TimeSpan(days: 0, hours: 0, minutes: 2, seconds: 0),
+            Description = $"{hermanCampos.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange3.Description += $"<li>Changed the ticket status to <strong>In Development</strong></li>";
+        statusChange3.Description += "</ul>";
+
+        TicketHistory statusChange4 = new TicketHistory()
+        {
+            TicketId = pdfGeneration.Id,
+            AppUserId = hermanCampos.Id,
+            Created = pdfGeneration.Created + new TimeSpan(days: 2, hours: 0, minutes: 0, seconds: 0),
+            Description = $"{hermanCampos.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange4.Description += $"<li>Changed the ticket status to <strong>Complete</strong></li>";
+        statusChange4.Description += "</ul>";
+
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange3);
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange4);
+
+        Ticket newView = _context.Tickets.Where(t => t.Title == "New view - employee workload").First();
+
+        TicketHistory statusChange5 = new TicketHistory()
+        {
+            TicketId = newView.Id,
+            AppUserId = amandaGallup.Id,
+            Created = newView.Created + new TimeSpan(days: 0, hours: 3, minutes: 47, seconds: 0),
+            Description = $"{amandaGallup.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange5.Description += $"<li>Changed the ticket status to <strong>In Development</strong></li>";
+        statusChange5.Description += "</ul>";
+
+        TicketHistory statusChange6 = new TicketHistory()
+        {
+            TicketId = newView.Id,
+            AppUserId = amandaGallup.Id,
+            Created = newView.Created + new TimeSpan(days: 0, hours: 3, minutes: 52, seconds: 0),
+            Description = $"{amandaGallup.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange6.Description += $"<li>Changed the ticket status to <strong>On Hold</strong></li>";
+        statusChange6.Description += "</ul>";
+
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange5);
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange6);
+
+        Ticket mobileView = _context.Tickets.Where(t => t.Title == "Fix mobile view").First();
+
+        TicketHistory statusChange7 = new TicketHistory()
+        {
+            TicketId = mobileView.Id,
+            AppUserId = hermanCampos.Id,
+            Created = mobileView.Created + new TimeSpan(days: 0, hours: 9, minutes: 37, seconds: 0),
+            Description = $"{hermanCampos.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange7.Description += $"<li>Changed the ticket status to <strong>In Development</strong></li>";
+        statusChange7.Description += "</ul>";
+
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange7);
+
+        Ticket lastProjectMissing = _context.Tickets.Where(t => t.Title == "Last project missing").First();
+
+        TicketHistory statusChange8 = new TicketHistory()
+        {
+            TicketId = lastProjectMissing.Id,
+            AppUserId = amandaGallup.Id,
+            Created = lastProjectMissing.Created + new TimeSpan(days: 0, hours: 4, minutes: 2, seconds: 0),
+            Description = $"{amandaGallup.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange8.Description += $"<li>Changed the ticket status to <strong>In Development</strong></li>";
+        statusChange8.Description += "</ul>";
+
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange8);
+    }
+
+    private static async Task SeedInventoryProjectHistoryItemsAsync()
+    {
+        Ticket databaseSwap = _context.Tickets.Where(t => t.Title == "Database swap").First();
+
+        TicketHistory statusChange = new TicketHistory()
+        {
+            TicketId = databaseSwap.Id,
+            AppUserId = amandaGallup.Id,
+            Created = databaseSwap.Created + new TimeSpan(days: 0, hours: 4, minutes: 23, seconds: 0),
+            Description = $"{amandaGallup.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange.Description += $"<li>Changed the ticket status to <strong>In Development</strong></li>";
+        statusChange.Description += "</ul>";
+
+        TicketHistory statusChange2 = new TicketHistory()
+        {
+            TicketId = databaseSwap.Id,
+            AppUserId = amandaGallup.Id,
+            Created = databaseSwap.Created + new TimeSpan(days: 0, hours: 5, minutes: 3, seconds: 0),
+            Description = $"{amandaGallup.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange2.Description += $"<li>Changed the ticket status to <strong>Complete</strong></li>";
+        statusChange2.Description += "</ul>";
+
+        TicketHistory archiveChange = new TicketHistory()
+        {
+            TicketId = databaseSwap.Id,
+            AppUserId = amandaGallup.Id,
+            Created = databaseSwap.Created + new TimeSpan(days: 1, hours: 2, minutes: 15, seconds: 0),
+            Description = "Amanda Gallup archived the ticket."
+        };
+
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange);
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange2);
+        await _ticketHistoryService.AddTicketHistoryItemAsync(archiveChange);
+
+        Ticket automaticReorder = _context.Tickets.Where(t => t.Title == "Automatic reorder feature").First();
+
+        TicketHistory statusChange3 = new TicketHistory()
+        {
+            TicketId = automaticReorder.Id,
+            AppUserId = amandaGallup.Id,
+            Created = automaticReorder.Created + new TimeSpan(days: 0, hours: 0, minutes: 13, seconds: 0),
+            Description = $"{amandaGallup.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange3.Description += $"<li>Changed the ticket status to <strong>In Development</strong></li>";
+        statusChange3.Description += "</ul>";
+
+        TicketHistory statusChange4 = new TicketHistory()
+        {
+            TicketId = automaticReorder.Id,
+            AppUserId = amandaGallup.Id,
+            Created = automaticReorder.Created + new TimeSpan(days: 1, hours: 6, minutes: 19, seconds: 0),
+            Description = $"{amandaGallup.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange4.Description += $"<li>Changed the ticket status to <strong>Complete</strong></li>";
+        statusChange4.Description += "</ul>";
+
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange3);
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange4);
+
+        Ticket purchasingViewFreeze = _context.Tickets.Where(t => t.Title == "Purchasing view occasionally freezing").First();
+
+        TicketHistory statusChange5 = new TicketHistory()
+        {
+            TicketId = purchasingViewFreeze.Id,
+            AppUserId = amandaGallup.Id,
+            Created = purchasingViewFreeze.Created + new TimeSpan(days: 1, hours: 9, minutes: 35, seconds: 0),
+            Description = $"{amandaGallup.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange5.Description += $"<li>Changed the ticket status to <strong>In Development</strong></li>";
+        statusChange5.Description += "</ul>";
+
+        TicketHistory statusChange6 = new TicketHistory()
+        {
+            TicketId = purchasingViewFreeze.Id,
+            AppUserId = amandaGallup.Id,
+            Created = purchasingViewFreeze.Created + new TimeSpan(days: 1, hours: 11, minutes: 14, seconds: 0),
+            Description = $"{amandaGallup.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange6.Description += $"<li>Changed the ticket status to <strong>On Hold</strong></li>";
+        statusChange6.Description += "</ul>";
+
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange5);
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange6);
+
+        Ticket newColumn = _context.Tickets.Where(t => t.Title == "New report column").First();
+
+        TicketHistory statusChange7 = new TicketHistory()
+        {
+            TicketId = newColumn.Id,
+            AppUserId = amandaGallup.Id,
+            Created = newColumn.Created + new TimeSpan(days: 1, hours: 15, minutes: 1, seconds: 0),
+            Description = $"{amandaGallup.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange7.Description += $"<li>Changed the ticket status to <strong>In Development</strong></li>";
+        statusChange7.Description += "</ul>";
+
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange7);
+
+        Ticket crash = _context.Tickets.Where(t => t.Title == "Crash when deleting certain products").First();
+
+        TicketHistory statusChange8 = new TicketHistory()
+        {
+            TicketId = crash.Id,
+            AppUserId = amandaGallup.Id,
+            Created = crash.Created + new TimeSpan(days: 0, hours: 6, minutes: 11, seconds: 0),
+            Description = $"{amandaGallup.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange8.Description += $"<li>Changed the ticket status to <strong>In Development</strong></li>";
+        statusChange8.Description += "</ul>";
+
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange8);
+    }
+
+    private static async Task SeedPortfolioProjectHistoryItemsAsync()
+    {
+        Ticket portfolio = _context.Tickets.Where(t => t.Title == "Finish portfolio website").First();
+
+        TicketHistory statusChange = new TicketHistory()
+        {
+            TicketId = portfolio.Id,
+            AppUserId = hermanCampos.Id,
+            Created = portfolio.Created + new TimeSpan(days: 1, hours: 18, minutes: 23, seconds: 0),
+            Description = $"{hermanCampos.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange.Description += $"<li>Changed the ticket status to <strong>In Development</strong></li>";
+        statusChange.Description += "</ul>";
+
+        TicketHistory statusChange2 = new TicketHistory()
+        {
+            TicketId = portfolio.Id,
+            AppUserId = hermanCampos.Id,
+            Created = portfolio.Created + new TimeSpan(days: 4, hours: 1, minutes: 11, seconds: 0),
+            Description = $"{hermanCampos.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange2.Description += $"<li>Changed the ticket status to <strong>Complete</strong></li>";
+        statusChange2.Description += "</ul>";
+
+        TicketHistory archiveChange = new TicketHistory()
+        {
+            TicketId = portfolio.Id,
+            AppUserId = hermanCampos.Id,
+            Created = portfolio.Created + new TimeSpan(days: 4, hours: 1, minutes: 13, seconds: 0),
+            Description = $"{hermanCampos.FullName} archived the ticket."
+        };
+
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange);
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange2);
+        await _ticketHistoryService.AddTicketHistoryItemAsync(archiveChange);
+
+        Ticket blog = _context.Tickets.Where(t => t.Title == "Blog posts").First();
+
+        TicketHistory statusChange3 = new TicketHistory()
+        {
+            TicketId = blog.Id,
+            AppUserId = hermanCampos.Id,
+            Created = blog.Created + new TimeSpan(days: 1, hours: 10, minutes: 30, seconds: 0),
+            Description = $"{hermanCampos.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange3.Description += $"<li>Changed the ticket status to <strong>In Development</strong></li>";
+        statusChange3.Description += "</ul>";
+
+        TicketHistory statusChange4 = new TicketHistory()
+        {
+            TicketId = blog.Id,
+            AppUserId = hermanCampos.Id,
+            Created = blog.Created + new TimeSpan(days: 2, hours: 1, minutes: 17, seconds: 0),
+            Description = $"{hermanCampos.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange4.Description += $"<li>Changed the ticket status to <strong>Complete</strong></li>";
+        statusChange4.Description += "</ul>";
+
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange3);
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange4);
+    }
+
+    private static async Task SeedDietProjectHistoryItemsAsync()
+    {
+        Ticket logo = _context.Tickets.Where(t => t.Title == "Logo placement").First();
+
+        TicketHistory statusChange = new TicketHistory()
+        {
+            TicketId = logo.Id,
+            AppUserId = amandaGallup.Id,
+            Created = logo.Created + new TimeSpan(days: 0, hours: 3, minutes: 53, seconds: 0),
+            Description = $"{amandaGallup.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange.Description += $"<li>Changed the ticket status to <strong>In Development</strong></li>";
+        statusChange.Description += "</ul>";
+
+        TicketHistory statusChange2 = new TicketHistory()
+        {
+            TicketId = logo.Id,
+            AppUserId = amandaGallup.Id,
+            Created = logo.Created + new TimeSpan(days: 0, hours: 4, minutes: 1, seconds: 0),
+            Description = $"{amandaGallup.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange2.Description += $"<li>Changed the ticket status to <strong>Complete</strong></li>";
+        statusChange2.Description += "</ul>";
+
+        TicketHistory archiveChange = new TicketHistory()
+        {
+            TicketId = logo.Id,
+            AppUserId = amandaGallup.Id,
+            Created = logo.Created + new TimeSpan(days: 0, hours: 4, minutes: 3, seconds: 0),
+            Description = $"{amandaGallup.FullName} archived the ticket."
+        };
+
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange);
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange2);
+        await _ticketHistoryService.AddTicketHistoryItemAsync(archiveChange);
+
+        Ticket calories = _context.Tickets.Where(t => t.Title == "Calorie calculations, unit tests").First();
+
+        TicketHistory statusChange3 = new TicketHistory()
+        {
+            TicketId = calories.Id,
+            AppUserId = amandaGallup.Id,
+            Created = calories.Created + new TimeSpan(days: 1, hours: 7, minutes: 16, seconds: 0),
+            Description = $"{amandaGallup.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange3.Description += $"<li>Changed the ticket status to <strong>In Development</strong></li>";
+        statusChange3.Description += "</ul>";
+
+        TicketHistory statusChange4 = new TicketHistory()
+        {
+            TicketId = calories.Id,
+            AppUserId = amandaGallup.Id,
+            Created = calories.Created + new TimeSpan(days: 1, hours: 10, minutes: 19, seconds: 0),
+            Description = $"{amandaGallup.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange4.Description += $"<li>Changed the ticket status to <strong>Complete</strong></li>";
+        statusChange4.Description += "</ul>";
+
+        TicketHistory archiveChange2 = new TicketHistory()
+        {
+            TicketId = calories.Id,
+            AppUserId = amandaGallup.Id,
+            Created = calories.Created + new TimeSpan(days: 1, hours: 10, minutes: 37, seconds: 0),
+            Description = $"{amandaGallup.FullName} archived the ticket."
+        };
+
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange3);
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange4);
+        await _ticketHistoryService.AddTicketHistoryItemAsync(archiveChange2);
+
+        Ticket dataValidation = _context.Tickets.Where(t => t.Title == "Data validation").First();
+
+        TicketHistory statusChange5 = new TicketHistory()
+        {
+            TicketId = dataValidation.Id,
+            AppUserId = amandaGallup.Id,
+            Created = dataValidation.Created + new TimeSpan(days: 0, hours: 0, minutes: 11, seconds: 0),
+            Description = $"{amandaGallup.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange5.Description += $"<li>Changed the ticket status to <strong>In Development</strong></li>";
+        statusChange5.Description += "</ul>";
+
+        TicketHistory statusChange6 = new TicketHistory()
+        {
+            TicketId = dataValidation.Id,
+            AppUserId = amandaGallup.Id,
+            Created = dataValidation.Created + new TimeSpan(days: 0, hours: 2, minutes: 32, seconds: 0),
+            Description = $"{amandaGallup.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange6.Description += $"<li>Changed the ticket status to <strong>Complete</strong></li>";
+        statusChange6.Description += "</ul>";
+
+        TicketHistory archiveChange3 = new TicketHistory()
+        {
+            TicketId = dataValidation.Id,
+            AppUserId = amandaGallup.Id,
+            Created = dataValidation.Created + new TimeSpan(days: 0, hours: 2, minutes: 37, seconds: 0),
+            Description = $"{amandaGallup.FullName} archived the ticket."
+        };
+
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange5);
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange6);
+        await _ticketHistoryService.AddTicketHistoryItemAsync(archiveChange3);
+
+        Ticket importExport = _context.Tickets.Where(t => t.Title == "Import/export").First();
+
+        TicketHistory statusChange7 = new TicketHistory()
+        {
+            TicketId = importExport.Id,
+            AppUserId = amandaGallup.Id,
+            Created = importExport.Created + new TimeSpan(days: 1, hours: 9, minutes: 22, seconds: 0),
+            Description = $"{amandaGallup.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange7.Description += $"<li>Changed the ticket status to <strong>In Development</strong></li>";
+        statusChange7.Description += "</ul>";
+
+        TicketHistory statusChange8 = new TicketHistory()
+        {
+            TicketId = importExport.Id,
+            AppUserId = amandaGallup.Id,
+            Created = importExport.Created + new TimeSpan(days: 1, hours: 11, minutes: 40, seconds: 0),
+            Description = $"{amandaGallup.FullName} made the following changes:</br><ul>",
+        };
+
+        statusChange8.Description += $"<li>Changed the ticket status to <strong>Complete</strong></li>";
+        statusChange8.Description += "</ul>";
+
+        TicketHistory archiveChange4 = new TicketHistory()
+        {
+            TicketId = importExport.Id,
+            AppUserId = amandaGallup.Id,
+            Created = importExport.Created + new TimeSpan(days: 1, hours: 12, minutes: 58, seconds: 0),
+            Description = $"{amandaGallup.FullName} archived the ticket."
+        };
+
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange7);
+        await _ticketHistoryService.AddTicketHistoryItemAsync(statusChange8);
+        await _ticketHistoryService.AddTicketHistoryItemAsync(archiveChange4);
     }
 }

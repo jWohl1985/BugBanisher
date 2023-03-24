@@ -74,7 +74,7 @@ public static class SeedProjects
                     Name = "Project Management Software",
                     Description = "The client wants us to build them a web application they can use to manage their projects. It will be an issue tracking application similar to" +
                     " the BugBanisher we use. We need to meet with them to determine what their projects entail and the scope of work. This is going to a big project that will keep" +
-                    " several people tied up for the foreseeable future. Darren will be the project manager. Let's get meetings under way as soon as possible.",
+                    " several people tied up for the foreseeable future. Darren will be the project manager.",
                     Created = DateTime.Now - new TimeSpan(days: 60, hours: 0, minutes: 0, seconds: 0),
                     Deadline = DateTime.Now + new TimeSpan(days: 305, hours: 0, minutes: 0, seconds: 0),
                     ProjectManagerId = darrenJohnson.Id,

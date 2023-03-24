@@ -43,7 +43,7 @@ namespace BugBanisher.Services
             {
                 TicketId = ticket.Id,
                 AppUserId = attachment.AppUserId,
-                Created = DateTime.Now,
+                Created = attachment.Created,
                 Description = $"{attachingUser.FullName} added attachment {attachment.FileName}",
             };
 

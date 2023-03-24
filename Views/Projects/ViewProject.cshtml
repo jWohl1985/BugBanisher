@@ -91,13 +91,15 @@
 					
 					</div>
 
-					<p class="card-text mt-3">@((Model.Project.Deadline - DateTime.Now).Days) days remaining</p>
-					<div class="progress mt-0">
 					@{
+						float daysRemaining = (Model.Project.Deadline - DateTime.Now).Days;
 						float daysUsed = (DateTime.Now - Model.Project.Created).Days;
 						float totalDays = (Model.Project.Deadline - Model.Project.Created).Days;
-						float percentComplete = (daysUsed / totalDays) * 100;
+						float percentComplete = daysRemaining > 0 ? (daysUsed / totalDays) * 100 : 100;
 					}
+
+					<p class="card-text mt-3 @(daysRemaining <= 0 ? "text-danger" : "")">@(daysRemaining > 0 ? $"{daysRemaining.ToString()} days remaining" : "Project is due!")</p>
+					<div class="progress mt-0">
 						<div class="progress-bar progress-bar-striped" role="progressbar" style="width: @(percentComplete)%" aria-valuenow="@percentComplete" aria-valuemin="0" aria-valuemax="100"></div>
 					</div>
 				</div>

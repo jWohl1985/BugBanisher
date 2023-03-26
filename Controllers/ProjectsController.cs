@@ -10,6 +10,7 @@ using BugBanisher.Models.Enums;
 using System.ComponentModel.Design;
 using System.Globalization;
 using BugBanisher.Services;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace ProjectManager.Controllers;
 
@@ -47,7 +48,7 @@ public class ProjectsController : Controller
         if (project is null)
             return View(nameof(NotFound));
 
-        if (!UserIsAdmin && !project.Team.Contains(user))
+        if (!UserIsAdmin && project.ProjectManagerId != user.Id && !project.Team.Contains(user))
             return View(nameof(NotAuthorized));
 
         ProjectViewModel viewModel = new ProjectViewModel
@@ -124,20 +125,49 @@ public class ProjectsController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.ProjectManager)}")]
+    [Authorize(Roles = nameof(Roles.Admin))]
     [ValidateAntiForgeryToken]
-    public async Task<RedirectToActionResult> CreateProject(CreateOrEditProjectViewModel viewModel)
+    public async Task<IActionResult> CreateProject(CreateOrEditProjectViewModel viewModel)
     {
         ViewData["Action"] = "Create";
 
         Project project = viewModel.Project;
 
-        project.Name = viewModel.Name;
-        project.Description = viewModel.Description;
+        foreach (string key in ModelState.Keys)
+            if (key != "Image") ModelState.Remove(key);
+
+        if (viewModel.Name is null)
+            ModelState.AddModelError(string.Empty, "Project name cannot be empty");
+
+        if (viewModel.Description is null)
+            ModelState.AddModelError(string.Empty, "Project description cannot be empty");
+
+        if (viewModel.Deadline < DateTime.Now)
+            ModelState.AddModelError(string.Empty, "Project due date cannot be in the past");
+
+        if (ModelState["Image"] is not null && ModelState["Image"]!.ValidationState == ModelValidationState.Invalid)
+            ModelState.AddModelError(string.Empty, "Image is too large, or the wrong extension type");
+
+        if (ModelState.ErrorCount > 0)
+        {
+            CreateOrEditProjectViewModel newViewModel = await GenerateCreateProjectViewModel();
+            newViewModel.Name = viewModel.Name ?? string.Empty;
+            newViewModel.Description = viewModel.Description ?? string.Empty;
+            newViewModel.Deadline = viewModel.Deadline;
+            newViewModel.SelectedManager = viewModel.SelectedManager;
+            newViewModel.SelectedDevelopers = viewModel.SelectedDevelopers;
+            newViewModel.SelectedMembers = viewModel.SelectedMembers;
+            newViewModel.Image = viewModel.Image;
+            return View("CreateOrEditProject", newViewModel);
+        }
+
+        project.Name = viewModel.Name!;
+        project.Description = viewModel.Description!;
         project.Deadline = viewModel.Deadline;
         await UpdateProjectImageAsync(viewModel, project);
 
         project.Id = await _projectService.CreateNewProjectAsync(project);
+
         await AssignTeamToProjectAsync(viewModel, project);
 
         return RedirectToAction(nameof(ViewProject), new { projectId = project.Id });
@@ -150,9 +180,13 @@ public class ProjectsController : Controller
         ViewData["Action"] = "Edit";
 
         Project? project = await _projectService.GetProjectByIdAsync(projectId);
+        AppUser user = await _userManager.GetUserAsync(User);
 
         if (project is null)
             return View(nameof(NotFound));
+
+        if (!UserIsAdmin && project.ProjectManagerId != user.Id && !project.Team.Contains(user))
+            return View(nameof(NotAuthorized));
 
         CreateOrEditProjectViewModel viewModel = await GenerateEditProjectViewModel(project);
 
@@ -162,14 +196,42 @@ public class ProjectsController : Controller
     [HttpPost]
     [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.ProjectManager)}")]
     [ValidateAntiForgeryToken]
-    public async Task<RedirectToActionResult> EditProject(CreateOrEditProjectViewModel viewModel)
+    public async Task<IActionResult> EditProject(CreateOrEditProjectViewModel viewModel)
     {
         ViewData["Action"] = "Edit";
 
         Project? project = viewModel.Project;
 
-        project.Name = viewModel.Name;
-        project.Description = viewModel.Description;
+        foreach (string key in ModelState.Keys)
+            if (key != "Image") ModelState.Remove(key);
+
+        if (viewModel.Name is null)
+            ModelState.AddModelError(string.Empty, "Project name cannot be empty");
+
+        if (viewModel.Description is null)
+            ModelState.AddModelError(string.Empty, "Project description cannot be empty");
+
+        if (viewModel.Deadline < DateTime.Now)
+            ModelState.AddModelError(string.Empty, "Project due date cannot be in the past");
+
+        if (ModelState["Image"] is not null && ModelState["Image"]!.ValidationState == ModelValidationState.Invalid)
+            ModelState.AddModelError(string.Empty, "Image is too large, or the wrong extension type");
+
+        if (ModelState.ErrorCount > 0)
+        {
+            CreateOrEditProjectViewModel newViewModel = await GenerateEditProjectViewModel(project);
+            newViewModel.Name = viewModel.Name ?? string.Empty;
+            newViewModel.Description = viewModel.Description ?? string.Empty;
+            newViewModel.Deadline = viewModel.Deadline;
+            newViewModel.SelectedManager = viewModel.SelectedManager;
+            newViewModel.SelectedDevelopers = viewModel.SelectedDevelopers;
+            newViewModel.SelectedMembers = viewModel.SelectedMembers;
+            newViewModel.Image = viewModel.Image;
+            return View("CreateOrEditProject", newViewModel);
+        }
+
+        project.Name = viewModel.Name!;
+        project.Description = viewModel.Description!;
         project.Deadline = viewModel.Deadline;
 		await UpdateProjectImageAsync(viewModel, project);
 
@@ -279,10 +341,6 @@ public class ProjectsController : Controller
 	#region Private Helper Methods
 	private async Task<CreateOrEditProjectViewModel> GenerateCreateProjectViewModel()
     {
-        AppUser user = await _userManager.GetUserAsync(User);
-
-        List<AppUser> onlyThisUser = new List<AppUser> { user };
-
         Project createdProject = new Project
         {
             CompanyId = User.Identity!.GetCompanyId(),
@@ -301,7 +359,7 @@ public class ProjectsController : Controller
             Description = createdProject.Description,
 
             SelectedManager = "Unassigned",
-            ProjectManagers = UserIsAdmin ? new SelectList(await _companyService.GetAllProjectManagersAsync(createdProject.CompanyId), "Id", "FullName", "Unassigned") : new SelectList(onlyThisUser, "Id", "FullName", "Unassigned"),
+            ProjectManagers = new SelectList(await _companyService.GetAllProjectManagersAsync(createdProject.CompanyId), "Id", "FullName", "Unassigned"),
 
             SelectedDevelopers = new string[] { },
             Developers = new MultiSelectList(await _companyService.GetAllDevelopersAsync(createdProject.CompanyId), "Id", "FullName", new string[] { }),
@@ -320,9 +378,6 @@ public class ProjectsController : Controller
         List<string> developerIds = new List<string>();
         List<string> memberIds = new List<string>();
 
-        AppUser user = await _userManager.GetUserAsync(User);
-        List<AppUser> onlyThisUser = new List<AppUser> { user };
-
         foreach (AppUser developer in developers)
             developerIds.Add(developer.Id);
 
@@ -337,7 +392,7 @@ public class ProjectsController : Controller
             Description = project.Description,
 
             SelectedManager = currentProjectManager,
-            ProjectManagers = UserIsAdmin ? new SelectList(await _companyService.GetAllProjectManagersAsync(project.CompanyId), "Id", "FullName", currentProjectManager) : new SelectList(onlyThisUser, "Id", "FullName", currentProjectManager),
+            ProjectManagers = new SelectList(await _companyService.GetAllProjectManagersAsync(project.CompanyId), "Id", "FullName", currentProjectManager),
 
             SelectedDevelopers = developerIds,
             Developers = new MultiSelectList(await _companyService.GetAllDevelopersAsync(project.CompanyId), "Id", "FullName", developerIds),
@@ -358,7 +413,7 @@ public class ProjectsController : Controller
     {
 		AppUser selectedProjectManager = await _userManager.FindByIdAsync(viewModel.SelectedManager);
 
-        if (selectedProjectManager.Id != project.ProjectManagerId)
+        if (selectedProjectManager is not null && selectedProjectManager.Id != project.ProjectManagerId)
 			await _notificationService.CreateNewProjectNotificationAsync(selectedProjectManager.Id, project);
 
 		if (project.ProjectManagerId is not null)

@@ -3,6 +3,14 @@
 @model TicketViewModel
 
 @inject IFileService FileService
+@inject UserManager<AppUser> UserManager
+
+@{
+    AppUser user = await UserManager.GetUserAsync(User);
+    bool userIsTicketCreator = user.Id == Model.Ticket.CreatorId;
+    bool userIsTicketDeveloper = user.Id == Model.Ticket.DeveloperId;
+    bool userIsProjectManager = Model.ProjectManager is not null && user.Id == Model.ProjectManager.Id;
+}
 
 <div class="pagetitle">
     <h1>View Ticket</h1>
@@ -23,15 +31,21 @@
                 <h5 class="d-inline card-text">Basic Ticket Info</h5>
                 @if (!Model.Ticket.IsArchived && !Model.Ticket.IsArchivedByProject)
                 {
-                    <a class="btn btn-sm btn-outline-info ms-2" asp-controller="Tickets" asp-action="EditTicket" asp-route-ticketId="@Model.Ticket.Id" title="Edit">
-                        <i class="bi bi-pencil-fill"></i>
-                    </a>
-                    <a class="btn btn-sm btn-outline-warning ms-2" asp-controller="Tickets" asp-action="ConfirmArchiveTicket" asp-route-ticketId="@Model.Ticket.Id" title="Archive">
-                        <i class="bi bi-archive"></i>
-                    </a>
-                    <a class="btn btn-sm btn-outline-danger ms-2" asp-controller="Tickets" asp-action="ConfirmDeleteTicket" asp-route-ticketId="@Model.Ticket.Id" title="Delete">
-                        <i class="bi bi-trash"></i>
-                    </a>
+                    if (User.IsInRole(nameof(Roles.Admin)) || userIsProjectManager || userIsTicketCreator || userIsTicketDeveloper)
+                    {
+                        <a class="btn btn-sm btn-outline-info ms-2" asp-controller="Tickets" asp-action="EditTicket" asp-route-ticketId="@Model.Ticket.Id" title="Edit">
+                            <i class="bi bi-pencil-fill"></i>
+                        </a>
+                        <a class="btn btn-sm btn-outline-warning ms-2" asp-controller="Tickets" asp-action="ConfirmArchiveTicket" asp-route-ticketId="@Model.Ticket.Id" title="Archive">
+                            <i class="bi bi-archive"></i>
+                        </a>
+                    }
+                    if (User.IsInRole(nameof(Roles.Admin)) || userIsTicketCreator || userIsProjectManager)
+                    {
+                        <a class="btn btn-sm btn-outline-danger ms-2" asp-controller="Tickets" asp-action="ConfirmDeleteTicket" asp-route-ticketId="@Model.Ticket.Id" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    }
                 }
                 else if (Model.Ticket.IsArchived && !Model.Ticket.IsArchivedByProject)
                 {
@@ -200,6 +214,7 @@
     </div>
 
     <!-- Attachments Card -->
+    <a name="attachments"></a>
     <div class="col-12">
         <div class="card">
             <div class="card-header">
@@ -246,7 +261,7 @@
                 <div class="card-footer">
                     <div class="row">
                         <!-- Add an attachment -->
-                        <a href="#attachments"></a>
+                        
 
                         <div class="col-12">
                             @if (TempData.ContainsKey("AttachmentError"))
@@ -282,6 +297,7 @@
     </div>
 
     <!-- Comments Card -->
+    <a name="comments"></a>
     <div class="col-12">
         <div class="card">
             <div class="card-header">
@@ -322,8 +338,6 @@
                 <!-- Add a comment -->
                 <div class="card-footer">
                     <div class="row">
-                        <a href="#comments"></a>
-
                         <div class="col-12">
                             @if (TempData.ContainsKey("CommentError"))
                             {

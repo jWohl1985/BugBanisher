@@ -31,5 +31,6 @@ public class Ticket
     public virtual ICollection<TicketComment> Comments { get; set; } = new HashSet<TicketComment>();
     public virtual ICollection<TicketAttachment> Attachments { get; set; } = new HashSet<TicketAttachment>();
     public virtual ICollection<TicketHistory> History { get; set; } = new HashSet<TicketHistory>();
+    public ICollection<Notification> Notifications { get; set; } = new HashSet<Notification>();
 }
 

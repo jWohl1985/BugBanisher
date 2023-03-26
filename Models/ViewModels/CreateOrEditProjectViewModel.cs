@@ -1,10 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using BugBanisher.Extensions;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace BugBanisher.Models.ViewModels;
 
 public class CreateOrEditProjectViewModel
 {
     public Project Project { get; set; } = default!;
+
+    [MaxFileSize(1024 * 1024)]
+    [AllowedExtensions(new string[] { ".gif", ".jpg", ".png", ".jpeg" })]
     public IFormFile? Image { get; set; }
     public DateTime Deadline { get; set; } = default!;
     public string Name { get; set; } = default!;

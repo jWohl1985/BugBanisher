@@ -22,9 +22,13 @@
                     <div class="card-body">
 
                         <div class="pt-4 pb-2">
-                            <h5 class="card-title text-center pb-0 fs-4">Login to Your Account</h5>
+                            <h5 class="card-title text-center pb-0 fs-4">Login</h5>
+                            <!-- >
                             <p class="text-center small">Enter your username & password to login</p>
-                            <p class="text-center small">Or select a demo account: </p>
+                            < -->
+                            <p class="text-center small">This is a demo site. Registration is currently closed. Please
+                                select a demo account to log in. Please note, the demo database resets each night at
+                                12:00am PST.</p>
                         </div>
 
                         
@@ -40,37 +44,38 @@
                             <form asp-page-handler="DemoAccount" asp-route-type="dev" method="post" class="mb-2">
                                 <button class="btn btn btn-primary" type="submit"><i class="bi bi-code-slash me-1"></i>Demo Developer</button>
                             </form>
+
                         </div>
                         
-
                         <form id="account" method="post" class="row g-3">
                             <div asp-validation-summary="All" class="text-danger"></div>
                             <div class="col-12">
                                 <label asp-for="Input.Email" class="form-label">Username</label>
-                                <input asp-for="Input.Email" autocomplete="username" aria-required="true" class="form-control" required>
+                                <input asp-for="Input.Email" autocomplete="username" aria-required="true" class="form-control" required disabled>
                             </div>
 
                             <div class="col-12">
                                 <label asp-for="Input.Password" class="form-label">Password</label>
-                                <input asp-for="Input.Password" type="password" class="form-control" required>
+                                <input asp-for="Input.Password" type="password" class="form-control" required disabled>
                             </div>
 
                             <div class="col-12">
                                 <div class="form-check">
-                                    <input asp-for="Input.RememberMe" class="form-check-input">
+                                    <input asp-for="Input.RememberMe" class="form-check-input" disabled>
                                     <label asp-for="Input.RememberMe" class="form-check-label">Remember me</label>
                                 </div>
                             </div>
 
                             <div class="col-12">
-                                <button id="login-submit" class="btn btn-primary w-100" type="submit">Login</button>
+                                <button id="login-submit" class="btn btn-primary w-100" type="submit" disabled>Login</button>
                             </div>
 
+                            <!-- >
                             <div class="mt-3 text-center">
                                 <p class="small mb-0">Don't have an account? <a asp-area="Identity" asp-page="Register">Register</a>.</p>
                             </div>
+                            < -->
                         </form>
-
                       
                     </div>
                 </div>

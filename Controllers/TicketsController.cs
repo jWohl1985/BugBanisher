@@ -10,6 +10,7 @@ using BugBanisher.Extensions;
 using BugBanisher.Models.Enums;
 using System.Globalization;
 using System.Net.Sockets;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace BugBanisher.Controllers;
 
@@ -54,7 +55,7 @@ public class TicketsController : Controller
 		if (project is null || user is null)
 			return View(nameof(NotFound));
 
-		if (!UserIsAdmin && !project.Team.Contains(user))
+		if (!UserIsAdmin && project.ProjectManagerId != user.Id && !project.Team.Contains(user))
 			return View(nameof(NotAuthorized));
 
         TicketViewModel viewModel = new TicketViewModel
@@ -155,7 +156,7 @@ public class TicketsController : Controller
         if (project is null || user is null)
             return View(nameof(NotFound));
 
-        if (!UserIsAdmin && !project.Team.Contains(user))
+        if (!UserIsAdmin && project.ProjectManagerId != user.Id && !project.Team.Contains(user))
             return View(nameof(NotAuthorized));
 
         CreateOrEditTicketViewModel viewModel = await GenerateCreateTicketViewModel(projectId);
@@ -185,7 +186,7 @@ public class TicketsController : Controller
 		await _ticketHistoryService.AddTicketCreatedEventAsync(ticket.Id);
 
         if (ticket.DeveloperId is not null)
-            await _notificationService.CreateNewTicketNotificationAsync(ticket.DeveloperId, ticket.Id);
+            await _notificationService.CreateNewTicketNotificationAsync(ticket.DeveloperId, ticket);
 
         return RedirectToAction("ViewTicket", new { ticketId = ticket.Id });
 	}
@@ -207,7 +208,7 @@ public class TicketsController : Controller
         if (project is null || user is null)
             return View(nameof(NotFound));
 
-        if (!UserIsAdmin && !project.Team.Contains(user))
+        if (!UserIsAdmin && project.ProjectManagerId != user.Id && ticket.DeveloperId != user.Id)
             return View(nameof(NotAuthorized));
 
 		if (User.IsInRole(nameof(Roles.Developer)) && ticket.DeveloperId != user.Id)
@@ -250,11 +251,11 @@ public class TicketsController : Controller
 			{
 				ticket.TicketStatusId = "pending";
 				ticket.DeveloperId = viewModel.SelectedDeveloper;
-				await _notificationService.CreateNewTicketNotificationAsync(ticket.DeveloperId, ticket.Id);
+				await _notificationService.CreateNewTicketNotificationAsync(ticket.DeveloperId, ticket);
 			}
 
-			await _ticketService.UpdateTicketAsync(ticket);
-			await _ticketHistoryService.AddTicketHistoryItemAsync(historyItem);
+            await _ticketHistoryService.AddTicketHistoryItemAsync(historyItem);
+            await _ticketService.UpdateTicketAsync(ticket);
         }
         
 		return RedirectToAction("ViewTicket", new { ticketId = ticket.Id });
@@ -301,16 +302,16 @@ public class TicketsController : Controller
 		AppUser user = await _userManager.GetUserAsync(User);
 
 		if (viewModel.NewAttachment is null)
-		{
-			TempData["AttachmentError"] = "Please choose a file to add.";
-			return Redirect(Url.RouteUrl(new { controller = "Tickets", action = "ViewTicket", ticketId = viewModel.Ticket.Id }) + "#attachments");
-		}
+			TempData["AttachmentError"] += "Please choose a file to add.\n";
 
 		if (viewModel.FileDescription is null)
-		{
-			TempData["AttachmentError"] = "Please provide a brief file description.";
+			TempData["AttachmentError"] += "Please provide a brief file description.\n";
+
+		if (ModelState["NewAttachment"] is not null && ModelState["NewAttachment"]!.ValidationState == ModelValidationState.Invalid)
+			TempData["AttachmentError"] += "The file extension type is not allowed.\n";
+
+		if (TempData["AttachmentError"] is not null)
 			return Redirect(Url.RouteUrl(new { controller = "Tickets", action = "ViewTicket", ticketId = viewModel.Ticket.Id }) + "#attachments");
-		}
 
 		TicketAttachment attachment = new TicketAttachment()
 		{
@@ -318,9 +319,9 @@ public class TicketsController : Controller
 			AppUserId = user.Id,
 			Created = DateTime.Now,
 			Description = viewModel.FileDescription,
-			FileData = await _fileService.ConvertFileToByteArrayAsync(viewModel.NewAttachment),
-			FileName = viewModel.NewAttachment.FileName,
-			FileType = viewModel.NewAttachment.ContentType,
+			FileData = await _fileService.ConvertFileToByteArrayAsync(viewModel.NewAttachment!),
+			FileName = viewModel.NewAttachment!.FileName,
+			FileType = viewModel.NewAttachment!.ContentType,
 		};
 
 		await _ticketService.AddTicketAttachmentAsync(viewModel.Ticket.Id, attachment);
@@ -340,7 +341,7 @@ public class TicketsController : Controller
 		Project project = (await _projectService.GetProjectByIdAsync(attachment.Ticket!.ProjectId))!;
 		AppUser user = await _userManager.GetUserAsync(User);
 
-		if (!UserIsAdmin && !project.Team.Contains(user))
+		if (!UserIsAdmin && project.ProjectManagerId != user.Id && !project.Team.Contains(user))
 			return View(nameof(NotAuthorized));
 
 		string fileName = attachment.FileName;

@@ -162,12 +162,11 @@ public class NotificationService : INotificationService
 		return true;
 	}
 
-	public async Task<bool> CreateNewTicketNotificationAsync(string developerId, int ticketId)
+	public async Task<bool> CreateNewTicketNotificationAsync(string developerId, Ticket ticket)
     {
         AppUser? developer = await _context.Users.FirstOrDefaultAsync(u => u.Id == developerId);
-        Ticket? ticket = await _context.Tickets.FirstOrDefaultAsync(t => t.Id == ticketId);
 
-        if (developer is null || ticket is null)
+        if (developer is null)
             return false;
 
         Notification newTicketNotification = new Notification

@@ -123,6 +123,7 @@
                                             <a class="btn btn-outline-danger btn-sm" asp-controller="Company" asp-action="DeleteProfilePicture" asp-route-userId="@Model.Id"><i class="bi bi-trash"></i></a>
                                         <div class="pt-2">
                                             <input asp-for="ProfilePicture" class="form-control" type="file" accept="image/*">
+                                            <div class="text-danger" asp-validation-summary="ModelOnly"></div>
                                         </div>
                                     </div>
                                 </div>

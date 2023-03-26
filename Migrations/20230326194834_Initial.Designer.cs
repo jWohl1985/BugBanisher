@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BugBanisher.Migrations
 {
     [DbContext(typeof(BugBanisherContext))]
-    [Migration("20230325231458_Initial")]
+    [Migration("20230326194834_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -701,12 +701,14 @@ namespace BugBanisher.Migrations
                         .IsRequired();
 
                     b.HasOne("BugBanisher.Models.Project", "Project")
-                        .WithMany()
-                        .HasForeignKey("ProjectId");
+                        .WithMany("Notifications")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("BugBanisher.Models.Ticket", "Ticket")
-                        .WithMany()
-                        .HasForeignKey("TicketId");
+                        .WithMany("Notifications")
+                        .HasForeignKey("TicketId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("AppUser");
 
@@ -788,7 +790,7 @@ namespace BugBanisher.Migrations
                     b.HasOne("BugBanisher.Models.Ticket", "Ticket")
                         .WithMany("Attachments")
                         .HasForeignKey("TicketId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Ticket");
@@ -807,7 +809,7 @@ namespace BugBanisher.Migrations
                     b.HasOne("BugBanisher.Models.Ticket", "Ticket")
                         .WithMany("Comments")
                         .HasForeignKey("TicketId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("AppUser");
@@ -826,7 +828,7 @@ namespace BugBanisher.Migrations
                     b.HasOne("BugBanisher.Models.Ticket", "Ticket")
                         .WithMany("History")
                         .HasForeignKey("TicketId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("AppUser");
@@ -892,6 +894,8 @@ namespace BugBanisher.Migrations
 
             modelBuilder.Entity("BugBanisher.Models.Project", b =>
                 {
+                    b.Navigation("Notifications");
+
                     b.Navigation("Tickets");
                 });
 
@@ -902,6 +906,8 @@ namespace BugBanisher.Migrations
                     b.Navigation("Comments");
 
                     b.Navigation("History");
+
+                    b.Navigation("Notifications");
                 });
 #pragma warning restore 612, 618
         }

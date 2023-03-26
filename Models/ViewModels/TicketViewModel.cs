@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using BugBanisher.Extensions;
+using System.Drawing;
 
 namespace BugBanisher.Models.ViewModels;
 
@@ -9,7 +10,10 @@ public class TicketViewModel
 	public AppUser? ProjectManager { get; set; }
 	public AppUser? Developer { get; set; }
 	public string NewComment { get; set; } = String.Empty;
-	public IFormFile? NewAttachment { get; set; }
+
+    [MaxFileSize(1024 * 1024)]
+    [AllowedExtensions(new string[] { ".css", ".doc", ".gif", ".html", ".jpg", ".js", ".pdf", ".sql", ".tif", ".txt", ".xml", ".zip", ".cs", ".cshtml", ".json" })]
+    public IFormFile? NewAttachment { get; set; }
 	public string? FileDescription { get; set; }
 
 	public string StatusTextFormat => Ticket.Status is null ? "" : Ticket.Status.Id switch

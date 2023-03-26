@@ -189,7 +189,10 @@ public class TicketService : ITicketService
 
 	public async Task<TicketAttachment?> GetTicketAttachmentByIdAsync(int ticketAttachmentId)
 	{
-		return await _context.TicketAttachments.FirstOrDefaultAsync(ta => ta.Id == ticketAttachmentId);
+		return await _context.TicketAttachments
+			.Include(ta => ta.Ticket)
+			.Include(ta => ta.Uploader)
+			.FirstOrDefaultAsync(ta => ta.Id == ticketAttachmentId);
 	}
 
 	public async Task<bool> ArchiveTicketAsync(Ticket ticket)
@@ -287,5 +290,18 @@ public class TicketService : ITicketService
 		TicketPriority? ticketPriority = await _context.TicketPriorities.FirstOrDefaultAsync(t => t.Id == priorityId);
 
 		return ticketPriority is not null ? ticketPriority.Description : "";
+	}
+
+	public async Task RemoveEmployeeFromAllTicketsAsync(int companyId, string employeeId)
+	{
+		List<Ticket> tickets = await _context.Tickets.Where(t => t.DeveloperId == employeeId).ToListAsync();
+
+		foreach (Ticket ticket in tickets)
+		{
+			ticket.DeveloperId = null;
+			ticket.TicketStatusId = "unassigned";
+		}
+
+		await _context.SaveChangesAsync();
 	}
 }

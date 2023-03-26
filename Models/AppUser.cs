@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using BugBanisher.Extensions;
 using Microsoft.AspNetCore.Identity;
 
 namespace BugBanisher.Models;
@@ -13,6 +15,9 @@ public class AppUser : IdentityUser
     public string? About { get; set; }
 
     [NotMapped]
+    [DataType(DataType.Upload)]
+    [MaxFileSize(1024 * 1024)]
+    [AllowedExtensions(new string[] { ".gif", ".jpg", ".png", ".jpeg" })]
     public IFormFile? ProfilePicture { get; set; }
     public string? PictureExtension { get; set; }
     public byte[]? PictureData { get; set; }

@@ -19,7 +19,7 @@ public interface IProjectService
 	Task<bool> RemoveProjectManagerAsync(int projectId);
 	Task<bool> AssignEmployeeToProjectAsync(string employeeId, int projectId);
 	Task<bool> RemoveEmployeeFromProjectAsync(string employeeId, int projectId);
-	Task<bool> RemoveEmployeeFromAllActiveProjectsAsync(int companyId, string employeeId);
+	Task<bool> RemoveEmployeeFromAllProjectsAsync(int companyId, string employeeId);
 	Task UpdateProjectAsync(Project project);
 	Task<bool> ArchiveProjectAsync(int projectId);
 	Task<bool> UnarchiveProjectAsync(int projectId);

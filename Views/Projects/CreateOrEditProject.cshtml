@@ -19,6 +19,16 @@
     </nav>
 </div>
 
+<!-- Error alert -->
+@if (ViewContext.ModelState.ErrorCount > 0)
+{
+    <div class="col-lg-6">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div asp-validation-summary="ModelOnly"></div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+}
 
 <form asp-controller="Projects" asp-action="@(createOrEdit == "Create" ? "CreateProject" : "EditProject")" method="post" enctype="multipart/form-data">
     <input type="hidden" asp-for="Project.Id" />
@@ -28,6 +38,8 @@
     <input type="hidden" asp-for="Project.Created" />
     <input type="hidden" asp-for="Project.Team" />
     <input type="hidden" asp-for="Project.ProjectManagerId" />
+    <input type="hidden" asp-for="Project.Name"/>
+    <input type="hidden" asp-for="Project.Description"/>
 
     <div class="row">
 
@@ -68,27 +80,30 @@
                 }
             </div>
 
-            <h5 class="mt-3">Project Team</h5>
+            if (User.IsInRole(nameof(Roles.Admin)))
+            {
+                <h5 class="mt-3">Project Team</h5>
 
-            <div class="form-group mt-3">
-                <label asp-for="SelectedManager">Project Manager</label>
-                <select class="form-select" asp-items="@Model.ProjectManagers" asp-for="SelectedManager">
-                    <option value="@null">Unassigned</option>
-                </select>
-            </div>
+                <div class="form-group mt-3">
+                    <label asp-for="SelectedManager">Project Manager</label>
+                    <select class="form-select" asp-items="@Model.ProjectManagers" asp-for="SelectedManager">
+                        <option value="@null">Unassigned</option>
+                    </select>
+                </div>
 
-            
-            <div class="form-group mt-3">
-                <label asp-for="Developers">Developers</label><br />
-                <select class="form-select" multiple style="width: 200px" asp-items="@Model.Developers" asp-for="SelectedDevelopers">
-                </select>
-            </div>
 
-            <div class="form-group mt-3">
-                <label asp-for="Members">Members</label><br />
+                <div class="form-group mt-3">
+                    <label asp-for="Developers">Developers</label><br />
+                    <select class="form-select" multiple style="width: 200px" asp-items="@Model.Developers" asp-for="SelectedDevelopers">
+                    </select>
+                </div>
+
+                <div class="form-group mt-3">
+                    <label asp-for="Members">Members</label><br />
                 <select class="form-select" multiple style="width: 200px;" asp-items="@Model.Members" asp-for="SelectedMembers">
                 </select>
-            </div>
+                </div>
+            }
         </div>
     </div>
 

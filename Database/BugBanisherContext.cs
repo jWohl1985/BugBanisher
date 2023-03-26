@@ -36,23 +36,37 @@ public class BugBanisherContext : IdentityDbContext<AppUser>
             .HasOne<Ticket>(ta => ta.Ticket)
             .WithMany(t => t.Attachments)
             .HasForeignKey(ta => ta.TicketId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
 		modelBuilder.Entity<TicketComment>()
 			.HasOne<Ticket>(ta => ta.Ticket)
 			.WithMany(t => t.Comments)
 			.HasForeignKey(ta => ta.TicketId)
-			.OnDelete(DeleteBehavior.Restrict);
+			.OnDelete(DeleteBehavior.Cascade);
 
 		modelBuilder.Entity<TicketHistory>()
 			.HasOne<Ticket>(ta => ta.Ticket)
 			.WithMany(t => t.History)
 			.HasForeignKey(ta => ta.TicketId)
-			.OnDelete(DeleteBehavior.Restrict);
+			.OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Notification>()
+            .HasOne<Project>(n => n.Project)
+            .WithMany(p => p.Notifications)
+            .HasForeignKey(n => n.ProjectId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Notification>()
+            .HasOne<Ticket>(n => n.Ticket)
+            .WithMany(p => p.Notifications)
+            .HasForeignKey(n => n.TicketId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Project>()
             .HasMany(p => p.Team) // AppUsers
             .WithMany(t => t.Projects)
             .UsingEntity(j => j.ToTable("ProjectUsers"));
+
+
     }
 }

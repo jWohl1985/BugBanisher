@@ -25,4 +25,5 @@ public interface ITicketService
 	Task<string> GetTicketTypeDescriptionByIdAsync(string? typeId);
 	Task<string> GetTicketStatusDescriptionByIdAsync(string? statusId);
 	Task<string> GetTicketPriorityDescriptionByIdAsync(string? priorityId);
+	Task RemoveEmployeeFromAllTicketsAsync(int companyId, string employeeId);
 }

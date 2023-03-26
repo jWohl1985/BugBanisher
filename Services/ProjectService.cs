@@ -260,7 +260,7 @@ public class ProjectService : IProjectService
 		return true;
 	}
 
-	public async Task<bool> RemoveEmployeeFromAllActiveProjectsAsync(int companyId, string employeeId)
+	public async Task<bool> RemoveEmployeeFromAllProjectsAsync(int companyId, string employeeId)
 	{
 		AppUser? employee = await _context.Users.FirstOrDefaultAsync(u => u.Id == employeeId);
 
@@ -276,7 +276,16 @@ public class ProjectService : IProjectService
 				project.Team.Remove(employee);
 		}
 
-		return true;
+        foreach (Project project in await GetAllArchivedCompanyProjectsAsync(companyId))
+        {
+            if (project.ProjectManagerId == employeeId)
+                await RemoveProjectManagerAsync(project.Id);
+
+            if (project.Team.Contains(employee))
+                project.Team.Remove(employee);
+        }
+
+        return true;
 	}
 
 	public async Task UpdateProjectAsync(Project project)

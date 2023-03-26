@@ -6,8 +6,8 @@
 @inject IFileService FileService
 
 <section class="section dashboard">
-	<div class="row">
-		<div class="col-lg-10">
+	<div class="d-flex row justify-content-center">
+		<div class="col-lg-11">
 
 			<div class="pagetitle">
 				<h1>Dashboard</h1>
@@ -128,9 +128,8 @@
 				}
 
 				<!-- Project Status -->
-				<div class="col-12">
+				<div class="col-lg-12">
 					<div class="card recent-sales overflow-auto">
-
 						<div class="card-body">
 							<h5 class="card-title">@(User.IsInRole(nameof(Roles.Admin)) ? "Project Status" : "Your Projects")</h5>
 							<div class="table-responsive">
@@ -150,27 +149,35 @@
 
 											<tr>
 												<td class="align-middle"><a class="link" asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@project.Id">@project.Name</a></td>
-												@if (ProjectManager is not null)
-												{
-													<td class="d-flex align-middle">
-														@if (ProjectManager.PictureData is not null)
+												<td class="d-flex align-middle">
+													<div class="d-flex">
+														@if (ProjectManager is null)
 														{
-															<img src="data:image/*;base64,@(Convert.ToBase64String(ProjectManager.PictureData))" class="rounded-circle ms-1" width="50" height="50">
+															<div class="flex-shrink-0">
+																<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle" width="50" height="50">
+															</div>
+															<div class="flex-grow-1 align-self-center">
+																<p class="card-text text-danger fw-bold ms-3">Unassigned!</p>
+															</div>
 														}
 														else
 														{
-															<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle ms-1" width="50" height="50">
+															<div class="flex-shrink-0">
+																@if (ProjectManager.PictureData is not null)
+																{
+																	<img src="data:image/*;base64,@(Convert.ToBase64String(ProjectManager.PictureData))" class="rounded-circle" width="50" height="50">
+																}
+																else
+																{
+																	<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle" width="50" height="50">
+																}
+															</div>
+															<div class="flex-grow-1 align-self-center">
+																<p class="card-text ms-3"><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@ProjectManager.Id">@ProjectManager.FullName</a></p>
+															</div>
 														}
-														<a class="ms-2 align-self-center" asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@ProjectManager.Id">@ProjectManager.FullName</a>
-													</td>
-												}
-												else
-												{
-													<td class="d-flex align-middle">
-														<img class="rounded-circle ms-1" width="50" height="50" src="~/@FileService.GetDefaultUserPicPath()"/>
-														<span class="ms-2 fw-bold text-danger align-self-center">Unassigned!</span>
-													</td>
-												}
+													</div>
+												</td>
 												<td class="align-middle">@project.Deadline.ToShortDateString() (@((project.Deadline - DateTime.Now).Days) days)</td>
 												<td class="align-middle">@project.Tickets.Where(t => !t.IsArchived && t.TicketStatusId != "complete").Count()</td>
 											</tr>
@@ -206,27 +213,35 @@
 											<tr>
 												<td class="align-middle"><a asp-controller="Tickets" asp-action="ViewTicket" asp-route-ticketId="@ticket.Id"><i class="bi bi-ticket-detailed-fill me-2"></i>@ticket.Title</a></td>
 												<td class="align-middle"><a asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@ticket.Project!.Id">@ticket.Project!.Name</a></td>
-												@if (ticket.Developer is not null)
-												{
-													<td class="align-middle">
-														@if (ticket.Developer.PictureData is not null)
+												<td class="d-flex align-middle">
+													<div class="d-flex">
+														@if (ticket.Developer is null)
 														{
-															<img src="data:image/*;base64,@(Convert.ToBase64String(ticket.Developer.PictureData))" class="rounded-circle ms-1" width="50" height="50">
+															<div class="flex-shrink-0">
+																<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle" width="50" height="50">
+															</div>
+															<div class="flex-grow-1 align-self-center">
+																<p class="card-text text-danger fw-bold ms-3">Unassigned!</p>
+															</div>
 														}
 														else
 														{
-															<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle ms-1" width="50" height="50">
+															<div class="flex-shrink-0">
+																@if (ticket.Developer.PictureData is not null)
+																{
+																	<img src="data:image/*;base64,@(Convert.ToBase64String(ticket.Developer.PictureData))" class="rounded-circle" width="50" height="50">
+																}
+																else
+																{
+																	<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle" width="50" height="50">
+																}
+															</div>
+															<div class="flex-grow-1 align-self-center">
+																<p class="card-text ms-3"><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@ticket.Developer.Id">@ticket.Developer.FullName</a></p>
+															</div>
 														}
-														<a class="ms-2" asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@ticket.Developer.Id">@ticket.Developer.FullName</a>
-													</td>
-												}
-												else
-												{
-													<td class="d-flex align-middle">
-														<img class="rounded-circle ms-1" width="50" height="50" src="~/@FileService.GetDefaultUserPicPath()" />
-														<span class="ms-2 fw-bold text-danger align-self-center">Unassigned!</span>
-													</td>
-												}
+													</div>
+												</td>
 												<td class="align-middle">@ticket.Type!.Description</td>
 												<td class="align-middle">@ticket.Priority!.Description</td>
 												<td class="align-middle">@ticket.Status!.Description</td>
@@ -262,15 +277,21 @@
 											{
 												<tr>
 													<td>
-														@if (employee.PictureData is not null)
-														{
-															<img src="data:image/*;base64,@(Convert.ToBase64String(employee.PictureData))" class="rounded-circle ms-1" width="50" height="50">
-														}
-														else
-														{
-															<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle ms-1" width="50" height="50">
-														}
-														<a class="ms-2" asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@employee.Id">@employee.FullName</a>
+														<div class="d-flex">
+															<div class="flex-shrink-0">
+																@if (employee.PictureData is not null)
+																{
+																	<img src="data:image/*;base64,@(Convert.ToBase64String(employee.PictureData))" class="rounded-circle" width="50" height="50">
+																}
+																else
+																{
+																	<img src="~/@FileService.GetDefaultUserPicPath()" class="rounded-circle" width="50" height="50">
+																}
+															</div>
+															<div class="flex-grow-1 align-self-center">
+																<p class="card-text ms-3"><a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@employee.Id">@employee.FullName</a></p>
+															</div>
+														</div>
 													</td>
 													<td>@employee.JobTitle</td>
 													<td>@Model.ActiveProjects.Where(p => p.Team.Contains(employee) || p.ProjectManagerId == employee.Id).Count()</td>

@@ -8,6 +8,7 @@ using BugBanisher.Models.Enums;
 using BugBanisher.Models.ViewModels;
 using BugBanisher.Services.Interfaces;
 using System.Data;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace BugBanisher.Controllers;
 
@@ -16,6 +17,7 @@ public class CompanyController : Controller
     private readonly UserManager<AppUser> _userManager;
     private readonly ICompanyService _companyService;
     private readonly IProjectService _projectService;
+    private readonly ITicketService _ticketService;
     private readonly INotificationService _notificationService;
     private readonly IRoleService _roleService;
     private readonly IFileService _fileService;
@@ -23,6 +25,7 @@ public class CompanyController : Controller
     public CompanyController(UserManager<AppUser> userManager, 
         ICompanyService companyService,
         IProjectService projectService,
+        ITicketService ticketService,
         INotificationService notificationService,
         IRoleService roleService,
         IFileService fileService)
@@ -30,6 +33,7 @@ public class CompanyController : Controller
         _userManager = userManager;
         _companyService = companyService;
         _projectService = projectService;
+        _ticketService = ticketService;
         _notificationService = notificationService;
         _roleService = roleService;
         _fileService = fileService;
@@ -52,9 +56,15 @@ public class CompanyController : Controller
 
     [HttpPost]
     [Authorize]
-    public async Task<RedirectToActionResult> UpdateEmployeeProfile(AppUser updatedUser)
+    public async Task<IActionResult> UpdateEmployeeProfile(AppUser updatedUser)
     {
         AppUser user = await _userManager.GetUserAsync(User);
+
+        if (ModelState["ProfilePicture"] is not null && ModelState["ProfilePicture"]!.ValidationState == ModelValidationState.Invalid)
+        {
+            ModelState.AddModelError(string.Empty, "Profile picture is too large or the wrong extension type.");
+            return View("ViewEmployee", user);
+        }
 
         if (updatedUser.ProfilePicture is not null)
         {
@@ -201,7 +211,8 @@ public class CompanyController : Controller
             return View("NotFound");
 
         await _companyService.RemoveEmployeeAsync(userRemoved.Id);
-        await _projectService.RemoveEmployeeFromAllActiveProjectsAsync(companyId, userRemoved.Id);
+        await _projectService.RemoveEmployeeFromAllProjectsAsync(companyId, userRemoved.Id);
+        await _ticketService.RemoveEmployeeFromAllTicketsAsync(companyId, userRemoved.Id);
         await _notificationService.CreateRemovedFromCompanyNotification(companyId, userRemoved);
 
         TempData["Message"] = $"{userRemoved.FirstName} {userRemoved.LastName} was successfully removed.";

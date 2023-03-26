@@ -172,15 +172,21 @@ namespace BugBanisher.Migrations
                     b.Property<bool>("HasBeenSeen")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Message")
+                    b.Property<int>("NotificationTypeId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("PreviewText")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("NotificationTypeId")
+                    b.Property<int?>("ProjectId")
                         .HasColumnType("integer");
 
                     b.Property<string>("SenderId")
                         .HasColumnType("text");
+
+                    b.Property<int?>("TicketId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -191,6 +197,10 @@ namespace BugBanisher.Migrations
                     b.HasIndex("AppUserId");
 
                     b.HasIndex("CompanyId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("TicketId");
 
                     b.ToTable("Notifications");
                 });
@@ -688,9 +698,21 @@ namespace BugBanisher.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("BugBanisher.Models.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId");
+
+                    b.HasOne("BugBanisher.Models.Ticket", "Ticket")
+                        .WithMany()
+                        .HasForeignKey("TicketId");
+
                     b.Navigation("AppUser");
 
                     b.Navigation("Company");
+
+                    b.Navigation("Project");
+
+                    b.Navigation("Ticket");
                 });
 
             modelBuilder.Entity("BugBanisher.Models.Project", b =>

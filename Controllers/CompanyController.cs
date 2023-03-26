@@ -44,17 +44,17 @@ public class CompanyController : Controller
         if (appUser is null)
             return View("NotFound");
 
+        if (appUser.CompanyId != User.Identity!.GetCompanyId())
+            return View("NotAuthorized");
+
         return View(appUser);
     }
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> UpdateEmployeeProfile(AppUser updatedUser)
+    public async Task<RedirectToActionResult> UpdateEmployeeProfile(AppUser updatedUser)
     {
         AppUser user = await _userManager.GetUserAsync(User);
-
-        if (user.Id != updatedUser.Id)
-            return Problem("You cannot modify another user's profile!");
 
         if (updatedUser.ProfilePicture is not null)
         {
@@ -74,20 +74,18 @@ public class CompanyController : Controller
 
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> DeleteProfilePicture(string userId)
+    public async Task<RedirectToActionResult> DeleteProfilePicture(string userId)
     {
-        AppUser user = await _userManager.GetUserAsync(User);
+        if ((await _userManager.GetUserAsync(User)).Id != userId)
+            return RedirectToAction(nameof(NotAuthorized));
 
-        if (user.Id != userId)
-            return Problem("You cannot modify another user's profile!");
+        await _companyService.DeleteProfilePictureAsync(userId);
 
-        await _companyService.DeleteProfilePictureAsync(user);
-
-        return RedirectToAction(nameof(ViewEmployee), new { userId = user.Id });
+        return RedirectToAction(nameof(ViewEmployee), new { userId = userId });
     }
 
     [HttpGet]
-    [Authorize]
+    [Authorize(Roles = nameof(Roles.Admin))]
     public async Task<ViewResult> ManageEmployees()
     {
         int companyId = User.Identity!.GetCompanyId();
@@ -97,7 +95,7 @@ public class CompanyController : Controller
     }
 
     [HttpGet]
-    [Authorize]
+    [Authorize(Roles = nameof(Roles.Admin))]
     public async Task<ViewResult> EditEmployee(string id)
     {
         AppUser? employeeToEdit = await _userManager.FindByIdAsync(id);
@@ -120,7 +118,7 @@ public class CompanyController : Controller
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = nameof(Roles.Admin))]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EditEmployee(EditEmployeeViewModel viewModel)
     {
@@ -167,17 +165,17 @@ public class CompanyController : Controller
     }
 
     [HttpGet]
-    [Authorize]
+    [Authorize(Roles = nameof(Roles.Admin))]
     public async Task<IActionResult> ConfirmRemoveEmployee(string employeeId)
     {
-        AppUser? employee = await _userManager.FindByIdAsync(employeeId);
+        AppUser? employeeToRemove = await _userManager.FindByIdAsync(employeeId);
 
-        if (employee is null)
+        if (employeeToRemove is null)
             return View("NotFound");
 
-        if (await _userManager.IsInRoleAsync(employee, nameof(Roles.Admin)))
+        if (await _userManager.IsInRoleAsync(employeeToRemove, nameof(Roles.Admin)))
         {
-            List<AppUser> admins = await _companyService.GetAllAdminsAsync(employee.CompanyId!.Value);
+            List<AppUser> admins = await _companyService.GetAllAdminsAsync(employeeToRemove.CompanyId!.Value);
 
             if (admins.Count == 1)
             {
@@ -188,11 +186,11 @@ public class CompanyController : Controller
             }
         }
 
-        return View(employee);
+        return View(employeeToRemove);
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = nameof(Roles.Admin))]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> RemoveEmployeeConfirmed([Bind("Id")] AppUser employee)
     {
@@ -211,7 +209,7 @@ public class CompanyController : Controller
 	}
 
     [HttpGet]
-    [Authorize]
+    [Authorize(Roles = nameof(Roles.Admin))]
     public async Task<ViewResult> InviteUserToCompany()
     {
         int companyId = User.Identity!.GetCompanyId();
@@ -222,7 +220,7 @@ public class CompanyController : Controller
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = nameof(Roles.Admin))]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> InviteUserToCompany([Bind("Email")] AppUser user)
     {
@@ -254,7 +252,7 @@ public class CompanyController : Controller
         Notification? notification = await _notificationService.GetByIdAsync(notificationId);
 
         if (notification is null || notification.NotificationTypeId != (int)NotificationType.CompanyInvite)
-            return View("NotFound");
+            return View("NotAuthorized");
 
         Company? company = await _companyService.GetCompanyByIdAsync(notification.CompanyId);
         AppUser? appUser = await _userManager.GetUserAsync(User);
@@ -281,7 +279,7 @@ public class CompanyController : Controller
         Notification? notification = await _notificationService.GetByIdAsync(notificationId);
 
         if (notification is null || notification.NotificationTypeId != (int)NotificationType.CompanyInvite)
-            return View("NotFound");
+            return View("NotAuthorized");
 
         Company? company = await _companyService.GetCompanyByIdAsync(notification.CompanyId);
         AppUser? appUser = await _userManager.GetUserAsync(User);
@@ -290,12 +288,17 @@ public class CompanyController : Controller
             return View("NotFound");
 
         notification.HasBeenSeen = true;
-        notification.Message = notification.Message + " (You declined)";
         await _notificationService.CreateInviteRejectedNotification(notification.Id, appUser);
 
         ViewData["CompanyName"] = $"{company.Name}";
 
         return RedirectToAction(nameof(NotificationsController.MyNotifications), "Notifications");
+    }
+
+    [HttpGet]
+    public ViewResult NotAuthorized()
+    {
+        return View();
     }
 
 	#region Private Helper Methods

@@ -1,14 +1,8 @@
 ﻿@page
 @model AccessDeniedModel
 
-<div class="pagetitle">
-    <h1>Access Denied</h1>
-    <nav>
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">Account</li>
-            <li class="breadcrumb-item active">Access Denied</li>
-        </ol>
-    </nav>
-</div>
-
-<p>Your account does not have permission to access this resource.</p>
+<section class="section error-404 min-vh-100 d-flex flex-column align-items-center justify-content-center">
+    <h1>Not Authorized</h1>
+    <h2>You can't do that!</h2>
+    <a class="btn" asp-controller="Home" asp-action="Index">Back to home</a>
+</section>

@@ -12,6 +12,6 @@ public interface ICompanyService
     Task<List<AppUser>> GetAllDevelopersAsync(int companyId);
     Task<List<AppUser>> GetAllMembersAsync(int companyId);
     Task<AppUser?> UpdateEmployeeProfileAsync(AppUser updatedUser);
-    Task DeleteProfilePictureAsync(AppUser appUser);
+    Task DeleteProfilePictureAsync(string userId);
     Task<bool> AddEmployeeAsync(AppUser appUser, int companyId);
 }

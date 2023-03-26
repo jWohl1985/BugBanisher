@@ -122,11 +122,16 @@ public class CompanyService : ICompanyService
         return user;
     }
 
-    public async Task DeleteProfilePictureAsync(AppUser appUser)
+    public async Task DeleteProfilePictureAsync(string userId)
     {
-        appUser.PictureData = null;
-        _context.Users.Update(appUser);
-        await _context.SaveChangesAsync();
+        AppUser? user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user is not null)
+        {
+            user.PictureData = null;
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+        }
     }
 
     public async Task<bool> AddEmployeeAsync(AppUser appUser, int companyId)

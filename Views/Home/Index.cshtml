@@ -7,11 +7,6 @@
 
 <section class="section dashboard">
 	<div class="row">
-
-		<div class="col-lg-1">
-
-		</div>
-		<!-- Left side columns -->
 		<div class="col-lg-10">
 
 			<div class="pagetitle">
@@ -72,37 +67,72 @@
 					</div>
 				</div>
 
-				<!-- Employees Card -->
-				<div class="col-xxl-4 col-xl-12">
+				@if (User.IsInRole(nameof(Roles.Admin)))
+				{
+					<!-- Employees Card -->
+					<div class="col-xxl-4 col-xl-12">
 
-					<div class="card info-card customers-card">
+						<div class="card info-card customers-card">
 
-						<div class="card-body">
-							<h5 class="card-title">Employees <span>| By Role</span></h5>
+							<div class="card-body">
+								<h5 class="card-title">Employees <span>| By Role</span></h5>
 
-							<div class="d-flex align-items-center">
-								<div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-									<i class="bi bi-people"></i>
+								<div class="d-flex align-items-center">
+									<div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+										<i class="bi bi-people"></i>
+									</div>
+									<div class="ps-3">
+										<span class="small pt-1 fw-bold">@Model.AdminCount</span> <span class="text-muted small pt-2 ps-1">@(
+										Model.AdminCount == 1 ? "administrator" : "administrators"
+										)</span><br/>
+										<span class="small pt-1 fw-bold">@Model.ProjectManagerCount</span> <span class="text-muted small pt-2 ps-1">@(
+										Model.ProjectManagerCount == 1 ? "project manager" : "project managers"
+										)</span><br/>
+										<span class="small pt-1 fw-bold">@Model.DeveloperCount</span> <span class="text-muted small pt-2 ps-1">@(
+										Model.DeveloperCount == 1 ? "developer" : "developers"
+										)</span><br/>
+										<span class="small pt-1 fw-bold">@Model.MemberCount</span> <span class="text-muted small pt-2 ps-1">@(
+										Model.MemberCount == 1 ? "member" : "members"
+										)</span>
+									</div>
 								</div>
-								<div class="ps-3">
-									<span class="small pt-1 fw-bold">@Model.AdminCount</span> <span class="text-muted small pt-2 ps-1">@(Model.AdminCount == 1 ? "administrator" : "administrators")</span><br/>
-									<span class="small pt-1 fw-bold">@Model.ProjectManagerCount</span> <span class="text-muted small pt-2 ps-1">@(Model.ProjectManagerCount == 1 ? "project manager" : "project managers")</span><br/>
-									<span class="small pt-1 fw-bold">@Model.DeveloperCount</span> <span class="text-muted small pt-2 ps-1">@(Model.DeveloperCount == 1 ? "developer" : "developers")</span><br/>
-									<span class="small pt-1 fw-bold">@Model.MemberCount</span> <span class="text-muted small pt-2 ps-1">@(Model.MemberCount == 1 ? "member" : "members")</span>
+
+							</div>
+						</div>
+
+					</div>
+				}
+				else
+				{
+					<div class="col-xxl-4 col-md-6">
+						<div class="card info-card customers-card">
+
+							<div class="card-body">
+								<h5 class="card-title">Notifications <span>| Unseen</span></h5>
+
+								<div class="d-flex align-items-center">
+									<div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+										<i class="bi bi-envelope-fill"></i>
+									</div>
+									<div class="ps-3">
+										<span class="small pt-1 fw-bold">@Model.Notifications.Where(n => !n.HasBeenSeen).Count()</span> <span class="text-muted small pt-2 ps-1">unread</span><br />
+										<span class="small pt-1 fw-bold">@Model.Notifications.Where(n => n.NotificationType == NotificationType.NewProject).Count()</span> <span class="text-muted small pt-2 ps-1">new projects</span><br />
+										<span class="small pt-1 fw-bold">@Model.Notifications.Where(n => n.NotificationType == NotificationType.NewTicket).Count()</span> <span class="text-muted small pt-2 ps-1">new tickets</span><br />
+										<span class="small pt-1 fw-bold">@Model.Notifications.Where(n => n.NotificationType == NotificationType.Mention).Count()</span> <span class="text-muted small pt-2 ps-1">mentions</span><br />
+									</div>
 								</div>
 							</div>
 
 						</div>
 					</div>
-
-				</div>
+				}
 
 				<!-- Project Status -->
 				<div class="col-12">
 					<div class="card recent-sales overflow-auto">
 
 						<div class="card-body">
-							<h5 class="card-title">Project Status</h5>
+							<h5 class="card-title">@(User.IsInRole(nameof(Roles.Admin)) ? "Project Status" : "Your Projects")</h5>
 							<div class="table-responsive">
 								<table class="table table-borderless datatable">
 									<thead>
@@ -157,7 +187,7 @@
 					<div class="card recent-sales overflow-auto">
 
 						<div class="card-body">
-							<h5 class="card-title">Recent Tickets</h5>
+							<h5 class="card-title">@(User.IsInRole(nameof(Roles.Admin)) ? "Recent Tickets" : "Your Tickets")</h5>
 							<div class="table-responsive">
 								<table class="table table-borderless datatable">
 									<thead>

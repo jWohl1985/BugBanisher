@@ -4,6 +4,8 @@ using BugBanisher.Database;
 using BugBanisher.Models;
 using BugBanisher.Models.Enums;
 using BugBanisher.Services.Interfaces;
+using System.Security.Policy;
+using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace BugBanisher.Services;
 
@@ -18,7 +20,11 @@ public class NotificationService : INotificationService
 
     public async Task<Notification?> GetByIdAsync(int id)
     {
-        return await _context.Notifications.Where(n => n.Id == id).FirstOrDefaultAsync();
+        return await _context.Notifications
+            .Where(n => n.Id == id)
+            .Include(n => n.Ticket)
+            .Include(n => n.Project)
+            .FirstOrDefaultAsync();
     }
 
     public async Task<List<Notification>> GetUnseenNotificationsForUserAsync(AppUser appUser)
@@ -26,6 +32,8 @@ public class NotificationService : INotificationService
         return await _context.Notifications.Where(n => n.AppUserId == appUser.Id)
             .Where(n => n.HasBeenSeen == false)
             .OrderByDescending(n => n.Created)
+            .Include(n => n.Ticket)
+            .Include(n => n.Project)
             .ToListAsync();
     }
 
@@ -33,6 +41,8 @@ public class NotificationService : INotificationService
     {
         return await _context.Notifications.Where(n => n.AppUserId == appUser.Id)
             .OrderByDescending(n => n.Created)
+            .Include(n => n.Ticket)
+            .Include(n => n.Project)
             .ToListAsync();
     }
 
@@ -52,8 +62,8 @@ public class NotificationService : INotificationService
             SenderId = sendingUser.Id,
             CompanyId = (sendingUser.CompanyId!).Value,
             Created = DateTime.Now,
-            Title = $"New invite from {sendingUser.FullName}",
-            Message = $"{sendingUser.FullName} has invited you to join their company.",
+            Title = $"New invite",
+            PreviewText = "You've been invited to join a company.",
             NotificationTypeId = (int)NotificationType.CompanyInvite,
         };
 
@@ -79,11 +89,11 @@ public class NotificationService : INotificationService
         Notification inviteAcceptedNotification = new Notification
         {
             AppUserId = originalInvite.SenderId!,
+            SenderId = originalInvite.AppUserId,
             CompanyId = originalInvite.CompanyId,
             Created = DateTime.Now,
-            Title = $"{invitee.FullName} joined your company",
-            Message = $"{invitee.FullName} has accepted the invite to join your company. You can now assign them a role and job title. " +
-            $"Visit the Company\\Manage Team Members page to do so.",
+            Title = $"Invite accepted",
+            PreviewText = "Your company has a new employee.",
             NotificationTypeId = (int)NotificationType.CompanyInviteAccepted,
         };
 
@@ -112,8 +122,8 @@ public class NotificationService : INotificationService
             AppUserId = originalInvite.SenderId!,
             CompanyId = originalInvite.CompanyId,
             Created = DateTime.Now,
-            Title = $"{invitee.FullName} declined your invite",
-            Message = $"{invitee.FullName} declined your invite to join your company.",
+            Title = $"Invite declined",
+            PreviewText = "A user declined your company invite.",
             NotificationTypeId = (int)NotificationType.CompanyInviteRejected,
         };
 
@@ -129,12 +139,35 @@ public class NotificationService : INotificationService
         }
     }
 
-    public async Task<bool> CreateNewTicketNotificationAsync(string developerId, Ticket ticket)
+	public async Task<bool> CreateNewProjectNotificationAsync(string userId, Project project)
+	{
+		AppUser? user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+		if (user is null)
+			return false;
+
+		Notification newProjectNotification = new Notification
+		{
+			AppUserId = userId,
+			CompanyId = user.CompanyId!.Value,
+			Created = DateTime.Now,
+            ProjectId = project.Id,
+			Title = $"New project",
+            PreviewText = "You have a new project to work on.",
+			NotificationTypeId = (int)NotificationType.NewProject,
+		};
+
+		await _context.Notifications.AddAsync(newProjectNotification);
+		await _context.SaveChangesAsync();
+		return true;
+	}
+
+	public async Task<bool> CreateNewTicketNotificationAsync(string developerId, int ticketId)
     {
         AppUser? developer = await _context.Users.FirstOrDefaultAsync(u => u.Id == developerId);
-        Project? project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == ticket.ProjectId);
+        Ticket? ticket = await _context.Tickets.FirstOrDefaultAsync(t => t.Id == ticketId);
 
-        if (developer is null || project is null)
+        if (developer is null || ticket is null)
             return false;
 
         Notification newTicketNotification = new Notification
@@ -142,12 +175,41 @@ public class NotificationService : INotificationService
             AppUserId = developerId,
             CompanyId = developer.CompanyId!.Value,
             Created = DateTime.Now,
-            Title = $"You've been assigned a new ticket.",
-            Message = $"You have a new ticket to accept on the {project.Name} project.\n\n" + $"Ticket Title: {ticket.Title}\n\n",
+            ProjectId = ticket.ProjectId,
+            TicketId = ticket.Id,
+            Title = $"New ticket",
+            PreviewText = "You have a new ticket to work on.",
             NotificationTypeId = (int)NotificationType.NewTicket,
         };
 
         await _context.Notifications.AddAsync(newTicketNotification);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> CreateMentionNotificationAsync(string mentionedUserId, string commentingUserId, int ticketId)
+    {
+        AppUser? mentionedUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == mentionedUserId);
+        AppUser? commentingUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == commentingUserId);
+        Ticket? ticket = await _context.Tickets.FirstOrDefaultAsync(t => t.Id == ticketId);
+
+        if (mentionedUser is null || commentingUser is null || ticket is null)
+            return false;
+
+        Notification newMentionNotification = new Notification
+        {
+            AppUserId = mentionedUserId,
+            CompanyId = commentingUser.CompanyId!.Value,
+            SenderId = commentingUserId,
+            TicketId = ticketId,
+            ProjectId = ticket.ProjectId,
+            Created = DateTime.Now,
+            Title = $"New comment",
+            PreviewText = "Someone mentioned you in a comment.",
+            NotificationTypeId = (int)NotificationType.Mention,
+        };
+
+        await _context.Notifications.AddAsync(newMentionNotification);
         await _context.SaveChangesAsync();
         return true;
     }
@@ -174,8 +236,7 @@ public class NotificationService : INotificationService
             CompanyId = companyId,
             Created = DateTime.Now,
             Title = $"You were removed from your company.",
-            Message = $"Hopefully we're not the ones breaking the news to you, but you were removed from your company. On the bright side, " +
-            $"you can now be invited to a different one.",
+            PreviewText = "You were removed from your company.",
             NotificationTypeId = (int)NotificationType.RemovedFromCompany,
         };
 

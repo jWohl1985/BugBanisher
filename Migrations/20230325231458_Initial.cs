@@ -104,8 +104,8 @@ namespace BugBanisher.Migrations
                     LastName = table.Column<string>(type: "text", nullable: false),
                     JobTitle = table.Column<string>(type: "text", nullable: false),
                     About = table.Column<string>(type: "text", nullable: true),
-                    PictureExtension = table.Column<string>(type: "text", nullable: false),
-                    PictureData = table.Column<byte[]>(type: "bytea", nullable: false),
+                    PictureExtension = table.Column<string>(type: "text", nullable: true),
+                    PictureData = table.Column<byte[]>(type: "bytea", nullable: true),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
@@ -144,8 +144,8 @@ namespace BugBanisher.Migrations
                     IsArchived = table.Column<bool>(type: "boolean", nullable: false),
                     Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Deadline = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    PictureData = table.Column<byte[]>(type: "bytea", nullable: false),
-                    PictureExtension = table.Column<string>(type: "text", nullable: false)
+                    PictureData = table.Column<byte[]>(type: "bytea", nullable: true),
+                    PictureExtension = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -244,38 +244,6 @@ namespace BugBanisher.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Notifications",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    AppUserId = table.Column<string>(type: "text", nullable: false),
-                    SenderId = table.Column<string>(type: "text", nullable: true),
-                    CompanyId = table.Column<int>(type: "integer", nullable: false),
-                    NotificationTypeId = table.Column<int>(type: "integer", nullable: false),
-                    Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    HasBeenSeen = table.Column<bool>(type: "boolean", nullable: false),
-                    Title = table.Column<string>(type: "text", nullable: false),
-                    Message = table.Column<string>(type: "text", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Notifications", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Notifications_AspNetUsers_AppUserId",
-                        column: x => x.AppUserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Notifications_Companies_CompanyId",
-                        column: x => x.CompanyId,
-                        principalTable: "Companies",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "ProjectUsers",
                 columns: table => new
                 {
@@ -356,6 +324,50 @@ namespace BugBanisher.Migrations
                         principalTable: "TicketTypes",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Notifications",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    AppUserId = table.Column<string>(type: "text", nullable: false),
+                    SenderId = table.Column<string>(type: "text", nullable: true),
+                    ProjectId = table.Column<int>(type: "integer", nullable: true),
+                    TicketId = table.Column<int>(type: "integer", nullable: true),
+                    CompanyId = table.Column<int>(type: "integer", nullable: false),
+                    NotificationTypeId = table.Column<int>(type: "integer", nullable: false),
+                    Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    HasBeenSeen = table.Column<bool>(type: "boolean", nullable: false),
+                    Title = table.Column<string>(type: "text", nullable: false),
+                    PreviewText = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notifications", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Notifications_AspNetUsers_AppUserId",
+                        column: x => x.AppUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Notifications_Companies_CompanyId",
+                        column: x => x.CompanyId,
+                        principalTable: "Companies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Notifications_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Notifications_Tickets_TicketId",
+                        column: x => x.TicketId,
+                        principalTable: "Tickets",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -534,6 +546,16 @@ namespace BugBanisher.Migrations
                 name: "IX_Notifications_CompanyId",
                 table: "Notifications",
                 column: "CompanyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notifications_ProjectId",
+                table: "Notifications",
+                column: "ProjectId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notifications_TicketId",
+                table: "Notifications",
+                column: "TicketId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Projects_CompanyId",

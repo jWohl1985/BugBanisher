@@ -18,6 +18,7 @@ public class HomeController : Controller
     private readonly ICompanyService _companyService;
     private readonly IProjectService _projectService;
     private readonly ITicketService _ticketService;
+    private readonly INotificationService _notificationService;
 
 
     public HomeController(
@@ -25,13 +26,15 @@ public class HomeController : Controller
         UserManager<AppUser> userManager, 
         ICompanyService companyService, 
         IProjectService projectService, 
-        ITicketService ticketService)
+        ITicketService ticketService,
+        INotificationService notificationService)
     {
         _signInManager = signInManager;
         _userManager = userManager;
         _companyService = companyService;
         _projectService = projectService;
         _ticketService = ticketService;
+        _notificationService = notificationService;
     }
 
     public async Task<IActionResult> Index()
@@ -83,17 +86,19 @@ public class HomeController : Controller
 
         int companyId = User.Identity!.GetCompanyId();
 
-        List<Project> projects = await _projectService.GetProjectsByProjectManagerAsync(user.Id);
+        List<Project> projects = await _projectService.GetUserActiveProjectsAsync(user.Id);
         List<Ticket> tickets = await _ticketService.GetUserOpenTicketsAsync(user.Id);
         List<Ticket> completedTickets = await _ticketService.GetCompletedTicketsAsync(companyId);
         List<AppUser> employees = await _companyService.GetAllEmployeesAsync(companyId);
+
+        List<Notification> notifications = await _notificationService.GetUnseenNotificationsForUserAsync(user);
 
         return new DashboardViewModel()
         {
             ActiveProjects = projects,
             OpenTickets = tickets,
             CompletedTickets = completedTickets,
-            Employees = employees,
+            Notifications = notifications,
         };
     }
 }

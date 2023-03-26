@@ -13,8 +13,6 @@ using System.Net.Sockets;
 
 namespace BugBanisher.Controllers;
 
-
-
 public class TicketsController : Controller
 {
 	private readonly IProjectService _projectService;
@@ -46,11 +44,20 @@ public class TicketsController : Controller
 	public async Task<ViewResult> ViewTicket(int ticketId)
 	{
 		Ticket? ticket = await _ticketService.GetTicketByIdAsync(ticketId);
-
+		
 		if (ticket is null)
-			return View("NotFound");
+			return View(nameof(NotFound));
 
-		TicketViewModel viewModel = new TicketViewModel
+        Project? project = await _projectService.GetProjectByIdAsync(ticket.ProjectId);
+		AppUser? user = await _userManager.GetUserAsync(User);
+
+		if (project is null || user is null)
+			return View(nameof(NotFound));
+
+		if (!UserIsAdmin && !project.Team.Contains(user))
+			return View(nameof(NotAuthorized));
+
+        TicketViewModel viewModel = new TicketViewModel
 		{
 			Ticket = ticket,
 			Project = ticket.Project!,
@@ -137,18 +144,27 @@ public class TicketsController : Controller
     }
 
     [HttpGet]
-	[Authorize(Roles = "Admin, ProjectManager, Developer")]
+	[Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.ProjectManager)}, {nameof(Roles.Developer)}")]
 	public async Task<ViewResult> CreateTicket(int projectId)
 	{
 		ViewData["Action"] = "Create";
 
-		CreateOrEditTicketViewModel viewModel = await GenerateCreateTicketViewModel(projectId);
+		Project? project = await _projectService.GetProjectByIdAsync(projectId);
+		AppUser? user = await _userManager.GetUserAsync(User);
+
+        if (project is null || user is null)
+            return View(nameof(NotFound));
+
+        if (!UserIsAdmin && !project.Team.Contains(user))
+            return View(nameof(NotAuthorized));
+
+        CreateOrEditTicketViewModel viewModel = await GenerateCreateTicketViewModel(projectId);
 
 		return View("CreateOrEditTicket", viewModel);
 	}
 
 	[HttpPost]
-	[Authorize(Roles = "Admin, ProjectManager, Developer")]
+	[Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.ProjectManager)}, {nameof(Roles.Developer)}")]
 	[ValidateAntiForgeryToken]
 	public async Task<RedirectToActionResult> CreateTicket(CreateOrEditTicketViewModel viewModel)
 	{
@@ -164,18 +180,18 @@ public class TicketsController : Controller
 
 		ticket.TicketStatusId = ticket.DeveloperId is not null ? "pending" : "unassigned";
 
-		if (ticket.DeveloperId is not null)
-			await _notificationService.CreateNewTicketNotificationAsync(ticket.DeveloperId, ticket);
-
 		ticket.Id = await _ticketService.CreateTicketAsync(ticket);
 
 		await _ticketHistoryService.AddTicketCreatedEventAsync(ticket.Id);
 
-		return RedirectToAction("ViewTicket", new { ticketId = ticket.Id });
+        if (ticket.DeveloperId is not null)
+            await _notificationService.CreateNewTicketNotificationAsync(ticket.DeveloperId, ticket.Id);
+
+        return RedirectToAction("ViewTicket", new { ticketId = ticket.Id });
 	}
 
 	[HttpGet]
-	[Authorize(Roles = "Admin, ProjectManager, Developer")]
+	[Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.ProjectManager)}, {nameof(Roles.Developer)}")]
 	public async Task<ViewResult> EditTicket(int ticketId)
 	{
 		ViewData["Action"] = "Edit";
@@ -183,15 +199,27 @@ public class TicketsController : Controller
 		Ticket? ticket = await _ticketService.GetTicketByIdAsync(ticketId);
 
 		if (ticket is null)
-			return View("NotFound");
+			return View(nameof(NotFound));
 
-		CreateOrEditTicketViewModel viewModel = await GenerateEditTicketViewModel(ticket);
+        Project? project = await _projectService.GetProjectByIdAsync(ticket.ProjectId);
+        AppUser? user = await _userManager.GetUserAsync(User);
+
+        if (project is null || user is null)
+            return View(nameof(NotFound));
+
+        if (!UserIsAdmin && !project.Team.Contains(user))
+            return View(nameof(NotAuthorized));
+
+		if (User.IsInRole(nameof(Roles.Developer)) && ticket.DeveloperId != user.Id)
+			return View(nameof(NotAuthorized));
+
+        CreateOrEditTicketViewModel viewModel = await GenerateEditTicketViewModel(ticket);
 
 		return View("CreateOrEditTicket", viewModel);
 	}
 
     [HttpPost]
-    [Authorize(Roles = "Admin, ProjectManager, Developer")]
+    [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.ProjectManager)}, {nameof(Roles.Developer)}")]
 	[ValidateAntiForgeryToken]
     public async Task<RedirectToActionResult> EditTicket(CreateOrEditTicketViewModel viewModel)
     {
@@ -222,7 +250,7 @@ public class TicketsController : Controller
 			{
 				ticket.TicketStatusId = "pending";
 				ticket.DeveloperId = viewModel.SelectedDeveloper;
-				await _notificationService.CreateNewTicketNotificationAsync(ticket.DeveloperId, ticket);
+				await _notificationService.CreateNewTicketNotificationAsync(ticket.DeveloperId, ticket.Id);
 			}
 
 			await _ticketService.UpdateTicketAsync(ticket);
@@ -237,15 +265,16 @@ public class TicketsController : Controller
 	[ValidateAntiForgeryToken]
 	public async Task<RedirectResult> AddComment(TicketViewModel viewModel)
 	{
-		AppUser user = await _userManager.GetUserAsync(User);
-
 		if (string.IsNullOrEmpty(viewModel.NewComment))
 		{
 			TempData["CommentError"] = "Comment cannot be empty.";
 			return Redirect(Url.RouteUrl(new { controller = "Tickets", action = "ViewTicket", ticketId = viewModel.Ticket.Id }) + "#comments");
 		}
 
-		TicketComment comment = new TicketComment()
+        AppUser user = await _userManager.GetUserAsync(User);
+		Project project = (await _projectService.GetProjectByIdAsync(viewModel.Ticket.ProjectId))!;
+
+        TicketComment comment = new TicketComment()
 		{
 			TicketId = viewModel.Ticket.Id,
 			AppUserId = user.Id,
@@ -254,6 +283,12 @@ public class TicketsController : Controller
 		};
 
 		await _ticketService.AddTicketCommentAsync(viewModel.Ticket.Id, comment);
+
+		foreach (AppUser teamMember in project.Team)
+		{
+			if (comment.Comment.Contains($"@{teamMember.FullName}"))
+				await _notificationService.CreateMentionNotificationAsync(teamMember.Id, user.Id, viewModel.Ticket.Id);
+		}
 
 		return Redirect(Url.RouteUrl(new { controller = "Tickets", action = "ViewTicket", ticketId = viewModel.Ticket.Id }) + "#comments");
 	}
@@ -300,7 +335,13 @@ public class TicketsController : Controller
 		TicketAttachment? attachment = await _ticketService.GetTicketAttachmentByIdAsync(ticketAttachmentId);
 
 		if (attachment is null)
-			return View("NotFound");
+			return View(nameof(NotFound));
+
+		Project project = (await _projectService.GetProjectByIdAsync(attachment.Ticket!.ProjectId))!;
+		AppUser user = await _userManager.GetUserAsync(User);
+
+		if (!UserIsAdmin && !project.Team.Contains(user))
+			return View(nameof(NotAuthorized));
 
 		string fileName = attachment.FileName;
 		byte[] fileData = attachment.FileData;
@@ -311,25 +352,32 @@ public class TicketsController : Controller
 	}
 
 	[HttpGet]
-	[Authorize]
+	[Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.ProjectManager)}, {nameof(Roles.Developer)}")]
 	public async Task<ViewResult> ConfirmArchiveTicket(int ticketId)
 	{
 		Ticket? ticket = await _ticketService.GetTicketByIdAsync(ticketId);
 
 		if (ticket is null)
-			return View("NotFound");
+			return View(nameof(NotFound));
+
+		Project project = (await _projectService.GetProjectByIdAsync(ticket.ProjectId))!;
+		AppUser user = await _userManager.GetUserAsync(User);
+
+		if (!UserIsAdmin && project.ProjectManagerId != user.Id && ticket.DeveloperId != user.Id)
+			return View(nameof(NotAuthorized));
 
 		return View(ticket);
 	}
 
 	[HttpPost]
-	[Authorize]
+	[Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.ProjectManager)}, {nameof(Roles.Developer)}")]
+	[ValidateAntiForgeryToken]
 	public async Task<IActionResult> ArchiveTicketConfirmed(Ticket ticket)
 	{
 		Ticket? ticketToArchive = await _ticketService.GetTicketByIdAsync(ticket.Id);
 
 		if (ticketToArchive is null)
-			return View("NotFound");
+			return View(nameof(NotFound));
 
 		AppUser user = await _userManager.GetUserAsync(User);
 
@@ -340,25 +388,32 @@ public class TicketsController : Controller
 	}
 
     [HttpGet]
-    [Authorize]
+    [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.ProjectManager)}, {nameof(Roles.Developer)}")]
     public async Task<ViewResult> ConfirmUnarchiveTicket(int ticketId)
     {
         Ticket? ticket = await _ticketService.GetTicketByIdAsync(ticketId);
 
         if (ticket is null)
-            return View("NotFound");
+            return View(nameof(NotFound));
+
+        Project project = (await _projectService.GetProjectByIdAsync(ticket.ProjectId))!;
+        AppUser user = await _userManager.GetUserAsync(User);
+
+        if (!UserIsAdmin && project.ProjectManagerId != user.Id && ticket.DeveloperId != user.Id)
+            return View(nameof(NotAuthorized));
 
         return View(ticket);
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.ProjectManager)}, {nameof(Roles.Developer)}")]
+	[ValidateAntiForgeryToken]
     public async Task<IActionResult> UnarchiveTicketConfirmed(Ticket ticket)
     {
         Ticket? ticketToUnarchive = await _ticketService.GetTicketByIdAsync(ticket.Id);
 
         if (ticketToUnarchive is null)
-            return View("NotFound");
+            return View(nameof(NotFound));
 
         AppUser user = await _userManager.GetUserAsync(User);
 
@@ -369,29 +424,42 @@ public class TicketsController : Controller
     }
 
 	[HttpGet]
-	[Authorize]
+	[Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.ProjectManager)}, {nameof(Roles.Developer)}")]
 	public async Task<ViewResult> ConfirmDeleteTicket(int ticketId)
 	{
 		Ticket? ticket = await _ticketService.GetTicketByIdAsync(ticketId);
 
 		if (ticket is null)
-			return View("NotFound");
+			return View(nameof(NotFound));
 
-		return View(ticket);
+        Project project = (await _projectService.GetProjectByIdAsync(ticket.ProjectId))!;
+        AppUser user = await _userManager.GetUserAsync(User);
+
+        if (!UserIsAdmin && project.ProjectManagerId != user.Id && ticket.DeveloperId != user.Id)
+            return View(nameof(NotAuthorized));
+
+        return View(ticket);
 	}
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.ProjectManager)}, {nameof(Roles.Developer)}")]
+	[ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteTicketConfirmed(Ticket ticket)
     {
         Ticket? ticketToDelete = await _ticketService.GetTicketByIdAsync(ticket.Id);
 
         if (ticketToDelete is null)
-            return View("NotFound");
+            return View(nameof(NotFound));
 
 		await _ticketService.DeleteTicketAsync(ticketToDelete);
         return RedirectToAction("ViewProject", "Projects", new { projectId = ticketToDelete.ProjectId });
     }
+
+	[HttpGet]
+	public ViewResult NotAuthorized()
+	{
+		return View();
+	}
 
     #region Private helper methods
 

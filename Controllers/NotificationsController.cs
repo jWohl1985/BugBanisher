@@ -22,12 +22,8 @@ public class NotificationsController : Controller
     public async Task<ViewResult> MyNotifications()
     {
         AppUser? appUser = await _userManager.GetUserAsync(User);
-        List<Notification> notifications;
 
-        if (appUser is null)
-            notifications = new List<Notification>();
-        else
-            notifications = await _notificationService.GetAllNotificationsForUserAsync(appUser);
+        List<Notification> notifications = appUser is not null ? await _notificationService.GetAllNotificationsForUserAsync(appUser) : new List<Notification>();
 
         return View(notifications);
     }
@@ -39,8 +35,19 @@ public class NotificationsController : Controller
         Notification? notification = await _notificationService.GetByIdAsync(id);
 
         if (notification is not null)
-            await _notificationService.MarkAsRead(notification);
+        {
+            if (notification.AppUserId == (await _userManager.GetUserAsync(User)).Id)
+                await _notificationService.MarkAsRead(notification);
+            else
+                return RedirectToAction(nameof(NotAuthorized));
+        }
 
         return RedirectToAction(nameof(MyNotifications));
+    }
+
+    [HttpGet]
+    public ViewResult NotAuthorized()
+    {
+        return View();
     }
 }

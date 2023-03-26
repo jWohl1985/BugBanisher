@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using BugBanisher.Models.Enums;
 using System.ComponentModel.Design;
 using System.Globalization;
+using BugBanisher.Services;
 
 namespace ProjectManager.Controllers;
 
@@ -17,29 +18,37 @@ public class ProjectsController : Controller
     private readonly ICompanyService _companyService;
     private readonly IProjectService _projectService;
     private readonly IFileService _fileService;
+    private readonly INotificationService _notificationService;
     private readonly UserManager<AppUser> _userManager;
-
-    private const string ListView = "List";
-    private const string CreateOrEditProjectView = "CreateOrEditProject";
 
     private bool UserIsAdmin => User.IsInRole(nameof(Roles.Admin));
 
-    public ProjectsController(ICompanyService companyService, IProjectService projectService, IFileService fileService, UserManager<AppUser> userManager)
+    public ProjectsController(ICompanyService companyService, 
+        IProjectService projectService, 
+        IFileService fileService, 
+        INotificationService notificationService, 
+        UserManager<AppUser> userManager)
     {
         _companyService = companyService;
         _projectService = projectService;
         _fileService = fileService;
         _userManager = userManager;
+        _notificationService = notificationService;
     }
 
     [HttpGet]
     [Authorize]
     public async Task<ViewResult> ViewProject(int projectId)
     {
+        AppUser user = await _userManager.GetUserAsync(User);
+
         Project? project = await _projectService.GetProjectByIdAsync(projectId);
 
         if (project is null)
-            return View("NotFound");
+            return View(nameof(NotFound));
+
+        if (!UserIsAdmin && !project.Team.Contains(user))
+            return View(nameof(NotAuthorized));
 
         ProjectViewModel viewModel = new ProjectViewModel
         {
@@ -75,7 +84,7 @@ public class ProjectsController : Controller
             PerPageOptions = new SelectList(new string[] { "5", "10", "20", "30", "40", "50" }, perPage.ToString()),
         };
 
-        return View(ListView, viewModel);
+        return View("List", viewModel);
     }
 
     [HttpGet]
@@ -86,7 +95,7 @@ public class ProjectsController : Controller
         AppUser user = await _userManager.GetUserAsync(User);
 
         List<Project> archivedProjects = 
-            UserIsAdmin ? await _projectService.GetAllArchivedCompanyProjectsAsync(companyId) : archivedProjects = await _projectService.GetUserArchivedProjectsAsync(user.Id);
+            UserIsAdmin ? await _projectService.GetAllArchivedCompanyProjectsAsync(companyId) : await _projectService.GetUserArchivedProjectsAsync(user.Id);
 
         ProjectListViewModel viewModel = new ProjectListViewModel()
         {
@@ -100,22 +109,22 @@ public class ProjectsController : Controller
             PerPageOptions = new SelectList(new string[] { "5", "10", "20", "30", "40", "50" }, perPage.ToString()),
         };
 
-        return View(ListView, viewModel);
+        return View("List", viewModel);
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin, ProjectManager")]
+    [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.ProjectManager)}")]
     public async Task<ViewResult> CreateProject()
     {
         ViewData["Action"] = "Create";
 
         CreateOrEditProjectViewModel viewModel = await GenerateCreateProjectViewModel();
 
-        return View(CreateOrEditProjectView, viewModel);
+        return View("CreateOrEditProject", viewModel);
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin, ProjectManager")]
+    [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.ProjectManager)}")]
     [ValidateAntiForgeryToken]
     public async Task<RedirectToActionResult> CreateProject(CreateOrEditProjectViewModel viewModel)
     {
@@ -135,7 +144,7 @@ public class ProjectsController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin, ProjectManager")]
+    [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.ProjectManager)}")]
     public async Task<ViewResult> EditProject(int projectId)
     {
         ViewData["Action"] = "Edit";
@@ -143,15 +152,15 @@ public class ProjectsController : Controller
         Project? project = await _projectService.GetProjectByIdAsync(projectId);
 
         if (project is null)
-            return View("NotFound");
+            return View(nameof(NotFound));
 
         CreateOrEditProjectViewModel viewModel = await GenerateEditProjectViewModel(project);
 
-        return View(CreateOrEditProjectView, viewModel);
+        return View("CreateOrEditProject", viewModel);
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin, ProjectManager")]
+    [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.ProjectManager)}")]
     [ValidateAntiForgeryToken]
     public async Task<RedirectToActionResult> EditProject(CreateOrEditProjectViewModel viewModel)
     {
@@ -171,84 +180,116 @@ public class ProjectsController : Controller
 	}
 
     [HttpGet]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.ProjectManager)}")]
     public async Task<ViewResult> ConfirmDeleteProject(int projectId)
     {
         Project? project = await _projectService.GetProjectByIdAsync(projectId);
 
         if (project is null)
-            return View("NotFound");
+            return View(nameof(NotFound));
+
+        AppUser user = await _userManager.GetUserAsync(User);
+
+        if (User.IsInRole(nameof(Roles.ProjectManager)) && project.ProjectManagerId != user.Id)
+            return View(nameof(NotAuthorized));
 
         return View(project);
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.ProjectManager)}")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteProjectConfirmed(Project project)
+    public async Task<RedirectToActionResult> DeleteProjectConfirmed(Project project)
     {
-        if(!await _projectService.DeleteProjectAsync(project.Id))
-			return Problem($"Could not delete project. Id: {project.Id}, Name: {project.Name}");
+        AppUser user = await _userManager.GetUserAsync(User);
+
+        if (User.IsInRole(nameof(Roles.ProjectManager)) && project.ProjectManagerId != user.Id)
+            return RedirectToAction(nameof(NotAuthorized));
+
+        await _projectService.DeleteProjectAsync(project.Id);
 
         return RedirectToAction(nameof(ListActiveProjects));
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin, ProjectManager")]
+    [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.ProjectManager)}")]
     public async Task<ViewResult> ConfirmArchiveProject(int projectId)
     {
         Project? project = await _projectService.GetProjectByIdAsync(projectId);
 
         if (project is null)
-            return View("NotFound");
+            return View(nameof(NotFound));
+
+        AppUser user = await _userManager.GetUserAsync(User);
+
+        if (User.IsInRole(nameof(Roles.ProjectManager)) && project.ProjectManagerId != user.Id)
+            return View(nameof(NotAuthorized));
 
         return View(project);
     }
 
 	[HttpPost]
-	[Authorize(Roles = "Admin, ProjectManager")]
+	[Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.ProjectManager)}")]
     [ValidateAntiForgeryToken]
 	public async Task<IActionResult> ArchiveProjectConfirmed(Project project)
 	{
-        if (!await _projectService.ArchiveProjectAsync(project.Id))
-            return Problem($"Could not archive project. Id: {project.Id}, Name: {project.Name}");
+        AppUser user = await _userManager.GetUserAsync(User);
+
+        if (User.IsInRole(nameof(Roles.ProjectManager)) && project.ProjectManagerId != user.Id)
+            return RedirectToAction(nameof(NotAuthorized));
+
+        await _projectService.ArchiveProjectAsync(project.Id);
 
 		return RedirectToAction(nameof(ViewProject), new { projectId = project.Id });
 	}
 
 	[HttpGet]
-	[Authorize(Roles = "Admin, ProjectManager")]
+	[Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.ProjectManager)}")]
 	public async Task<ViewResult> ConfirmUnarchiveProject(int projectId)
 	{
 		Project? project = await _projectService.GetProjectByIdAsync(projectId);
 
 		if (project is null)
-			return View("NotFound");
+			return View(nameof(NotFound));
 
 		return View(project);
 	}
 
 	[HttpPost]
-	[Authorize(Roles = "Admin, ProjectManager")]
+	[Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.ProjectManager)}")]
 	[ValidateAntiForgeryToken]
 	public async Task<IActionResult> UnarchiveProjectConfirmed(Project project)
 	{
-		if (!await _projectService.UnarchiveProjectAsync(project.Id))
-			return Problem($"Could not unarchive project. Id: {project.Id}, Name: {project.Name}");
+        AppUser user = await _userManager.GetUserAsync(User);
+
+        if (User.IsInRole(nameof(Roles.ProjectManager)) && project.ProjectManagerId != user.Id)
+            return RedirectToAction(nameof(NotAuthorized));
+
+        await _projectService.UnarchiveProjectAsync(project.Id);
 
 		return RedirectToAction(nameof(ViewProject), new { projectId = project.Id });
 	}
 
+    [HttpGet]
+    public ViewResult NotAuthorized()
+    {
+        return View();
+    }
+
 	#region Private Helper Methods
 	private async Task<CreateOrEditProjectViewModel> GenerateCreateProjectViewModel()
     {
+        AppUser user = await _userManager.GetUserAsync(User);
+
+        List<AppUser> onlyThisUser = new List<AppUser> { user };
+
         Project createdProject = new Project
         {
             CompanyId = User.Identity!.GetCompanyId(),
             Name = String.Empty,
             Description = String.Empty,
             Created = DateTime.Now,
-            Deadline = DateTime.Now.AddDays(1),
+            Deadline = DateTime.Now.AddDays(30),
         };
 
         return new CreateOrEditProjectViewModel()
@@ -260,7 +301,7 @@ public class ProjectsController : Controller
             Description = createdProject.Description,
 
             SelectedManager = "Unassigned",
-            ProjectManagers = new SelectList(await _companyService.GetAllProjectManagersAsync(createdProject.CompanyId), "Id", "FullName", "Unassigned"),
+            ProjectManagers = UserIsAdmin ? new SelectList(await _companyService.GetAllProjectManagersAsync(createdProject.CompanyId), "Id", "FullName", "Unassigned") : new SelectList(onlyThisUser, "Id", "FullName", "Unassigned"),
 
             SelectedDevelopers = new string[] { },
             Developers = new MultiSelectList(await _companyService.GetAllDevelopersAsync(createdProject.CompanyId), "Id", "FullName", new string[] { }),
@@ -279,6 +320,9 @@ public class ProjectsController : Controller
         List<string> developerIds = new List<string>();
         List<string> memberIds = new List<string>();
 
+        AppUser user = await _userManager.GetUserAsync(User);
+        List<AppUser> onlyThisUser = new List<AppUser> { user };
+
         foreach (AppUser developer in developers)
             developerIds.Add(developer.Id);
 
@@ -293,7 +337,7 @@ public class ProjectsController : Controller
             Description = project.Description,
 
             SelectedManager = currentProjectManager,
-            ProjectManagers = new SelectList(await _companyService.GetAllProjectManagersAsync(project.CompanyId), "Id", "FullName", currentProjectManager),
+            ProjectManagers = UserIsAdmin ? new SelectList(await _companyService.GetAllProjectManagersAsync(project.CompanyId), "Id", "FullName", currentProjectManager) : new SelectList(onlyThisUser, "Id", "FullName", currentProjectManager),
 
             SelectedDevelopers = developerIds,
             Developers = new MultiSelectList(await _companyService.GetAllDevelopersAsync(project.CompanyId), "Id", "FullName", developerIds),
@@ -314,15 +358,28 @@ public class ProjectsController : Controller
     {
 		AppUser selectedProjectManager = await _userManager.FindByIdAsync(viewModel.SelectedManager);
 
+        if (selectedProjectManager.Id != project.ProjectManagerId)
+			await _notificationService.CreateNewProjectNotificationAsync(selectedProjectManager.Id, project);
+
 		if (project.ProjectManagerId is not null)
 			await _projectService.RemoveProjectManagerAsync(project.Id);
 
-		if (selectedProjectManager is not null)
-			await _projectService.AssignProjectManagerAsync(selectedProjectManager.Id, project.Id);
+        if (selectedProjectManager is not null)
+            await _projectService.AssignProjectManagerAsync(selectedProjectManager.Id, project.Id);
 	}
 
     private async Task AssignDevelopersAsync(CreateOrEditProjectViewModel viewModel, Project project)
     {
+        if (viewModel.SelectedDevelopers is not null)
+        {
+            foreach (string employeeId in viewModel.SelectedDevelopers)
+            {
+                AppUser employee = await _userManager.FindByIdAsync(employeeId);
+
+                if (!project.Team.Contains(employee))
+                    await _notificationService.CreateNewProjectNotificationAsync(employeeId, project);
+            }
+        }
 
         foreach (AppUser projectMember in project.Team)
         {
@@ -349,6 +406,17 @@ public class ProjectsController : Controller
 
     private async Task AssignMembersAsync(CreateOrEditProjectViewModel viewModel, Project project)
     {
+        if (viewModel.SelectedMembers is not null)
+        {
+            foreach (string employeeId in viewModel.SelectedMembers)
+            {
+                AppUser employee = await _userManager.FindByIdAsync(employeeId);
+
+                if (!project.Team.Contains(employee))
+                    await _notificationService.CreateNewProjectNotificationAsync(employeeId, project);
+            }
+        }
+
         foreach (AppUser projectMember in project.Team)
         {
 			if (false == await _userManager.IsInRoleAsync(projectMember, nameof(Roles.Member)))

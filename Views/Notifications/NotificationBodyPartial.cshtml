@@ -1,0 +1,59 @@
+﻿@model Notification
+
+@inject UserManager<AppUser> UserManager
+
+@{
+    AppUser sendingUser = await UserManager.FindByIdAsync(Model.SenderId);
+}
+
+
+@switch (Model.NotificationType)
+{
+    case (NotificationType.CompanyInvite):
+        <p class="card-text">
+            @sendingUser.FullName has invited you to join their company.
+        </p>
+        break;
+
+
+    case (NotificationType.CompanyInviteAccepted):
+        <p class="card-text">
+            <a asp-controller="Company" asp-action="ViewEmployee" asp-route-userId="@sendingUser.Id">@sendingUser.FullName</a> has accepted the invite to join your company. 
+            You can now assign them a role and job title. Visit the <a asp-controller="Company" asp-action="ManageEmployees">Manage Team Members</a> page to do so.
+        </p>
+        break;
+
+    case (NotificationType.CompanyInviteRejected):
+        <p class="card-text">
+            @sendingUser.FullName declined the invite to join your company.
+        </p>
+        break;
+
+    case (NotificationType.NewProject):
+        <p class="card-text">
+            You have been added to the team for the following project: <a asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@Model.Project!.Id">@Model.Project!.Name</a>
+        </p>
+        break;
+
+    case (NotificationType.NewTicket):
+        <p class="card-text">
+            You have a new ticket to accept on the <a asp-controller="Projects" asp-action="ViewProject" asp-route-projectId="@Model.Project!.Id">@Model.Project!.Name</a> project. 
+            Ticket Title: <a asp-controller="Tickets" asp-action="ViewTicket" asp-route-ticketId="@Model.Ticket!.Id">@Model.Ticket!.Title</a>
+        </p>
+        break;
+
+    case (NotificationType.Mention):
+        <p class="card-text">
+            @sendingUser.FullName left you a comment in the <a asp-controller="Tickets" asp-action="ViewTicket" asp-route-ticketId="@Model.TicketId">@Model.Ticket!.Title</a> ticket. 
+            Be sure to read it!"</p>
+        break;
+
+    case (NotificationType.RemovedFromCompany):
+        <p class="card-text">
+            Hopefully we're not the ones breaking the news to you, but you were removed from your company. On the bright side, you can now be invited to a different one, or create your own.
+        </p>
+        break;
+
+    default:
+        break;
+}
